@@ -46,6 +46,10 @@ gcc -Wall -Wextra -o programa programa.c
 | Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
 | GUI (ampliación) | [`TEORIA/13`](TEORIA/13-gui/) |
 
+La teoría incorpora una galería complementaria de **57 figuras**. El inventario, los prompts de
+las ilustraciones generadas y los créditos de las fotografías externas están en
+[`TEORIA/IMAGENES.md`](TEORIA/IMAGENES.md).
+
 ## Prácticas
 
 | Práctica | Carpeta |

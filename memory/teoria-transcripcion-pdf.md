@@ -11,9 +11,10 @@ Tarea (iniciada 2026-09-01): transcribir el contenido de `Sistemas Operativos - 
 **Criterios acordados con el usuario:**
 - Fidelidad: **prosa fiel** — todo el texto, cifras, listas y tablas del PDF, redactado en
   prosa/listas legibles en Markdown, estilo conciso del repo. No verbatim bullet-a-bullet.
-- Diagramas: replicar con **mermaid**.
-- Imágenes: catalogar **solo diagramas/figuras relevantes** (no iconos, fotos de hardware ni
-  capturas). Prompt detallado de ChatGPT para cada una. Catálogo maestro en
+- Diagramas: Claude replica **todos** con **mermaid** o **SVG embebido inline en el .md**
+  (confirmado por el usuario; NO renderizar a PNG). Solo queda pendiente el material
+  **fotográfico/externo** (fotos históricas, hardware, capturas, timelines con copyright).
+- Prompt ChatGPT para ese material pendiente. Registro de estado por tema en
   `TEORIA/IMAGENES-PENDIENTES.md`. El usuario генera las imágenes y luego Claude las
   distribuye en cada carpeta y las linka en el `.md`.
 - Tema 9 del PDF (Sistemas distribuidos, pp.656–732): **OMITIR**, no hay carpeta.
@@ -34,13 +35,17 @@ Tarea (iniciada 2026-09-01): transcribir el contenido de `Sistemas Operativos - 
 Texto del PDF extraído en scratchpad: `pdf_text.txt`, `slide_titles.txt`.
 
 **Progreso:**
-- [x] 01 Introducción (Tema 1) — README reescrito + catálogo img (cu-ruta-datos, monoprog-vs-multiprog)
-- [ ] 03 Procesos e hilos (Tema 2, pp.140–204)
-- [ ] 04 Planificación (Tema 3, pp.205–272)
-- [ ] 05 Concurrencia y sincronización (Tema 4, pp.273–364)
-- [ ] 06 Gestión de memoria (Tema 5+6, pp.366–489)
-- [ ] 11 Dispositivos de E/S (Tema 7, pp.491–556)
-- [ ] 12 Sistemas de ficheros (Tema 8, pp.558–654)
-- [ ] 02/07/08/09/10/13 — revisar PDFs de prácticas
+- [x] 01 Introducción (Tema 1) — README + todos los diagramas mermaid/SVG inline. Pendiente: fotos históricas + timelines (externos)
+- [x] 03 Procesos e hilos (Tema 2) — README + todos los diagramas mermaid/SVG inline. Nada pendiente
+- [x] 04 Planificación (Tema 3) — README + todos los diagramas mermaid/SVG/tabla inline. Pendiente: capturas Task Manager (se omiten)
+- [x] 05 Concurrencia y sincronización (Tema 4) — README + diagramas mermaid/SVG inline + pseudocódigo. Pendiente: ilustraciones/clipart/fotos
+- [x] 06 Gestión de memoria (Temas 5+6) — README + diagramas mermaid/SVG/tabla inline. Pendiente: aparcamiento, capturas Win/Linux
+- [x] 11 Dispositivos de E/S (Tema 7) — README + diagramas mermaid/SVG inline. Pendiente: fotos discos/conectores
+- [x] 12 Sistemas de ficheros (Tema 8) — README + diagramas mermaid/SVG/tabla inline (i-nodo, RAID 0/1/5, VFS…). Pendiente: fotos cabinas RAID
+- [ ] 02/07/08/09/10/13 — revisar PDFs de prácticas (pendiente)
+
+**TODOS los temas del PDF principal (1–8) COMPLETADOS.** Falta: Tema 9 distribuidos (omitido
+por acuerdo), y los temas repo 02/07/08/09/10/13 (revisar PDFs de prácticas).
+El usuario está creando en paralelo `TEORIA/IMAGENES.md` (galería complementaria de 57 imágenes).
 
 Catálogo maestro creado: `TEORIA/IMAGENES-PENDIENTES.md`.

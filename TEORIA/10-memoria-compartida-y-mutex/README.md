@@ -30,6 +30,62 @@ flowchart TD
 
 Detalle en la práctica: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaforos/).
 
+## Galería visual complementaria
+
+### T10.1 · Dos procesos ante una misma pizarra
+
+```mermaid
+flowchart LR
+    A["Proceso A<br/>espacio privado"] --> LA[lock]
+    B["Proceso B<br/>espacio privado"] --> LB[lock]
+    LA --> K{{"testigo único<br/>mutex"}}
+    LB -. espera .-> K
+    K --> S[["pizarra común<br/>memoria compartida"]]
+    S --> U[unlock]
+    U --> K
+```
+
+*La memoria compartida evita copiar datos entre procesos, pero obliga a sincronizar los accesos
+para impedir escrituras simultáneas.*
+
+### T10.2 · Sin mutex y con mutex
+
+```mermaid
+flowchart TB
+    subgraph MAL["Sin mutex · carrera"]
+        A1[Proceso A lee 10] --> A2[escribe 11]
+        B1[Proceso B lee 10] --> B2[escribe 11]
+        A2 --> R1["resultado 11<br/>se perdió una actualización"]
+        B2 --> R1
+    end
+    subgraph BIEN["Con mutex · acceso ordenado"]
+        C1["A: lock · 10→11 · unlock"] --> C2["B: lock · 11→12 · unlock"] --> R2[resultado 12]
+    end
+```
+
+*Compartir memoria aporta velocidad. El mutex aporta el orden necesario para que esa velocidad no
+produzca resultados incoherentes.*
+
+### T10.3 · Una sala común mapeada en dos procesos
+
+```mermaid
+flowchart TB
+    subgraph PA["Espacio virtual del proceso A"]
+        APR[Memoria privada A]
+        AS["dirección 0x7000<br/>segmento compartido"]
+    end
+    subgraph PB["Espacio virtual del proceso B"]
+        BPR[Memoria privada B]
+        BS["dirección 0x9000<br/>segmento compartido"]
+    end
+    AS --> F[["mismos marcos físicos<br/>en RAM"]]
+    BS --> F
+```
+
+*Cada proceso conserva su memoria privada, pero el núcleo puede mapear el mismo segmento físico
+dentro de varios espacios de direcciones.*
+
 ## Material
 
-_(pendiente de añadir)_
+Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en
+[`TEORIA/IMAGENES.md`](../IMAGENES.md).

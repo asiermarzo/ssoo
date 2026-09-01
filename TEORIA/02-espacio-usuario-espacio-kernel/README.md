@@ -52,6 +52,78 @@ flowchart TB
     end
 ```
 
+## Galería visual complementaria
+
+### T02.1 · El kernel como zona restringida
+
+```mermaid
+flowchart TB
+    subgraph U["Zona pública · modo usuario"]
+        A1[Aplicación]
+        A2[Biblioteca]
+        A3[Utilidad]
+    end
+    G{{"Control de acceso<br/>syscall · trap"}}
+    subgraph K["Zona restringida · modo kernel"]
+        MEM[Memoria]
+        CPU[CPU y planificación]
+        DEV[Dispositivos]
+        FS[Sistema de ficheros]
+    end
+    A1 --> G
+    A2 --> G
+    A3 --> G
+    G --> MEM
+    G --> CPU
+    G --> DEV
+    G --> FS
+```
+
+*Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos
+protegidos deben solicitar un servicio al núcleo.*
+
+### T02.2 · La llamada al sistema como ventanilla
+
+```mermaid
+sequenceDiagram
+    participant A as Aplicación
+    participant V as Ventanilla segura · libc
+    participant K as Núcleo
+    participant H as Hardware
+    A->>V: read(fd, búfer, tamaño)
+    V->>K: número de servicio + parámetros
+    Note over V,K: cambio controlado a modo kernel
+    K->>K: comprueba permisos y direcciones
+    K->>H: solicita los datos
+    H-->>K: datos disponibles
+    K-->>V: resultado o error
+    V-->>A: retorno a modo usuario
+```
+
+*Una llamada al sistema cruza temporalmente la frontera entre modo usuario y modo kernel sin
+entregar a la aplicación el control directo del hardware.*
+
+### T02.3 · Núcleo monolítico y microkernel como talleres
+
+```mermaid
+flowchart TB
+    subgraph M["Gran taller central · monolítico"]
+        MA[Aplicaciones] --> MK["Kernel<br/>memoria · ficheros · red · drivers · IPC"]
+        MK --> MH[Hardware]
+    end
+    subgraph X["Talleres aislados · microkernel"]
+        XA[Aplicaciones] <-->|mensajes| XS1[Servidor de ficheros]
+        XA <-->|mensajes| XS2[Servidor de dispositivos]
+        XS1 <-->|IPC| XK["Microkernel<br/>planificación · direcciones · IPC"]
+        XS2 <-->|IPC| XK
+        XK --> XH[Hardware]
+    end
+```
+
+*Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado. Un microkernel
+conserva solo los mecanismos esenciales y delega otros servicios a procesos aislados.*
+
 ## Material
 
-_(pendiente de añadir)_
+Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en
+[`TEORIA/IMAGENES.md`](../IMAGENES.md).

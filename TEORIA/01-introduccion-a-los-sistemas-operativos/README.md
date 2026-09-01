@@ -106,6 +106,25 @@ subtract R3, R4       ; Colocar la resta en R3
 store    R3, d        ; Almacenar el resultado en la celda de memoria d
 ```
 
+Ruta de datos: los registros aportan el operando izquierdo y el operando derecho a la unidad
+funcional, que deja el resultado en los registros de estado; los registros intercambian datos
+con la memoria primaria.
+
+```mermaid
+flowchart LR
+    MP["Memoria primaria"]
+    subgraph CU["Unidad de Control"]
+        direction TB
+        REG["Registros<br/>R1, R2, …, Rn"]
+        UF["Unidad funcional"]
+        RE["Registros de estado"]
+    end
+    MP <-->|"a / desde la memoria"| REG
+    REG -->|"operando izquierdo"| UF
+    REG -->|"operando derecho"| UF
+    UF -->|"resultado"| RE
+```
+
 ### Memoria Principal (PM)
 
 - Almacena los programas (conjuntos de instrucciones) y los datos que está manipulando la CPU.
@@ -367,28 +386,36 @@ sistemas distribuidos · sistemas de tiempo real · sistemas empotrados · máqu
 monoprogramado la CPU queda ociosa mientras la Tarea 1 hace E/S; en el multiprogramado, la
 Tarea 2 aprovecha la CPU mientras la Tarea 1 está en E/S, y viceversa.
 
-```mermaid
-gantt
-    title Monoprogramado vs multiprogramado
-    dateFormat X
-    axisFormat %s
-    section Monoprog. CPU
-    Tarea 1      :0, 2
-    (ociosa)     :crit, 2, 4
-    Tarea 1      :4, 6
-    Tarea 2      :6, 8
-    section Monoprog. E/S
-    Tarea 1      :2, 4
-    Tarea 2      :8, 10
-    section Multiprog. CPU
-    Tarea 1      :0, 2
-    Tarea 2      :2, 4
-    Tarea 1      :4, 6
-    Tarea 2      :6, 7
-    section Multiprog. E/S
-    Tarea 1      :2, 4
-    Tarea 2      :4, 6
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cronograma comparando el uso de CPU y E/S en un sistema monoprogramado y en uno multiprogramado">
+  <rect width="780" height="340" fill="#ffffff"/>
+  <text x="20" y="28" font-size="15" font-weight="bold">Monoprogramado</text>
+  <text x="70" y="62" text-anchor="end">CPU</text>
+  <text x="70" y="102" text-anchor="end">E/S</text>
+  <line x1="80" y1="38" x2="80" y2="118" stroke="#333"/>
+  <rect x="80"  y="45" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="135" y="65" text-anchor="middle">Tarea 1</text>
+  <rect x="190" y="45" width="90"  height="30" fill="none" stroke="#999" stroke-dasharray="4 3"/><text x="235" y="64" text-anchor="middle" fill="#777" font-size="11">(ociosa)</text>
+  <rect x="280" y="45" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="335" y="65" text-anchor="middle">Tarea 1</text>
+  <rect x="390" y="45" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="445" y="65" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="500" y="45" width="90"  height="30" fill="none" stroke="#999" stroke-dasharray="4 3"/><text x="545" y="64" text-anchor="middle" fill="#777" font-size="11">(ociosa)</text>
+  <rect x="590" y="45" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="645" y="65" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="190" y="85" width="90"  height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="235" y="105" text-anchor="middle">Tarea 1</text>
+  <rect x="500" y="85" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="545" y="105" text-anchor="middle" fill="#fff">Tarea 2</text>
+
+  <text x="20" y="180" font-size="15" font-weight="bold">Multiprogramado</text>
+  <text x="70" y="214" text-anchor="end">CPU</text>
+  <text x="70" y="254" text-anchor="end">E/S</text>
+  <line x1="80" y1="190" x2="80" y2="270" stroke="#333"/>
+  <rect x="80"  y="197" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="135" y="217" text-anchor="middle">Tarea 1</text>
+  <rect x="190" y="197" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="235" y="217" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="280" y="197" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="335" y="217" text-anchor="middle">Tarea 1</text>
+  <rect x="390" y="197" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="435" y="217" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="190" y="237" width="90"  height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="235" y="257" text-anchor="middle">Tarea 1</text>
+  <rect x="280" y="237" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="335" y="257" text-anchor="middle" fill="#fff">Tarea 2</text>
+
+  <line x1="80" y1="300" x2="710" y2="300" stroke="#333"/>
+  <path d="M 710 296 L 718 300 L 710 304 z" fill="#333"/>
+  <text x="724" y="304">tiempo</text>
+</svg>
 
 ### Sistemas de tiempo compartido
 
@@ -535,6 +562,108 @@ Comparación batch multiprogramado vs tiempo compartido:
 
 ---
 
+## Galería visual complementaria
+
+### T01.1 · Un sistema operativo, muchos cuerpos
+
+![Smartwatch, teléfono, portátil, servidor, automóvil, robot industrial, avión y satélite como ejemplos de dispositivos gobernados por software de sistema](img/dispositivos-con-so.png)
+
+*Aunque cambien radicalmente de tamaño y función, todos estos dispositivos necesitan software
+que administre sus recursos y conecte las aplicaciones con el hardware. Ilustración generada
+para estos apuntes.*
+
+### T01.2 · Preparación de datos con tarjetas perforadas
+
+![Operadora del censo estadounidense trabajando con una perforadora de tarjetas IBM 016 en la década de 1950](img/operadora-tarjetas-perforadas.jpg)
+
+*En los sistemas de procesamiento por lotes, los trabajos y sus datos se preparaban en tarjetas
+perforadas y se entregaban para su ejecución. El usuario no interactuaba con el programa mientras
+la computadora procesaba el lote.*
+
+<sub>Fuente: U.S. Census Bureau, década de 1950; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg).</sub>
+
+### T01.3 · Programar antes del sistema operativo
+
+![Jean Bartik y Frances Spence preparando ENIAC para una demostración en 1946](img/programadoras-eniac.jpg)
+
+*Antes de los sistemas operativos, preparar un programa podía implicar configurar físicamente
+la máquina. Jean Bartik y Frances Spence aparecen preparando ENIAC para una demostración en 1946.*
+
+<sub>Fuente: fotografía del U.S. Army, 1946; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg).</sub>
+
+### T01.4 · La jerarquía de memoria como espacio de trabajo
+
+```mermaid
+flowchart LR
+    R["Bandeja inmediata<br/>REGISTROS<br/>mínima · ultrarrápida"] --> C["Mesa auxiliar<br/>CACHÉ<br/>pequeña · muy rápida"]
+    C --> M["Mesa de trabajo<br/>RAM<br/>capacidad media"]
+    M --> D["Archivador<br/>SSD / DISCO<br/>grande · persistente"]
+    D --> T["Almacén<br/>CINTA / ARCHIVO<br/>enorme · lento"]
+```
+
+*Cuanto más cerca está la memoria de la CPU, más rápida y costosa es, pero también menor es su
+capacidad.*
+
+### T01.5 · Una interrupción de E/S llama a la CPU
+
+```mermaid
+sequenceDiagram
+    participant CPU as CPU trabajando
+    participant D as Dispositivo de E/S
+    CPU->>D: inicia una operación
+    CPU->>CPU: ejecuta otro proceso
+    D-->>CPU: interrupción: operación terminada
+    CPU->>CPU: guarda contexto y atiende el evento
+    CPU-->>CPU: reanuda el trabajo interrumpido
+```
+
+*Una interrupción permite que el procesador haga otro trabajo mientras espera a un dispositivo y
+recupere la operación cuando este anuncia que ha terminado.*
+
+### T01.6 · Sistemas de tiempo real
+
+![Robot industrial, sensor de frenado y aviónica como ejemplos de sistemas con plazos de respuesta](img/sistemas-tiempo-real.png)
+
+*En un sistema de tiempo real no basta con obtener el resultado correcto: debe obtenerse antes de
+que venza su plazo. Ilustración generada para estos apuntes.*
+
+### T01.7 · Del mecanismo al microprocesador
+
+```mermaid
+timeline
+    title Evolución física del computador
+    1830 : Máquina analítica<br/>mecánica y programa mediante tarjetas
+    1940 : Válvulas de vacío<br/>salas completas y gran consumo
+    1950 : Transistor<br/>menor tamaño y mayor fiabilidad
+    1960 : Circuito integrado<br/>muchos componentes en silicio
+    1970 : Microprocesador<br/>CPU integrada en un chip
+    2000 : Sistemas móviles y empotrados<br/>computación ubicua
+```
+
+*La reducción del tamaño y del consumo transformó computadores que ocupaban salas enteras en
+sistemas empotrados presentes en objetos cotidianos.*
+
+### T01.8 · Máquinas virtuales y contenedores
+
+```mermaid
+flowchart TB
+    subgraph VM["Máquinas virtuales: viviendas completas"]
+        HW1[Hardware] --> H[Hipervisor]
+        H --> V1["VM 1<br/>SO invitado + aplicaciones"]
+        H --> V2["VM 2<br/>SO invitado + aplicaciones"]
+    end
+    subgraph CT["Contenedores: espacios aislados con servicios comunes"]
+        HW2[Hardware] --> K[SO anfitrión · núcleo compartido]
+        K --> C1["Contenedor 1<br/>aplicación + dependencias"]
+        K --> C2["Contenedor 2<br/>aplicación + dependencias"]
+    end
+```
+
+*La virtualización permite ejecutar varios entornos aislados sobre una misma máquina física. Las
+máquinas virtuales reproducen un sistema completo; los contenedores comparten el núcleo.*
+
+---
+
 ## Lecturas recomendadas
 
 - Capítulos 1 y 2 de [Silb09].
@@ -553,5 +682,11 @@ Virtualización · Cloud computing · Sistemas operativos libres · SSOO para di
 
 ## Material gráfico
 
-Las imágenes por incorporar se listan en
-[`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md) (sección Tema 1).
+Todos los diagramas del Tema 1 están replicados como mermaid o SVG dentro de este documento.
+Quedan como **material fotográfico** (no reproducible), a criterio del profesor:
+
+- Retratos y fotos históricas: Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I.
+- Cronologías (*timelines*) de familias de sistemas operativos (imágenes externas): se enlazan
+  a Wikipedia en la sección «Cronologías».
+
+Ver [`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).
