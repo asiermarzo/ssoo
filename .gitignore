@@ -1,0 +1,23 @@
+# Artefactos de compilación C
+*.o
+*.a
+*.so
+*.out
+a.out
+
+# Binarios compilados (sin extensión) — descomenta si molestan
+# PRACTICA/**/build/
+
+# Material original de partida (PDFs del curso anterior) — no se versiona
+/Practicas_240304-25-26.pdf
+/Practicas_240304-250304_25-26-anexo.pdf
+/Sistemas Operativos - 240304-25-26.pdf
+
+# Editores / sistema
+*.swp
+*~
+.vscode/
+.DS_Store
+
+# Notas de trabajo locales
+/????DE.md
