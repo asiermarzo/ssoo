@@ -1,8 +1,6 @@
 # Sistemas Operativos — material de teoría y prácticas
 
-Material para la asignatura **Sistemas Operativos** (240304) del Grado en Ingeniería
-Informática de la Universidad Pública de Navarra. 2º curso, semestre de otoño.
-6 ECTS: 3 de teoría y 3 de prácticas.
+Material para la asignatura **Sistemas Operativos** (240304) del Grado en Ingeniería Informática de la Universidad Pública de Navarra. 2º curso, semestre de otoño. 6 ECTS: 3 de teoría y 3 de prácticas.
 
 ## Cómo obtener el material
 
@@ -10,19 +8,13 @@ Informática de la Universidad Pública de Navarra. 2º curso, semestre de otoñ
 git clone https://github.com/asiermarzo/ssoo.git
 ```
 
-También se puede descargar como ZIP desde la página del repositorio en GitHub
-(botón *Code → Download ZIP*) y descomprimirlo con el gestor de archivos o con
-`unzip ssoo-main.zip`.
+O descargar como ZIP desde la página del repositorio en GitHub (botón *Code → Download ZIP*) y descomprimirlo con el gestor de archivos o con el comando `unzip ssoo-main.zip`.
 
-Las prácticas se realizan sobre un PC virtualizado con Linux, disponible 24×7 a través
-de la infraestructura VDI del Aulario o del
-[Laboratorio Virtual](https://eim-laboratoriovirtual.unavarra.es/laboratorio/).
+Las prácticas se realizan sobre un PC virtualizado con Linux, disponible 24×7 a través de la infraestructura VDI del Aulario o del [Laboratorio Virtual](https://eim-laboratoriovirtual.unavarra.es/laboratorio/).
 
 ## Cómo compilar las prácticas
 
-Cada práctica se compila con `gcc` y trae su propio script de compilación en bash.
-El uso de `make` o `cmake` es opcional (cada proceso o grupo de procesos es un único
-`.c` que compila a un binario).
+Cada práctica se compila con `gcc` y trae su propio script de compilación en bash. El uso de `make` o `cmake` es opcional (cada proceso o grupo de procesos es un único `.c` que compila a un binario).
 
 ```bash
 gcc -Wall -Wextra -o programa programa.c
@@ -61,40 +53,28 @@ gcc -Wall -Wextra -o programa programa.c
 | P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
 | P9 — Sistema concurrente | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
 
-El `README.md` de cada práctica es autocontenido: incluye la descripción del tema, los
-comandos y llamadas al sistema utilizadas (prototipo, parámetros, valor devuelto, errores,
-`#include` y ejemplos) y los ejercicios propuestos.
+El `README.md` de cada práctica es autocontenido: incluye la descripción del tema, los comandos y llamadas al sistema utilizadas (prototipo, parámetros, valor devuelto, errores, `#include` y ejemplos) y los ejercicios propuestos.
 
 ## Guía de estilo
 
-Para exposiciones se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También
-se pueden dar simulaciones interactivas embebidas, normalmente en HTML + JS.
+Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También se pueden dar simulaciones interactivas embebidas, normalmente en HTML + JS. Se utilizará un markdown mínimo y el texto estará siempre en una línea.
 
-Para prácticas se utilizan archivos Markdown, archivos `.c`, scripts bash para compilación
-y demás, y configuraciones tmux de terminales.
+Para prácticas, se utilizan archivos Markdown, archivos `.c`, Makefiles, scripts bash y configuraciones tmux de terminales.
 
 Se prefieren explicaciones concisas frente a detalladas y verbosas.
 
-En código no se utilizará alojamiento estático para las variables (en la pila) siempre que
-sea posible y se evitará el uso de `malloc`. Quizás sea necesario `malloc` para mostrar
-diferencias entre pila (*stack*) y montículo (*heap*), y para el tema de gestión de memoria.
+En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. Quizás sea necesario `malloc` para mostrar diferencias entre pila (*stack*) y montículo (*heap*), y para el tema de gestión de memoria.
 
-Se evitarán programas con varios archivos C: cada proceso o grupo de procesos será un `.c`
-que acabará compilado en un binario. Esto hace el uso de cmake o makefile opcional. Se
-pueden utilizar `.h` para compartir constantes y estructuras comunes.
+Se evitarán programas con varios archivos C: cada proceso o grupo de procesos será un `.c` que acabará compilado en un binario. Esto hace el uso de make opcional. Se pueden utilizar `.h` para compartir constantes y estructuras comunes.
 
-Se pueden dejar `#include` que no sean necesarios si esto evita estar buscando qué includes
-necesita cada función. Es más como incluir un bloque común de `#include <>` y quitar los que
-den *warning* por no usarse.
+Se pueden dejar `#include` que no sean necesarios si esto evita estar buscando qué includes necesita cada función. Es más como incluir un bloque común de `#include <>` y quitar los que den *warning* por no usarse.
 
-Sobre convenciones de código: aunque cada estudiante puede seguir su propia preferencia, el
-código de este material sigue estas normas:
+Sobre convenciones de código: aunque cada estudiante puede seguir su propia preferencia, el código de este material sigue estas normas:
 
 - La llave de apertura `{` se coloca en la misma línea.
 - Se usa `snake_case` en lugar de `CamelCase`.
 - Se intenta usar `for` siempre que sea posible (frente a `while` o `do`/`while`).
-- Las variables se declaran e inicializan en la misma línea.
-- Las variables se declaran en el *scope* más interno posible.
+- Las variables se declaran e inicializan en la misma línea, en el *scope* más interno posible.
 - Se evita el uso de variables globales.
 - Los `struct` se definen con `typedef struct` sin darle nombre al `struct`.
 

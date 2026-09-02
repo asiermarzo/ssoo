@@ -1,82 +1,56 @@
 # Tema 2: Procesos e hilos
 
-2.1 Concepto de proceso · 2.2 Concepto de hilo · 2.3 Diferencias entre proceso e hilo ·
-2.4 Operaciones de los procesos · 2.5 Estados de un proceso · 2.6 Mecanismos de comunicación
-entre procesos.
+2.1 Concepto de proceso · 2.2 Concepto de hilo · 2.3 Diferencias entre proceso e hilo · 2.4 Operaciones de los procesos · 2.5 Estados de un proceso · 2.6 Mecanismos de comunicación entre procesos.
 
 ---
 
 ## 2.1 Concepto de proceso
 
-Un **proceso** es la ejecución de una aplicación o programa sobre un computador de Von
-Neumann. Un proceso incluye:
+Un **proceso** es la ejecución de una aplicación o programa sobre un computador de Von Neumann. Un proceso incluye:
 
 - el código del programa,
 - una **pila** (para el paso de parámetros, direcciones, etc.),
 - los datos del programa,
 - la información de contexto del procesador.
 
-Un **programa por sí mismo NO es un proceso**: un programa es una entidad **pasiva** y un
-proceso es una entidad **activa**.
+Un **programa por sí mismo NO es un proceso**: un programa es una entidad **pasiva** y un proceso es una entidad **activa**.
 
 ### Multiprogramación y máquina virtual
 
-Para lograr la multiprogramación se hace creer a los programas que están solos en la máquina
-⇒ **máquina virtual**:
+Para lograr la multiprogramación se hace creer a los programas que están solos en la máquina ⇒ **máquina virtual**:
 
-- Cada proceso se ejecuta en su propio **espacio de direcciones** y no puede acceder
-  directamente al espacio de direcciones de otros procesos.
+- Cada proceso se ejecuta en su propio **espacio de direcciones** y no puede acceder directamente al espacio de direcciones de otros procesos.
 - La ejecución de un proceso está confinada a su espacio, y también lo están sus errores.
 - **Desventaja**: compartir información entre procesos es complicado.
 
-El sistema operativo realiza una **multiplexación espacial** de la memoria principal y una
-**multiplexación temporal** de los procesos en ejecución, mediante el concepto de **máquina
-abstracta**. La máquina abstracta proporciona:
+El sistema operativo realiza una **multiplexación espacial** de la memoria principal y una **multiplexación temporal** de los procesos en ejecución, mediante el concepto de **máquina abstracta**. La máquina abstracta proporciona:
 
-- **Protección de la memoria**: en los sistemas multiusuario y/o multitarea, el SO asigna una
-  zona de memoria a cada proceso para evitar que un proceso de usuario acceda al espacio de
-  direcciones de otro. Se protege, al menos, el vector de interrupción y las rutinas de
-  servicio de interrupción.
-- **Protección de la CPU**: los sistemas multiprogramados‑multitarea deben evitar que un
-  proceso se apodere de la CPU. Un contador de reloj se decrementa en cada *tick*; al llegar a
-  cero se genera una **interrupción de reloj**. El SO asigna fracciones de tiempo (**cuanto**)
-  a los procesos; al expirar el plazo, la interrupción de reloj devuelve el control al SO.
+- **Protección de la memoria**: en los sistemas multiusuario y/o multitarea, el SO asigna una zona de memoria a cada proceso para evitar que un proceso de usuario acceda al espacio de direcciones de otro. Se protege, al menos, el vector de interrupción y las rutinas de servicio de interrupción.
+- **Protección de la CPU**: los sistemas multiprogramados‑multitarea deben evitar que un proceso se apodere de la CPU. Un contador de reloj se decrementa en cada *tick*; al llegar a cero se genera una **interrupción de reloj**. El SO asigna fracciones de tiempo (**cuanto**) a los procesos; al expirar el plazo, la interrupción de reloj devuelve el control al SO.
 
 ### ¿Por qué usar procesos?
 
-- **Simplicidad**: hay muchas operaciones independientes que pueden ejecutarse en procesos
-  independientes.
-- **Velocidad**: si un proceso se interrumpe (esperando disco, teclado, red…) se cambia a
-  otro, como si se dispusiera de más de una CPU.
+- **Simplicidad**: hay muchas operaciones independientes que pueden ejecutarse en procesos independientes.
+- **Velocidad**: si un proceso se interrumpe (esperando disco, teclado, red…) se cambia a otro, como si se dispusiera de más de una CPU.
 - **Seguridad**: se limitan los efectos de un error, aislando el problema.
 
-En la literatura se usan indistintamente **proceso** (*process*), **tarea** (*task*) y
-**trabajo** (*job*).
+En la literatura se usan indistintamente **proceso** (*process*), **tarea** (*task*) y **trabajo** (*job*).
 
 ## 2.2 Concepto de hilo
 
-Un **hilo** es la parte del proceso relacionada con la ejecución del código dentro del entorno
-computacional protegido definido por el proceso.
+Un **hilo** es la parte del proceso relacionada con la ejecución del código dentro del entorno computacional protegido definido por el proceso.
 
 **Beneficios de los hilos** (rendimiento):
 
-1. Se tarda mucho menos en crear un nuevo hilo en un proceso existente que en crear un proceso
-   nuevo.
+1. Se tarda mucho menos en crear un nuevo hilo en un proceso existente que en crear un proceso nuevo.
 2. Se tarda menos en terminar un hilo.
 3. Se tarda menos en cambiar entre dos hilos de un mismo proceso.
 
-Además, aportan eficiencia en la comunicación entre programas en ejecución y son útiles
-incluso en monoprocesadores para simplificar la estructura de programas que llevan a cabo
-diversas funciones.
+Además, aportan eficiencia en la comunicación entre programas en ejecución y son útiles incluso en monoprocesadores para simplificar la estructura de programas que llevan a cabo diversas funciones.
 
-- Dentro de un proceso puede haber varios hilos de ejecución; un proceso podría estar haciendo
-  varias cosas "a la vez".
-- Los hilos de un proceso **comparten toda la misma memoria**: si un hilo modifica una
-  variable, todos los demás ven el nuevo valor; si un hilo corrompe una zona de memoria, todos
-  la ven corrompida; un fallo en un hilo puede hacer fallar a todos los demás del proceso.
-- Lanzar un proceso es más costoso (hay que copiar toda la memoria del programa); los hilos
-  son más **ligeros**. Los hilos son una buena elección cuando hay que compartir y actualizar
-  datos.
+- Dentro de un proceso puede haber varios hilos de ejecución; un proceso podría estar haciendo varias cosas "a la vez".
+- Los hilos de un proceso **comparten toda la misma memoria**: si un hilo modifica una variable, todos los demás ven el nuevo valor; si un hilo corrompe una zona de memoria, todos la ven corrompida; un fallo en un hilo puede hacer fallar a todos los demás del proceso.
+- Lanzar un proceso es más costoso (hay que copiar toda la memoria del programa); los hilos son más **ligeros**. Los hilos son una buena elección cuando hay que compartir y actualizar datos.
 
 ### Estados de un hilo en UNIX
 
@@ -92,9 +66,7 @@ diversas funciones.
 
 ## 2.3 Diferencias entre proceso e hilo
 
-- Los hilos de un mismo proceso **comparten la memoria** del proceso; para compartir memoria
-  entre procesos se requieren mecanismos de comunicación entre procesos como la memoria
-  compartida (`shm`).
+- Los hilos de un mismo proceso **comparten la memoria** del proceso; para compartir memoria entre procesos se requieren mecanismos de comunicación entre procesos como la memoria compartida (`shm`).
 - Los hilos de un mismo proceso **se reparten el tiempo de CPU** asignado al proceso.
 
 ### Procesos vs hilos
@@ -110,8 +82,7 @@ diversas funciones.
 
 **Diferencias** — los hilos, a diferencia de los procesos, **no son independientes** entre sí:
 
-- Como todos los hilos pueden acceder a todas las direcciones de la tarea, un hilo puede leer
-  o escribir sobre la pila de cualquier otro hilo.
+- Como todos los hilos pueden acceder a todas las direcciones de la tarea, un hilo puede leer o escribir sobre la pila de cualquier otro hilo.
 - La **protección queda en manos del programador** de los hilos.
 
 **Ventajas de los hilos sobre los procesos:**
@@ -119,15 +90,11 @@ diversas funciones.
 - Se tarda mucho menos en crear un hilo en un proceso existente que en crear un proceso.
 - Se tarda mucho menos en terminar un hilo que un proceso.
 - Se tarda mucho menos en conmutar entre hilos de un mismo proceso que entre procesos.
-- Los hilos hacen más rápida la comunicación: al compartir memoria y recursos, se comunican
-  entre sí sin invocar el núcleo del SO.
+- Los hilos hacen más rápida la comunicación: al compartir memoria y recursos, se comunican entre sí sin invocar el núcleo del SO.
 
 ### Coexistencia de procesos e hilos
 
-En un proceso **monohilo**, el código, los datos y los ficheros, junto con los registros y la
-pila, pertenecen al único hilo. En un proceso **multihilo**, el código, los datos y los
-ficheros se **comparten**, mientras que cada hilo tiene sus propios **registros** y su propia
-**pila**.
+En un proceso **monohilo**, el código, los datos y los ficheros, junto con los registros y la pila, pertenecen al único hilo. En un proceso **multihilo**, el código, los datos y los ficheros se **comparten**, mientras que cada hilo tiene sus propios **registros** y su propia **pila**.
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" font-family="sans-serif" font-size="14" role="img" aria-label="Disposición de memoria de un proceso monohilo frente a un proceso multihilo">
   <rect width="780" height="440" fill="#ffffff"/>
@@ -181,33 +148,25 @@ Las cuatro combinaciones posibles son:
 - Todo proceso posee un identificador único, el **descriptor de proceso** (`pid`).
 - La **creación** de un proceso se realiza con la llamada al sistema `fork()`.
 - La **finalización** de un proceso se lleva a cabo con la llamada al sistema `kill()`.
-- En Linux se puede obtener información sobre el estado de los procesos en ejecución en el
-  directorio `/proc`.
+- En Linux se puede obtener información sobre el estado de los procesos en ejecución en el directorio `/proc`.
 
-Desde el punto de vista del sistema operativo, cada proceso se representa mediante su **Bloque
-de Control de Proceso (PCB)**. La **tabla de procesos** es la matriz o lista enlazada de PCBs,
-con una entrada por cada proceso existente en el sistema.
+Desde el punto de vista del sistema operativo, cada proceso se representa mediante su **Bloque de Control de Proceso (PCB)**. La **tabla de procesos** es la matriz o lista enlazada de PCBs, con una entrada por cada proceso existente en el sistema.
 
 Un PCB es un registro de datos con la siguiente información:
 
 - **Estado del proceso**: nuevo, listo, en ejecución, en espera o finalizado.
 - **Contador de programa**: dirección de la siguiente instrucción a ejecutar.
 - **Registros de la CPU** que utiliza el proceso.
-- **Información de planificación de la CPU**: prioridad, apuntadores a las colas de
-  planificación, etc.
+- **Información de planificación de la CPU**: prioridad, apuntadores a las colas de planificación, etc.
 - **Información de administración de memoria**: registros límite y tabla de páginas.
 - **Información contable**: medidas temporales de consumo de recursos, `pid`s…
-- **Información del estado de la E/S**: solicitudes de E/S pendientes, dispositivos asignados y
-  lista de descriptores de ficheros abiertos.
+- **Información del estado de la E/S**: solicitudes de E/S pendientes, dispositivos asignados y lista de descriptores de ficheros abiertos.
 
-El **espacio de direcciones** del proceso se traduce (enlazado de direcciones) a la memoria de
-ejecución, y a otros objetos como archivos.
+El **espacio de direcciones** del proceso se traduce (enlazado de direcciones) a la memoria de ejecución, y a otros objetos como archivos.
 
 ### Control de procesos
 
-Para proteger al sistema operativo, los procesadores soportan dos modos de funcionamiento:
-**modo usuario** y **modo maestro** (supervisor). El **supervisor** es quien realiza los
-cambios en el modo de funcionamiento.
+Para proteger al sistema operativo, los procesadores soportan dos modos de funcionamiento: **modo usuario** y **modo maestro** (supervisor). El **supervisor** es quien realiza los cambios en el modo de funcionamiento.
 
 **Mecanismos de control de procesos:**
 
@@ -217,31 +176,20 @@ cambios en el modo de funcionamiento.
 | **Cepo** (*trap*) | Asociada a la ejecución de la instrucción en curso | Tratamiento de un error o condición de excepción | Intento ilegal de acceso a un archivo |
 | **Llamada del supervisor** | Solicitud explícita | Llamada a una función del SO | Un proceso de usuario llega a una instrucción que solicita abrir un archivo |
 
-- En una **interrupción**, el control se transfiere primero a un **gestor de interrupciones**
-  que realiza tareas básicas y luego salta a una rutina del SO específica del tipo de
-  interrupción.
-- En los **cepos**, el SO determina si el error es **fatal** (el proceso pasa a Terminado y se
-  produce un cambio de proceso) o **no fatal** (se intenta recuperación o se notifica al
-  usuario).
-- Una **llamada del supervisor** transfiere el control a una rutina que forma parte del código
-  del SO.
+- En una **interrupción**, el control se transfiere primero a un **gestor de interrupciones** que realiza tareas básicas y luego salta a una rutina del SO específica del tipo de interrupción.
+- En los **cepos**, el SO determina si el error es **fatal** (el proceso pasa a Terminado y se produce un cambio de proceso) o **no fatal** (se intenta recuperación o se notifica al usuario).
+- Una **llamada del supervisor** transfiere el control a una rutina que forma parte del código del SO.
 
-Antes de leer la siguiente instrucción, el procesador **siempre comprueba si se ha producido
-alguna interrupción**:
+Antes de leer la siguiente instrucción, el procesador **siempre comprueba si se ha producido alguna interrupción**:
 
 1. Si no hay ninguna pendiente, continúa con la siguiente instrucción del proceso actual.
-2. Si hay alguna pendiente: guarda el contexto del programa en ejecución, asigna al PC la
-   dirección de comienzo del programa de tratamiento de la interrupción y lee su primera
-   instrucción.
+2. Si hay alguna pendiente: guarda el contexto del programa en ejecución, asigna al PC la dirección de comienzo del programa de tratamiento de la interrupción y lee su primera instrucción.
 
 ### Ámbito de proceso y cambio de contexto
 
-- Cuando un proceso se ejecuta, su PC, puntero a pila, registros, etc., están cargados en la
-  CPU.
-- Cuando el SO detiene un proceso en ejecución, guarda los valores actuales de esos registros
-  (el **contexto**) en el PCB de ese proceso.
-- Conmutar la CPU de un proceso a otro se denomina **cambio de contexto**. En los sistemas de
-  tiempo compartido, el tiempo invertido en esta tarea se llama **tiempo de sobrecarga**.
+- Cuando un proceso se ejecuta, su PC, puntero a pila, registros, etc., están cargados en la CPU.
+- Cuando el SO detiene un proceso en ejecución, guarda los valores actuales de esos registros (el **contexto**) en el PCB de ese proceso.
+- Conmutar la CPU de un proceso a otro se denomina **cambio de contexto**. En los sistemas de tiempo compartido, el tiempo invertido en esta tarea se llama **tiempo de sobrecarga**.
 
 **Pasos de un cambio de proceso:**
 
@@ -251,15 +199,11 @@ alguna interrupción**:
 4. Seleccionar otro proceso para su ejecución.
 5. Actualizar el PCB seleccionado, cambiando su estado a Ejecución.
 6. Actualizar las estructuras de datos de gestión de memoria.
-7. Restaurar el contexto del procesador al que existía cuando el proceso seleccionado dejó por
-   última vez el estado de Ejecución.
+7. Restaurar el contexto del procesador al que existía cuando el proceso seleccionado dejó por última vez el estado de Ejecución.
 
 ### Colas de estado
 
-El SO mantiene una colección de **colas, una por estado**, que representan el estado de todos
-los procesos del sistema. Cada PCB está encolado en la cola correspondiente a su estado
-actual; conforme un proceso cambia de estado, su PCB se retira de una cola y se encola en
-otra.
+El SO mantiene una colección de **colas, una por estado**, que representan el estado de todos los procesos del sistema. Cada PCB está encolado en la cola correspondiente a su estado actual; conforme un proceso cambia de estado, su PCB se retira de una cola y se encola en otra.
 
 ```mermaid
 flowchart LR
@@ -296,9 +240,7 @@ stateDiagram-v2
 | **Parado (T)** | Tampoco entra en el reparto de CPU. No espera un evento; solo pasará a preparado cuando reciba una señal determinada que le permita continuar. |
 | **Zombie (Z)** | Al finalizar, todo proceso avisa a su padre para que elimine su entrada de la tabla de procesos. Si el padre no recibe esa comunicación, el hijo queda en estado zombie: no consume CPU, pero sí sigue consumiendo recursos del sistema. |
 
-El diagrama completo de estados de un proceso en UNIX refleja las transiciones provocadas por
-`fork()`, `exit()`, las llamadas al sistema, las interrupciones, la expulsión y la
-carga/descarga (*swapping*) de memoria:
+El diagrama completo de estados de un proceso en UNIX refleja las transiciones provocadas por `fork()`, `exit()`, las llamadas al sistema, las interrupciones, la expulsión y la carga/descarga (*swapping*) de memoria:
 
 ```mermaid
 stateDiagram-v2
@@ -344,15 +286,10 @@ stateDiagram-v2
 
 ## Hilos y procesos en Linux
 
-- En Linux, el PCB es la estructura `struct task_struct`. Forma parte de una `union
-  task_union` que contiene el PCB y la **pila del núcleo** del proceso; ocupa **8 KB**. Con
-  esta estructura el núcleo puede determinar el puntero al PCB de un proceso a partir de su
-  puntero de la pila de núcleo.
+- En Linux, el PCB es la estructura `struct task_struct`. Forma parte de una `union task_union` que contiene el PCB y la **pila del núcleo** del proceso; ocupa **8 KB**. Con esta estructura el núcleo puede determinar el puntero al PCB de un proceso a partir de su puntero de la pila de núcleo.
 - El conjunto de procesos se representa como una colección de `struct task_struct` enlazadas:
-  - como **tabla hash** ordenada por `pid` (para localizar rápidamente una tarea por su `pid`
-    con `find_task_by_pid()`),
-  - como **lista circular doblemente enlazada** mediante los punteros `p->next_task` y
-    `p->prev_task` (para navegar por todas las tareas del sistema).
+  - como **tabla hash** ordenada por `pid` (para localizar rápidamente una tarea por su `pid` con `find_task_by_pid()`),
+  - como **lista circular doblemente enlazada** mediante los punteros `p->next_task` y `p->prev_task` (para navegar por todas las tareas del sistema).
 
   ```c
   static inline struct task_struct *find_task_by_pid(int pid)
@@ -361,11 +298,8 @@ stateDiagram-v2
 - Linux usa **la misma estructura** (`task_struct`) para representar un proceso y un hilo.
   - **Ventaja**: se planifica cada hilo como si fuera un proceso.
   - La estructura tiene campos que son punteros al espacio de direcciones del proceso.
-  - **Diferencia**: al crear un proceso hijo se copia la memoria del padre en otra dirección y
-    esos punteros apuntan a la nueva; al crear un hilo se **copian los punteros**, de modo que
-    todos los hilos de un proceso comparten exactamente el mismo espacio de direcciones.
-  - La sincronización y exclusión mutua del acceso concurrente de los hilos a la memoria del
-    proceso es **responsabilidad del programador**.
+  - **Diferencia**: al crear un proceso hijo se copia la memoria del padre en otra dirección y esos punteros apuntan a la nueva; al crear un hilo se **copian los punteros**, de modo que todos los hilos de un proceso comparten exactamente el mismo espacio de direcciones.
+  - La sincronización y exclusión mutua del acceso concurrente de los hilos a la memoria del proceso es **responsabilidad del programador**.
 
 Estados de un proceso/hilo en Linux (visión simplificada):
 
@@ -436,9 +370,7 @@ pid_t getppid(void);
 
 ### Hilos POSIX (*Portable Operating System Interface for uniX*)
 
-Los hilos permiten la ejecución concurrente de varias secuencias de instrucciones asociadas a
-diferentes funciones dentro de un mismo proceso, compartiendo el espacio de direcciones y las
-estructuras de datos del núcleo.
+Los hilos permiten la ejecución concurrente de varias secuencias de instrucciones asociadas a diferentes funciones dentro de un mismo proceso, compartiendo el espacio de direcciones y las estructuras de datos del núcleo.
 
 | Llamada | Función |
 |---------|---------|
@@ -471,8 +403,7 @@ gcc -o prog prog.c -lpthread
 
 ### Herramientas de gestión de procesos
 
-En Linux, los comandos `ps`, `top`, `jobs`, `fg`, `bg`, `kill` y `killall` permiten obtener
-información sobre el estado de ejecución de los procesos y modificarlo.
+En Linux, los comandos `ps`, `top`, `jobs`, `fg`, `bg`, `kill` y `killall` permiten obtener información sobre el estado de ejecución de los procesos y modificarlo.
 
 ---
 
@@ -482,9 +413,7 @@ información sobre el estado de ejecución de los procesos y modificarlo.
 
 ![Dos cocinas independientes comparadas con varios cocineros que comparten una sola cocina](img/procesos-vs-hilos-cocinas.png)
 
-*Los procesos poseen espacios de memoria independientes. Los hilos de un mismo proceso comparten
-código, datos y recursos, pero cada uno mantiene su propia pila y estado de ejecución. Ilustración
-generada para estos apuntes.*
+*Los procesos poseen espacios de memoria independientes. Los hilos de un mismo proceso comparten código, datos y recursos, pero cada uno mantiene su propia pila y estado de ejecución. Ilustración generada para estos apuntes.*
 
 ### T03.2 · Programa pasivo y proceso activo
 
@@ -497,8 +426,7 @@ flowchart LR
     X(("Cocinero trabajando<br/>PROCESO<br/>entidad activa"))
 ```
 
-*Un programa es código almacenado. Un proceso aparece cuando ese código se ejecuta junto con sus
-datos, pila, recursos y contexto del procesador.*
+*Un programa es código almacenado. Un proceso aparece cuando ese código se ejecuta junto con sus datos, pila, recursos y contexto del procesador.*
 
 ### T03.3 · Árbol de procesos creado con `fork()`
 
@@ -512,8 +440,7 @@ flowchart TB
     A -. wait .-> C
 ```
 
-*La llamada `fork()` crea un nuevo proceso a partir del proceso actual. Desde ese punto, padre e
-hijo continúan como ejecuciones independientes.*
+*La llamada `fork()` crea un nuevo proceso a partir del proceso actual. Desde ese punto, padre e hijo continúan como ejecuciones independientes.*
 
 ### T03.4 · Estados como estaciones de un recorrido
 
@@ -530,8 +457,7 @@ stateDiagram-v2
     Terminado --> [*]
 ```
 
-*Un proceso no permanece siempre ejecutándose: alterna entre esperar su turno, usar la CPU y
-quedar bloqueado por sucesos o recursos.*
+*Un proceso no permanece siempre ejecutándose: alterna entre esperar su turno, usar la CPU y quedar bloqueado por sucesos o recursos.*
 
 ### T03.5 · El sistema visto desde un monitor de procesos
 
@@ -540,13 +466,10 @@ flowchart TB
     T["MONITOR DE PROCESOS<br/><br/>PID · USUARIO · ESTADO · CPU · MEMORIA · COMANDO<br/>1200 · ana · R · 37% · 82 MiB · simulador<br/>1240 · ana · S · 02% · 18 MiB · editor<br/>1241 · root · S · 00% · 06 MiB · servicio<br/><br/>CPU 42%      RAM 5,1 / 8 GiB"]
 ```
 
-*Las abstracciones del sistema operativo pueden observarse en tiempo real: cada fila representa
-una tarea cuyo estado y consumo controla el núcleo.*
+*Las abstracciones del sistema operativo pueden observarse en tiempo real: cada fila representa una tarea cuyo estado y consumo controla el núcleo.*
 
 ---
 
 ## Material gráfico
 
-Todos los diagramas del Tema 2 están replicados como mermaid o SVG dentro de este documento
-(disposición de memoria monohilo/multihilo, diagrama básico de estados, diagrama completo de
-estados en UNIX, colas de estado, estados en Linux). No queda material fotográfico pendiente.
+Todos los diagramas del Tema 2 están replicados como mermaid o SVG dentro de este documento (disposición de memoria monohilo/multihilo, diagrama básico de estados, diagrama completo de estados en UNIX, colas de estado, estados en Linux). No queda material fotográfico pendiente.

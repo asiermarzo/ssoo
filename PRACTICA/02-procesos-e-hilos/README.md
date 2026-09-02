@@ -2,20 +2,13 @@
 
 ## Descripción general
 
-Cada proceso tiene un identificador único en Linux, el *process id* (`pid`). Al proceso
-que solicita la creación de otro se le llama **padre** y al resultante **hijo**; los
-procesos forman un árbol (varios hijos, un solo padre). Un proceso consta de código,
-datos y pila.
+Cada proceso tiene un identificador único en Linux, el *process id* (`pid`). Al proceso que solicita la creación de otro se le llama **padre** y al resultante **hijo**; los procesos forman un árbol (varios hijos, un solo padre). Un proceso consta de código, datos y pila.
 
-Cuando un proceso termina debe haber finalizado ordenadamente sus hijos; si no, quedan
-**procesos zombie** (terminados pero cuyo estado de salida aún no ha sido recogido por el
-padre). Si el padre muere antes, los hijos quedan **huérfanos** y los adopta `init`
-(`pid` 1). Algo análogo ocurre con los hilos de un proceso.
+Cuando un proceso termina debe haber finalizado ordenadamente sus hijos; si no, quedan **procesos zombie** (terminados pero cuyo estado de salida aún no ha sido recogido por el padre). Si el padre muere antes, los hijos quedan **huérfanos** y los adopta `init` (`pid` 1). Algo análogo ocurre con los hilos de un proceso.
 
 ## Comandos comunes
 
-`ps` (lista de procesos), `top` (por consumo), `pstree` (árbol de procesos),
-`kill` / `killall` (envío de señales).
+`ps` (lista de procesos), `top` (por consumo), `pstree` (árbol de procesos), `kill` / `killall` (envío de señales).
 
 ## Identificadores de proceso
 
@@ -49,13 +42,10 @@ int main(void) {
 pid_t fork(void);
 ```
 
-Crea un nuevo proceso como copia casi exacta del padre (espacio de direcciones, entorno,
-privilegios, tabla de descriptores de fichero). Ambos continúan en la instrucción
-siguiente al `fork`.
+Crea un nuevo proceso como copia casi exacta del padre (espacio de direcciones, entorno, privilegios, tabla de descriptores de fichero). Ambos continúan en la instrucción siguiente al `fork`.
 
 - **Devuelve** `0` en el hijo, el `pid` del hijo en el padre, y `-1` si hay error.
-- **Herencia de descriptores**: padre e hijo comparten el mismo desplazamiento de
-  fichero para los abiertos por el padre antes del `fork`.
+- **Herencia de descriptores**: padre e hijo comparten el mismo desplazamiento de fichero para los abiertos por el padre antes del `fork`.
 
 ```mermaid
 flowchart TD
@@ -95,12 +85,9 @@ pid_t waitpid(pid_t pid, int *status, int options);
 void exit(int status);
 ```
 
-- `wait` suspende al padre hasta que termine **cualquier** hijo; `waitpid` espera a uno
-  concreto. `wait(&status)` ≡ `waitpid(-1, &status, 0)`.
-- **Devuelven** el `pid` del hijo terminado, o `-1` si no hay hijos o hay error. Si el
-  hijo ya había terminado, retornan de inmediato.
-- Si `status` no es `NULL` guarda el estado de salida, inspeccionable con macros
-  (`#include <sys/wait.h>`):
+- `wait` suspende al padre hasta que termine **cualquier** hijo; `waitpid` espera a uno concreto. `wait(&status)` ≡ `waitpid(-1, &status, 0)`.
+- **Devuelven** el `pid` del hijo terminado, o `-1` si no hay hijos o hay error. Si el hijo ya había terminado, retornan de inmediato.
+- Si `status` no es `NULL` guarda el estado de salida, inspeccionable con macros (`#include <sys/wait.h>`):
 
 | Macro | Significado |
 |-------|-------------|
@@ -148,10 +135,7 @@ int execvp(const char *file, char *const argv[]);
 int execve(const char *path, char *const argv[], char *const envp[]);
 ```
 
-Sustituyen el código y los datos del proceso llamante por los del programa indicado; el
-`pid`, `ppid`, `pgid`, la tabla de descriptores y el directorio actual se conservan.
-Letras: **l** argumentos uno a uno terminados en `NULL`; **v** argumentos en un array
-terminado en `NULL`; **e** se pasa el entorno; **p** se busca el programa en `$PATH`.
+Sustituyen el código y los datos del proceso llamante por los del programa indicado; el `pid`, `ppid`, `pgid`, la tabla de descriptores y el directorio actual se conservan. Letras: **l** argumentos uno a uno terminados en `NULL`; **v** argumentos en un array terminado en `NULL`; **e** se pasa el entorno; **p** se busca el programa en `$PATH`.
 
 - **Devuelve** `-1` sólo si hay error (si tiene éxito no retorna).
 
@@ -176,23 +160,19 @@ int pthread_join(pthread_t tid, void **retval);
 void pthread_exit(void *retval);
 ```
 
-Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y terminar y
-cambiar entre hilos del mismo proceso también.
+Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y terminar y cambiar entre hilos del mismo proceso también.
 
 ## Ejercicios propuestos
 
-1. Analizar y describir el funcionamiento de los cuatro programas de ejemplo
-   (`proc_01.c` a `proc_04.c`) suministrados.
-2. Programa que cree cuatro procesos A, B, C y D de forma que A sea padre de B, B de C
-   y C de D.
+1. Analizar y describir el funcionamiento de los cuatro programas de ejemplo (`proc_01.c` a `proc_04.c`) suministrados.
+2. Programa que cree cuatro procesos A, B, C y D de forma que A sea padre de B, B de C y C de D.
 
    ```mermaid
    flowchart LR
        A((A)) --> B((B)) --> C((C)) --> D((D))
    ```
 
-3. Programa que cree un árbol de procesos de tres niveles de profundidad, de modo que
-   cada rama tenga dos procesos.
+3. Programa que cree un árbol de procesos de tres niveles de profundidad, de modo que cada rama tenga dos procesos.
 
    ```mermaid
    flowchart TD
@@ -203,7 +183,5 @@ cambiar entre hilos del mismo proceso también.
        N2b --> N3c((nivel 3))
        N2b --> N3d((nivel 3))
    ```
-4. Programa `ejecutar` que lea de la entrada estándar el nombre de un programa y cree un
-   proceso hijo para ejecutar dicho programa.
-5. Como el ejercicio 2, pero creando cinco hijos y de forma que cada proceso termine
-   ordenadamente 1 segundo después de hacerlo su hijo.
+4. Programa `ejecutar` que lea de la entrada estándar el nombre de un programa y cree un proceso hijo para ejecutar dicho programa.
+5. Como el ejercicio 2, pero creando cinco hijos y de forma que cada proceso termine ordenadamente 1 segundo después de hacerlo su hijo.

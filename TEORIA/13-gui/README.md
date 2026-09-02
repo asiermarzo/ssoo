@@ -4,8 +4,7 @@ Tema de ampliación.
 
 ## Contenidos
 
-- Arquitectura de un entorno gráfico: servidor gráfico, gestor de ventanas, gestor de
-  composición.
+- Arquitectura de un entorno gráfico: servidor gráfico, gestor de ventanas, gestor de composición.
 - X Window System (X11) frente a Wayland.
 - Toolkits y entornos de escritorio.
 - Relación con el SO: eventos de entrada, framebuffer, aceleración por GPU.
@@ -22,8 +21,7 @@ flowchart LR
     HW -->|eventos| KMS --> XS -->|eventos| APP1
 ```
 
-En Wayland el compositor asume el papel del servidor X y del gestor de ventanas, y cada
-cliente dibuja en su propio búfer.
+En Wayland el compositor asume el papel del servidor X y del gestor de ventanas, y cada cliente dibuja en su propio búfer.
 
 ## Galería visual complementaria
 
@@ -31,8 +29,7 @@ cliente dibuja en su propio búfer.
 
 ![Estación de trabajo Xerox Alto con pantalla vertical, teclado, ratón y unidad central](img/xerox-alto.jpg)
 
-*El Xerox Alto, desarrollado en Xerox PARC durante la década de 1970, reunió varias ideas que
-definirían la interacción gráfica posterior: pantalla de mapa de bits, ventanas, teclado y ratón.*
+*El Xerox Alto, desarrollado en Xerox PARC durante la década de 1970, reunió varias ideas que definirían la interacción gráfica posterior: pantalla de mapa de bits, ventanas, teclado y ratón.*
 
 <sub>Fuente: Maksym Kozlenko, CC BY-SA 4.0, vía Wikimedia Commons. [Ficha y licencia](https://commons.wikimedia.org/wiki/File:Xerox_Alto_computer.jpg).</sub>
 
@@ -47,8 +44,7 @@ flowchart TB
     C --> F["framebuffer final"] --> P[Pantalla]
 ```
 
-*Las aplicaciones dibujan en superficies independientes. El compositor decide su posición, orden,
-transparencia y presentación final.*
+*Las aplicaciones dibujan en superficies independientes. El compositor decide su posición, orden, transparencia y presentación final.*
 
 ### T13.3 · El viaje de un clic
 
@@ -84,10 +80,8 @@ flowchart TB
     end
 ```
 
-*X11 distribuye el dibujo y los eventos mediante un servidor gráfico. En Wayland, el compositor
-coordina directamente clientes, entrada y presentación.*
+*X11 distribuye el dibujo y los eventos mediante un servidor gráfico. En Wayland, el compositor coordina directamente clientes, entrada y presentación.*
 
 ## Material
 
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en
-[`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

@@ -1,21 +1,15 @@
 # Tema 8: Sistema de ficheros
 
-8.1 Abstracción del sistema de ficheros · 8.2 Conceptos de fichero y directorio · 8.3 Nombrado
-del fichero, propietarios y permisos · 8.4 Estructura y almacenamiento del fichero ·
-8.5 Seguridad en los sistemas de ficheros · 8.6 Sistemas de ficheros.
+8.1 Abstracción del sistema de ficheros · 8.2 Conceptos de fichero y directorio · 8.3 Nombrado del fichero, propietarios y permisos · 8.4 Estructura y almacenamiento del fichero · 8.5 Seguridad en los sistemas de ficheros · 8.6 Sistemas de ficheros.
 
 ---
 
 ## 8.1 Abstracción del sistema de ficheros
 
-- Para el **usuario**, un archivo es un conjunto de datos con un nombre asociado que reside en
-  un dispositivo de almacenamiento permanente.
-- Para el **sistema operativo**, un archivo es un **tipo abstracto de datos** que permite
-  gestionar el acceso de los procesos a los dispositivos de almacenamiento permanente.
+- Para el **usuario**, un archivo es un conjunto de datos con un nombre asociado que reside en un dispositivo de almacenamiento permanente.
+- Para el **sistema operativo**, un archivo es un **tipo abstracto de datos** que permite gestionar el acceso de los procesos a los dispositivos de almacenamiento permanente.
 - El archivo es la **unidad de almacenamiento** que el SO ofrece a los procesos de usuario.
-- El acceso y la manipulación se realizan mediante **llamadas al sistema**. El SO puede
-  imponer el formato de acceso a los datos (VMS, Macintosh) o no (Linux, Unix, Windows). Los
-  sistemas de archivos hacen **transparente** el acceso a los dispositivos.
+- El acceso y la manipulación se realizan mediante **llamadas al sistema**. El SO puede imponer el formato de acceso a los datos (VMS, Macintosh) o no (Linux, Unix, Windows). Los sistemas de archivos hacen **transparente** el acceso a los dispositivos.
 
 ### Tipos de archivos
 
@@ -25,18 +19,11 @@ del fichero, propietarios y permisos · 8.4 Estructura y almacenamiento del fich
 - **Tuberías** (*pipes*) con nombre.
 - **Enlaces simbólicos**.
 
-Un **dispositivo RAID** es un conjunto de discos duros que actúan como una única unidad. Una
-**partición** es un grupo contiguo de cilindros que forman una única unidad sobre la que se
-sitúa un sistema de ficheros; las particiones permiten mejorar el acceso a disco, limitar el
-crecimiento de un sistema de ficheros y disponer de distintos sistemas operativos.
+Un **dispositivo RAID** es un conjunto de discos duros que actúan como una única unidad. Una **partición** es un grupo contiguo de cilindros que forman una única unidad sobre la que se sitúa un sistema de ficheros; las particiones permiten mejorar el acceso a disco, limitar el crecimiento de un sistema de ficheros y disponer de distintos sistemas operativos.
 
 ### Traducción flujo‑bloque
 
-Un **sistema de archivos** es la estructura de datos que permite almacenar archivos en los
-bloques de bytes direccionables linealmente de los dispositivos. Vincula los bloques del
-almacenamiento para el **empaquetado** (*marshalling*) de los archivos; el **desempaquetado**
-(*unmarshalling*) los descompone en bloques. A este proceso se le denomina **traducción
-flujo‑bloque**.
+Un **sistema de archivos** es la estructura de datos que permite almacenar archivos en los bloques de bytes direccionables linealmente de los dispositivos. Vincula los bloques del almacenamiento para el **empaquetado** (*marshalling*) de los archivos; el **desempaquetado** (*unmarshalling*) los descompone en bloques. A este proceso se le denomina **traducción flujo‑bloque**.
 
 ```mermaid
 flowchart TB
@@ -44,10 +31,8 @@ flowchart TB
     TFB <--> BL["Bloques del dispositivo de almacenamiento"]
 ```
 
-- **Bajo nivel**: el SO solo provee traducción **flujo‑bloque**; la estructuración de los
-  datos recae en las aplicaciones.
-- **Alto nivel / estructurado**: el SO provee traducción **registro‑flujo**; requiere
-  estructuras de datos específicas para el almacenamiento.
+- **Bajo nivel**: el SO solo provee traducción **flujo‑bloque**; la estructuración de los datos recae en las aplicaciones.
+- **Alto nivel / estructurado**: el SO provee traducción **registro‑flujo**; requiere estructuras de datos específicas para el almacenamiento.
 
 ```mermaid
 flowchart TB
@@ -59,47 +44,29 @@ flowchart TB
 
 ## 8.2 Conceptos de fichero y directorio
 
-El sistema de archivos es un **servicio** para los usuarios: acceder a los dispositivos es
-incómodo, requiere conocer detalles físicos, depende de direcciones físicas (no seguro) y, a
-nivel físico, el usuario no tiene restricciones.
+El sistema de archivos es un **servicio** para los usuarios: acceder a los dispositivos es incómodo, requiere conocer detalles físicos, depende de direcciones físicas (no seguro) y, a nivel físico, el usuario no tiene restricciones.
 
-**Objetivos**: proporcionar mecanismos de **nombrado y localización** de datos no volátiles;
-ofrecer **primitivas de acceso** cómodas e independientes de los dispositivos; proporcionar
-**protección y seguridad**.
+**Objetivos**: proporcionar mecanismos de **nombrado y localización** de datos no volátiles; ofrecer **primitivas de acceso** cómodas e independientes de los dispositivos; proporcionar **protección y seguridad**.
 
-**Funciones**: fiabilidad (correcto almacenamiento y recuperación) · almacenamiento
-**permanente** y **estructurado** · privacidad (solo usuarios autorizados) · abstracción de
-los dispositivos físicos · accesibilidad mediante llamadas al sistema o librerías ·
-**compartición** (acceso concurrente de usuarios autorizados).
+**Funciones**: fiabilidad (correcto almacenamiento y recuperación) · almacenamiento **permanente** y **estructurado** · privacidad (solo usuarios autorizados) · abstracción de los dispositivos físicos · accesibilidad mediante llamadas al sistema o librerías · **compartición** (acceso concurrente de usuarios autorizados).
 
 ### Asignación de bloques
 
-El *driver* del disco permite ver el disco como una secuencia numerada de bloques de tamaño
-fijo (**clusters**). La asignación se hace buscando **tasa de transferencia elevada** y
-**minimizar la fragmentación**.
+El *driver* del disco permite ver el disco como una secuencia numerada de bloques de tamaño fijo (**clusters**). La asignación se hace buscando **tasa de transferencia elevada** y **minimizar la fragmentación**.
 
 **Asignación de bloques adyacentes (contigua):**
 
-- Asigna a un fichero tantos bloques **consecutivos** como necesite. Solo hay que guardar la
-  posición del primer bloque y el número de bloques.
-- Sencilla, fácil de implementar y con buen rendimiento (no hay saltos de bloques en la
-  lectura).
-- **Desventajas**: se desconoce el tamaño del fichero al crearlo; si crece por encima del
-  espacio asignado, hay que **reubicarlo** si no hay bloques consecutivos; el disco se
-  fragmenta y requiere **compactación** periódica costosa.
+- Asigna a un fichero tantos bloques **consecutivos** como necesite. Solo hay que guardar la posición del primer bloque y el número de bloques.
+- Sencilla, fácil de implementar y con buen rendimiento (no hay saltos de bloques en la lectura).
+- **Desventajas**: se desconoce el tamaño del fichero al crearlo; si crece por encima del espacio asignado, hay que **reubicarlo** si no hay bloques consecutivos; el disco se fragmenta y requiere **compactación** periódica costosa.
 
 **Asignación de bloques no adyacentes:**
 
-- Asigna tantos bloques como necesite, aunque **no** estén consecutivos. Precisa controlar los
-  bloques libres/ocupados y qué bloques pertenecen a cada fichero.
-- Gran penalización si hay que realizar muchos **posicionamientos** de la cabeza (saltos entre
-  bloques).
-- **Tamaño de bloque grande**: reduce el tiempo de posicionamiento pero aumenta la
-  fragmentación del último bloque; no útil en ficheros pequeños.
-- **Tamaño de bloque reducido**: más saltos y más tiempo de posicionamiento, pero menos
-  fragmentación del último bloque; no útil en ficheros grandes.
-- Si se conoce el tamaño medio de los ficheros se puede fijar el tamaño de bloque. Tamaños
-  usados: **1K, 2K, 4K, 8K**.
+- Asigna tantos bloques como necesite, aunque **no** estén consecutivos. Precisa controlar los bloques libres/ocupados y qué bloques pertenecen a cada fichero.
+- Gran penalización si hay que realizar muchos **posicionamientos** de la cabeza (saltos entre bloques).
+- **Tamaño de bloque grande**: reduce el tiempo de posicionamiento pero aumenta la fragmentación del último bloque; no útil en ficheros pequeños.
+- **Tamaño de bloque reducido**: más saltos y más tiempo de posicionamiento, pero menos fragmentación del último bloque; no útil en ficheros grandes.
+- Si se conoce el tamaño medio de los ficheros se puede fijar el tamaño de bloque. Tamaños usados: **1K, 2K, 4K, 8K**.
 
 Estructuras para gestionar los bloques no adyacentes:
 
@@ -112,12 +79,9 @@ Estructuras para gestionar los bloques no adyacentes:
 
 ### Directorios
 
-- En muchos casos son un **tipo especial de archivo**. Organizan el acceso a los ficheros y
-  almacenan información de los archivos que agrupan.
-- Evolución: un único directorio → un directorio por usuario (multiusuario) → **estructura
-  arbórea jerárquica** (sistemas actuales).
-- Rutas de acceso: **absolutas** (desde la raíz del sistema de ficheros) o **relativas** (desde
-  el directorio de trabajo indicado en el PCB del proceso).
+- En muchos casos son un **tipo especial de archivo**. Organizan el acceso a los ficheros y almacenan información de los archivos que agrupan.
+- Evolución: un único directorio → un directorio por usuario (multiusuario) → **estructura arbórea jerárquica** (sistemas actuales).
+- Rutas de acceso: **absolutas** (desde la raíz del sistema de ficheros) o **relativas** (desde el directorio de trabajo indicado en el PCB del proceso).
 
 ### Ejemplo: resolución de `/usr/ast/mbox` con nodos‑i
 
@@ -131,14 +95,10 @@ Estructuras para gestionar los bloques no adyacentes:
 
 ## 8.3 Nombrado del fichero, propietarios y permisos
 
-- La mayoría de los sistemas de archivos modernos permiten asignar **permisos** (derechos de
-  acceso) a usuarios y grupos, restringiendo o permitiendo visualización, modificación y/o
-  ejecución.
-- **UNIX, POSIX, Linux y macOS X** tienen un sistema simple para archivos individuales. POSIX
-  especifica **listas de control de acceso (ACL)**, pero solo lo implementan ciertos sistemas.
+- La mayoría de los sistemas de archivos modernos permiten asignar **permisos** (derechos de acceso) a usuarios y grupos, restringiendo o permitiendo visualización, modificación y/o ejecución.
+- **UNIX, POSIX, Linux y macOS X** tienen un sistema simple para archivos individuales. POSIX especifica **listas de control de acceso (ACL)**, pero solo lo implementan ciertos sistemas.
 - Las variantes de **DOS** no implementan ningún sistema de permisos.
-- **Microsoft Windows**, así como VMS y OpenVMS, emplean **ACL** para un conjunto de permisos
-  más complejo y variado.
+- **Microsoft Windows**, así como VMS y OpenVMS, emplean **ACL** para un conjunto de permisos más complejo y variado.
 
 ### Notación simbólica en Linux
 
@@ -170,20 +130,12 @@ Estructuras para gestionar los bloques no adyacentes:
 
 ### Descriptor de fichero
 
-Al acceder a un archivo, el gestor de ficheros crea una instancia de un **descriptor de
-fichero** que incluye: nombre · compartible · propietario · indicadores de protección ·
-longitud · tiempo de creación · tiempo de última modificación · tiempo de último acceso ·
-cuenta de referencias · detalles del dispositivo de almacenamiento. Para el **descriptor de
-archivo abierto** se añaden: bloqueos · estado actual · usuario.
+Al acceder a un archivo, el gestor de ficheros crea una instancia de un **descriptor de fichero** que incluye: nombre · compartible · propietario · indicadores de protección · longitud · tiempo de creación · tiempo de última modificación · tiempo de último acceso · cuenta de referencias · detalles del dispositivo de almacenamiento. Para el **descriptor de archivo abierto** se añaden: bloqueos · estado actual · usuario.
 
 ### Bloques y agrupaciones
 
-- **Bloque**: agrupación lógica de sectores de disco; **unidad de transferencia mínima** del
-  sistema de archivos. Optimiza la eficiencia de la E/S. Todos los SO ofrecen un tamaño de
-  bloque por defecto; el usuario puede fijarlo con el mandato **`mkfs`**.
-- **Agrupación** (*cluster*): conjunto de bloques que se gestionan como una unidad lógica de
-  almacenamiento. Con agrupaciones y bloques grandes aparece **fragmentación interna**. Unidad
-  de asignación: `1 agrupación = X bloques`.
+- **Bloque**: agrupación lógica de sectores de disco; **unidad de transferencia mínima** del sistema de archivos. Optimiza la eficiencia de la E/S. Todos los SO ofrecen un tamaño de bloque por defecto; el usuario puede fijarlo con el mandato **`mkfs`**.
+- **Agrupación** (*cluster*): conjunto de bloques que se gestionan como una unidad lógica de almacenamiento. Con agrupaciones y bloques grandes aparece **fragmentación interna**. Unidad de asignación: `1 agrupación = X bloques`.
 
 ### Formato de las entradas de directorio
 
@@ -194,10 +146,7 @@ archivo abierto** se añaden: bloqueos · estado actual · usuario.
 
 ### Estructura del nodo‑i (UNIX)
 
-El nodo‑i de un archivo contiene: nodo del archivo · número de enlaces · UID y GID del
-propietario · tamaño del archivo · tiempos de creación, último acceso y última modificación ·
-**10 números de bloque del disco** (punteros **directos**) · un puntero **indirecto individual**
-· un puntero **indirecto doble** · un puntero **indirecto triple**.
+El nodo‑i de un archivo contiene: nodo del archivo · número de enlaces · UID y GID del propietario · tamaño del archivo · tiempos de creación, último acceso y última modificación · **10 números de bloque del disco** (punteros **directos**) · un puntero **indirecto individual** · un puntero **indirecto doble** · un puntero **indirecto triple**.
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" font-family="sans-serif" font-size="12" role="img" aria-label="Nodo-i con 10 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
   <rect width="700" height="400" fill="#ffffff"/>
@@ -249,8 +198,7 @@ propietario · tamaño del archivo · tiempos de creación, último acceso y úl
 ### Superbloque y mapas de bits
 
 - **Superbloque**: descripción del sistema de archivos, parámetros…
-- **Mapa de bits**: un bit que indica si un recurso está ocupado o no. Hay **mapa de bits de
-  nodos‑i** y **mapa de bits de bloques** (de datos: archivos/directorios).
+- **Mapa de bits**: un bit que indica si un recurso está ocupado o no. Hay **mapa de bits de nodos‑i** y **mapa de bits de bloques** (de datos: archivos/directorios).
 
 ### Gestión del espacio libre
 
@@ -262,13 +210,9 @@ propietario · tamaño del archivo · tiempos de creación, último acceso y úl
 
 ### Caché de bloques
 
-Al leer un bloque: (1) comprobar si está en la caché; si no, leerlo del dispositivo y copiarlo
-a la caché — si está llena, se **reemplaza** un bloque según la política. (2) Si el bloque ha
-sido escrito (**sucio**), se aplica la **política de escritura**.
+Al leer un bloque: (1) comprobar si está en la caché; si no, leerlo del dispositivo y copiarlo a la caché — si está llena, se **reemplaza** un bloque según la política. (2) Si el bloque ha sido escrito (**sucio**), se aplica la **política de escritura**.
 
-- **Políticas de reemplazo**: FIFO · segunda oportunidad · MRU (*Most Recently Used*) · **LRU**
-  (la más frecuente). Los bloques más usados tienden a permanecer en la caché; el uso estricto
-  de LRU puede crear problemas de fiabilidad si el ordenador falla.
+- **Políticas de reemplazo**: FIFO · segunda oportunidad · MRU (*Most Recently Used*) · **LRU** (la más frecuente). Los bloques más usados tienden a permanecer en la caché; el uso estricto de LRU puede crear problemas de fiabilidad si el ordenador falla.
 - **Políticas de escritura**:
 
 | Política | Descripción | Compromiso |
@@ -280,17 +224,13 @@ sido escrito (**sucio**), se aplica la **política de escritura**.
 
 ### Puntos de montaje
 
-- **Punto de montaje**: directorio sobre el que se monta un sistema de ficheros. No todos los
-  ficheros del árbol están en el mismo dispositivo.
-- El *kernel* guarda la información de particiones y puntos de montaje en `/proc/mounts` y
-  `/etc/mtab`. Se consultan con `mount` y `df`. Montaje automatizado: `/etc/fstab`.
+- **Punto de montaje**: directorio sobre el que se monta un sistema de ficheros. No todos los ficheros del árbol están en el mismo dispositivo.
+- El *kernel* guarda la información de particiones y puntos de montaje en `/proc/mounts` y `/etc/mtab`. Se consultan con `mount` y `df`. Montaje automatizado: `/etc/fstab`.
 
 ### Estructura del árbol en Linux/UNIX
 
-- La raíz del árbol jerárquico es **`/`**. El árbol se compone de directorios que contienen
-  ficheros.
-- Todo directorio contiene al menos **`.`** (el propio directorio) y **`..`** (enlace a su
-  directorio padre).
+- La raíz del árbol jerárquico es **`/`**. El árbol se compone de directorios que contienen ficheros.
+- Todo directorio contiene al menos **`.`** (el propio directorio) y **`..`** (enlace a su directorio padre).
 - Cada directorio y su contenido pueden pertenecer a un punto de montaje distinto.
 
 ## 8.6 Sistemas de ficheros
@@ -316,20 +256,12 @@ sido escrito (**sucio**), se aplica la **política de escritura**.
 
 ### Sistemas de ficheros *journaled* o transaccionales
 
-Tratan los cambios para crear, modificar o borrar un fichero como una **base de datos**,
-garantizando un comportamiento **transaccional** y almacenando un histórico. Propiedades
-**ACID**: Atomicidad, Consistencia, Aislamiento y Durabilidad.
+Tratan los cambios para crear, modificar o borrar un fichero como una **base de datos**, garantizando un comportamiento **transaccional** y almacenando un histórico. Propiedades **ACID**: Atomicidad, Consistencia, Aislamiento y Durabilidad.
 
-- El **histórico** (*journal*) es una lista de transacciones que permite **reconstruir** el
-  sistema de ficheros ante un error, devolviéndolo a su último estado consistente registrado.
-- Minimiza el tiempo de recuperación y **evita** herramientas como `fsck` (solo se verifican
-  los últimos cambios en los metadatos). Resuelve problemas de escalabilidad.
-- Toda operación que modifique metadatos y datos de un archivo se **agrupa en la misma
-  transacción**. Si el sistema falla, las acciones parcialmente realizadas se deshacen o se
-  completan con el *log*. No se garantiza que el sistema esté **actualizado** al terminar la
-  recuperación, sino que es **consistente**.
-- Ejemplos: ReiserFS/Reiser4, ext3, ext4 (Linux) · NTFS (Windows) · UFS (Solaris) · XFS
-  (IRIX/Linux) · JFS (Linux, IBM, OS/2, AIX) · HFS+ (macOS X).
+- El **histórico** (*journal*) es una lista de transacciones que permite **reconstruir** el sistema de ficheros ante un error, devolviéndolo a su último estado consistente registrado.
+- Minimiza el tiempo de recuperación y **evita** herramientas como `fsck` (solo se verifican los últimos cambios en los metadatos). Resuelve problemas de escalabilidad.
+- Toda operación que modifique metadatos y datos de un archivo se **agrupa en la misma transacción**. Si el sistema falla, las acciones parcialmente realizadas se deshacen o se completan con el *log*. No se garantiza que el sistema esté **actualizado** al terminar la recuperación, sino que es **consistente**.
+- Ejemplos: ReiserFS/Reiser4, ext3, ext4 (Linux) · NTFS (Windows) · UFS (Solaris) · XFS (IRIX/Linux) · JFS (Linux, IBM, OS/2, AIX) · HFS+ (macOS X).
 
 ### Sistemas de ficheros concretos
 
@@ -352,10 +284,7 @@ garantizando un comportamiento **transaccional** y almacenando un histórico. Pr
 
 ### Virtual File System (VFS)
 
-El **VFS** ofrece a las aplicaciones una **interfaz uniforme** de llamadas al sistema, aunque
-los datos estén almacenados con formatos diferentes. Bajo el **servidor de archivos** y el
-VFS, el **módulo organizador de archivos** integra los distintos sistemas (`ext2`, `vfat`,
-`reiserfs`, …, `proc`) y accede al **servidor de bloques**.
+El **VFS** ofrece a las aplicaciones una **interfaz uniforme** de llamadas al sistema, aunque los datos estén almacenados con formatos diferentes. Bajo el **servidor de archivos** y el VFS, el **módulo organizador de archivos** integra los distintos sistemas (`ext2`, `vfat`, `reiserfs`, …, `proc`) y accede al **servidor de bloques**.
 
 ```mermaid
 flowchart TB
@@ -373,9 +302,7 @@ flowchart TB
 
 ## 8.5 Seguridad en los sistemas de ficheros
 
-El sistema de ficheros debe **garantizar la consistencia** de los datos y que solo los
-usuarios **autorizados** accedan a ellos para operaciones autorizadas (lectura, escritura,
-ejecución).
+El sistema de ficheros debe **garantizar la consistencia** de los datos y que solo los usuarios **autorizados** accedan a ellos para operaciones autorizadas (lectura, escritura, ejecución).
 
 | Soluciones hardware | Soluciones software |
 |---------------------|---------------------|
@@ -384,8 +311,7 @@ ejecución).
 
 ### RAID
 
-Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que actúan como una
-única unidad, para mejorar el rendimiento y/o la tolerancia a fallos.
+Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que actúan como una única unidad, para mejorar el rendimiento y/o la tolerancia a fallos.
 
 **RAID 0** (*striping*): divide los datos entre los discos.
 
@@ -429,8 +355,7 @@ Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que a
   <text x="210" y="200" text-anchor="middle" font-size="11">Disco 1 (espejo)</text>
 </svg>
 
-**RAID 5**: división a nivel de bloques con **paridad distribuida** entre todos los discos
-(`Xp` = bloque de paridad).
+**RAID 5**: división a nivel de bloques con **paridad distribuida** entre todos los discos (`Xp` = bloque de paridad).
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" font-family="sans-serif" font-size="12" role="img" aria-label="RAID 5: cuatro discos con bloques de datos y paridad distribuida">
   <rect width="520" height="260" fill="#ffffff"/>
@@ -484,11 +409,7 @@ Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que a
 | **RAID 1+0** (RAID 10) | *Stripe* de *mirrors* | | Matriz anidada. |
 | **RAID 1E**, **RAID 50**, **RAID 100** | Matrices RAID combinadas | | Configuraciones híbridas. |
 
-Información adicional:
-[Seagate — modos RAID](http://www.seagate.com/es/es/manuals/network-storage/business-storage-nas-os/raid-modes/)
-· [Wikipedia — RAID](https://es.wikipedia.org/wiki/RAID)
-· [prepressure.com — RAID](https://www.prepressure.com/library/technology/raid)
-· [IONOS — RAID](https://www.ionos.es/digitalguide/servidores/seguridad/raid/)
+Información adicional: [Seagate — modos RAID](http://www.seagate.com/es/es/manuals/network-storage/business-storage-nas-os/raid-modes/) · [Wikipedia — RAID](https://es.wikipedia.org/wiki/RAID) · [prepressure.com — RAID](https://www.prepressure.com/library/technology/raid) · [IONOS — RAID](https://www.ionos.es/digitalguide/servidores/seguridad/raid/)
 
 ---
 
@@ -505,8 +426,7 @@ flowchart LR
     I --> E3["Estante · bloque 411"]
 ```
 
-*El nombre se almacena en el directorio; el inodo conserva los metadatos y las referencias a los
-bloques que contienen los datos.*
+*El nombre se almacena en el directorio; el inodo conserva los metadatos y las referencias a los bloques que contienen los datos.*
 
 ### T12.2 · Estrategias de asignación como aparcamiento
 
@@ -526,8 +446,7 @@ flowchart TB
     end
 ```
 
-*La asignación contigua favorece el acceso rápido; la enlazada evita exigir continuidad; la
-indexada concentra las referencias en una estructura específica.*
+*La asignación contigua favorece el acceso rápido; la enlazada evita exigir continuidad; la indexada concentra las referencias en una estructura específica.*
 
 ### T12.3 · Permisos como llaves diferenciadas
 
@@ -539,8 +458,7 @@ flowchart LR
     CH["chmod 764 fichero"] -. modifica .-> F
 ```
 
-*Los permisos determinan qué operaciones puede realizar cada categoría de usuario sobre un
-fichero.*
+*Los permisos determinan qué operaciones puede realizar cada categoría de usuario sobre un fichero.*
 
 ### T12.4 · VFS como adaptador universal
 
@@ -557,16 +475,10 @@ flowchart TB
     P --> K[Datos del núcleo]
 ```
 
-*El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados
-con formatos diferentes.*
+*El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados con formatos diferentes.*
 
 ---
 
 ## Material gráfico
 
-Todos los diagramas del Tema 8 están replicados como mermaid, SVG o tabla dentro de este
-documento (traducción flujo/registro‑bloque, resolución de rutas con nodos‑i, estructura del
-nodo‑i con indirecciones, VFS, comparativa de sistemas de ficheros, RAID 0/1/5, tabla de
-niveles RAID). Queda como **material fotográfico** (ilustrativo): fotos de cabinas y
-*enclosures* RAID. Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E, 50, 100)
-se resumen en la tabla de niveles; se pueden añadir sus SVG si se desea.
+Todos los diagramas del Tema 8 están replicados como mermaid, SVG o tabla dentro de este documento (traducción flujo/registro‑bloque, resolución de rutas con nodos‑i, estructura del nodo‑i con indirecciones, VFS, comparativa de sistemas de ficheros, RAID 0/1/5, tabla de niveles RAID). Queda como **material fotográfico** (ilustrativo): fotos de cabinas y *enclosures* RAID. Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E, 50, 100) se resumen en la tabla de niveles; se pueden añadir sus SVG si se desea.

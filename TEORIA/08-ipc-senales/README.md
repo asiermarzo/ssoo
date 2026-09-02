@@ -5,11 +5,9 @@ Práctica asociada: [`PRACTICA/04`](../../PRACTICA/04-senales/).
 ## Contenidos
 
 - Concepto de señal: forma limitada de IPC en sistemas POSIX.
-- Señales estándar y su significado (`SIGINT`, `SIGTERM`, `SIGKILL`, `SIGCHLD`,
-  `SIGUSR1`/`SIGUSR2`, `SIGSTOP`/`SIGCONT`…).
+- Señales estándar y su significado (`SIGINT`, `SIGTERM`, `SIGKILL`, `SIGCHLD`, `SIGUSR1`/`SIGUSR2`, `SIGSTOP`/`SIGCONT`…).
 - Envío de señales: `kill()`, `raise()`.
-- Manejo de señales: `signal()` frente a `sigaction()`. Acción por defecto, ignorar,
-  capturar.
+- Manejo de señales: `signal()` frente a `sigaction()`. Acción por defecto, ignorar, capturar.
 - Máscara de señales, señales pendientes y bloqueadas.
 - Espera de señales: `pause()`, `sleep()`, `sigsuspend()`.
 
@@ -44,8 +42,7 @@ sequenceDiagram
     P->>P: continúa donde estaba
 ```
 
-*Una señal no transporta un flujo de datos: notifica de forma asíncrona que ha ocurrido un
-determinado evento.*
+*Una señal no transporta un flujo de datos: notifica de forma asíncrona que ha ocurrido un determinado evento.*
 
 ### T08.2 · De `Ctrl+C` a `SIGINT`
 
@@ -59,8 +56,7 @@ flowchart LR
     D -->|manejador| H[atender y continuar]
 ```
 
-*Al pulsar `Ctrl+C`, el terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en
-primer plano.*
+*Al pulsar `Ctrl+C`, el terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.*
 
 ### T08.3 · Señal bloqueada y pendiente
 
@@ -74,8 +70,7 @@ stateDiagram-v2
     Entregada --> [*]
 ```
 
-*Bloquear una señal no implica necesariamente descartarla: puede permanecer pendiente hasta que
-la máscara permita su entrega.*
+*Bloquear una señal no implica necesariamente descartarla: puede permanecer pendiente hasta que la máscara permita su entrega.*
 
 ### T08.4 · `SIGTERM` frente a `SIGKILL`
 
@@ -88,10 +83,8 @@ flowchart TB
     KILL["SIGKILL<br/>terminación forzosa"] --> D["el núcleo termina el proceso<br/>no se captura ni se ignora"]
 ```
 
-*`SIGTERM` permite que el proceso responda y libere recursos. `SIGKILL` no puede capturarse ni
-ignorarse y provoca su terminación inmediata.*
+*`SIGTERM` permite que el proceso responda y libere recursos. `SIGKILL` no puede capturarse ni ignorarse y provoca su terminación inmediata.*
 
 ## Material
 
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en
-[`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

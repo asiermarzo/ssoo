@@ -1,8 +1,6 @@
 # Catálogo de imágenes de teoría
 
-Este documento registra la campaña visual complementaria de los 13 temas. Cada figura está
-integrada en el `README.md` de su tema con un identificador estable, un texto explicativo y texto
-alternativo cuando se trata de un archivo de imagen.
+Este documento registra la campaña visual complementaria de los 13 temas. Cada figura está integrada en el `README.md` de su tema con un identificador estable, un texto explicativo y texto alternativo cuando se trata de un archivo de imagen.
 
 ## Resumen
 
@@ -23,14 +21,11 @@ alternativo cuando se trata de un archivo de imagen.
 | 13 · GUI | T13.1–T13.4 | 1 de archivo, 3 Mermaid |
 | **Total** | **57** | **5 generadas, 4 de archivo, 48 Mermaid** |
 
-Las ilustraciones generadas no contienen texto ni marcas, de modo que la explicación y la
-localización permanecen en Markdown. Los diagramas Mermaid son editables y se renderizan como
-gráficos vectoriales en visores compatibles.
+Las ilustraciones generadas no contienen texto ni marcas, de modo que la explicación y la localización permanecen en Markdown. Los diagramas Mermaid son editables y se renderizan como gráficos vectoriales en visores compatibles.
 
 ## Ilustraciones generadas
 
-Se generaron mediante la herramienta integrada de generación de imágenes de OpenAI. Los PNG
-finales están guardados dentro de las carpetas `img/` de los temas que los consumen.
+Se generaron mediante la herramienta integrada de generación de imágenes de OpenAI. Los PNG finales están guardados dentro de las carpetas `img/` de los temas que los consumen.
 
 ### T01.1 · `01-*/img/dispositivos-con-so.png`
 
@@ -116,6 +111,4 @@ Constraints: no collision damage; no people visible; no emergency vehicles; no b
 | T11.2 | `11-*/img/disco-duro-abierto.jpg` | © Raimond Spekking | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Seagate_ST9300AG_-_opened._Platter_and_head_mechanics-9324.jpg) |
 | T13.1 | `13-*/img/xerox-alto.jpg` | Maksym Kozlenko | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Xerox_Alto_computer.jpg) |
 
-Los archivos externos se descargaron a un tamaño máximo aproximado de 1600 píxeles para evitar
-incorporar originales innecesariamente grandes. No se modificó su contenido; solo se emplea una
-miniatura generada por Wikimedia cuando corresponde.
+Los archivos externos se descargaron a un tamaño máximo aproximado de 1600 píxeles para evitar incorporar originales innecesariamente grandes. No se modificó su contenido; solo se emplea una miniatura generada por Wikimedia cuando corresponde.

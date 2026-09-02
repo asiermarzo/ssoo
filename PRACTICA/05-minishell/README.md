@@ -2,19 +2,14 @@
 
 ## Descripción general
 
-Construir una shell (intérprete de comandos) usando las llamadas al sistema de manejo de
-procesos (`fork`, `wait`, `exec`, `dup2`, `pipe`, `signal`, `open`, `close`) que permita
-ejecutar cualquier comando del sistema, con tuberías (`|`) y redirección de entrada y
-salida (`<`, `>`, `>>`). Pone en contexto los conceptos de las prácticas anteriores.
+Construir una shell (intérprete de comandos) usando las llamadas al sistema de manejo de procesos (`fork`, `wait`, `exec`, `dup2`, `pipe`, `signal`, `open`, `close`) que permita ejecutar cualquier comando del sistema, con tuberías (`|`) y redirección de entrada y salida (`<`, `>`, `>>`). Pone en contexto los conceptos de las prácticas anteriores.
 
 > Esta práctica va **antes** que memoria compartida y semáforos (P6).
 
 ## Especificaciones
 
 - **Comandos con argumentos**: `minishell\> cp -r sources backup`
-- **Tubería** `|`: `more kk.txt | grep hola` — se crean dos procesos (uno ejecuta `more`,
-  otro `grep`) intercomunicados por una pipe: la salida del primero se escribe en la
-  tubería y la entrada del segundo se lee de ella.
+- **Tubería** `|`: `more kk.txt | grep hola` — se crean dos procesos (uno ejecuta `more`, otro `grep`) intercomunicados por una pipe: la salida del primero se escribe en la tubería y la entrada del segundo se lee de ella.
 - **Redirección de salida** `> fichero`: `ls -al > kk.txt` (sobrescribe).
 - **Anexión a fichero** `>> fichero`: como `>` pero añade al final, sin sobrescribir.
 - **Redirección de entrada** `< fichero`: `wc -l < kk.txt`.
@@ -22,8 +17,7 @@ salida (`<`, `>`, `>>`). Pone en contexto los conceptos de las prácticas anteri
 - **Prompt** personalizado: `minishell\>`
 - La ejecución concluye al introducir `exit` o pulsar `Ctrl-C`.
 
-Tubería `more kk.txt | grep hola` — cada comando es un hijo; `dup2` conecta sus
-descriptores estándar a la pipe:
+Tubería `more kk.txt | grep hola` — cada comando es un hijo; `dup2` conecta sus descriptores estándar a la pipe:
 
 ```mermaid
 flowchart LR
@@ -36,8 +30,7 @@ flowchart LR
     M ==> PIPE[["pipe"]] ==> G ==> TTY["terminal"]
 ```
 
-Redirección `orden < entrada > salida` — se abre el fichero y se duplica sobre el
-descriptor 0 ó 1 antes del `execvp`:
+Redirección `orden < entrada > salida` — se abre el fichero y se duplica sobre el descriptor 0 ó 1 antes del `execvp`:
 
 ```mermaid
 flowchart LR
@@ -47,8 +40,7 @@ flowchart LR
 
 ## Biblioteca `fragmenta`
 
-Se proporciona una pequeña biblioteca (`fragmenta.o` + `fragmenta.h`) para trocear la
-línea de comandos en el array que necesita `execvp`.
+Se proporciona una pequeña biblioteca (`fragmenta.o` + `fragmenta.h`) para trocear la línea de comandos en el array que necesita `execvp`.
 
 ```
 FRAGMENTA(3)
@@ -77,9 +69,7 @@ VALOR DEVUELTO
 
 ## Llamadas al sistema útiles
 
-`fork(2)`, `execvp(3)`, `wait(2)`, `open(2)`, `close(2)`, `dup2(2)`, `pipe(2)`,
-`signal(2)`. Ver las prácticas [P2](../02-procesos-e-hilos/), [P3](../03-pipes-y-fifos/)
-y [P4](../04-senales/) para sus descripciones detalladas.
+`fork(2)`, `execvp(3)`, `wait(2)`, `open(2)`, `close(2)`, `dup2(2)`, `pipe(2)`, `signal(2)`. Ver las prácticas [P2](../02-procesos-e-hilos/), [P3](../03-pipes-y-fifos/) y [P4](../04-senales/) para sus descripciones detalladas.
 
 Esquema básico de ejecución de un comando:
 
@@ -96,11 +86,7 @@ if ((pid = fork()) == 0) {          /* hijo */
 
 ## Entrega de la práctica
 
-El comprimido a entregar debe incluir el `Makefile`, la biblioteca `fragmenta` (fuentes y
-cabecera) y todos los `.c` y `.h` necesarios para crear `minishell`. La acción por defecto
-de `make` debe crear el ejecutable de la shell; también debe responder a `make fragmenta`
-y `make prueba`. Para la corrección se borran los ejecutables, se hace `touch` a los
-fuentes y se recompila.
+El comprimido a entregar debe incluir el `Makefile`, la biblioteca `fragmenta` (fuentes y cabecera) y todos los `.c` y `.h` necesarios para crear `minishell`. La acción por defecto de `make` debe crear el ejecutable de la shell; también debe responder a `make fragmenta` y `make prueba`. Para la corrección se borran los ejecutables, se hace `touch` a los fuentes y se recompila.
 
 ## Descripción (manual)
 
@@ -122,7 +108,4 @@ DESCRIPCIÓN
 
 ## Ejercicio
 
-Implementar `minishell` conforme a las especificaciones anteriores: bucle de lectura de
-línea, troceado con `fragmenta`, comandos internos (`exit`), ejecución de externos con
-`fork` + `execvp` + `wait`, redirecciones (`<`, `>`, `>>`) con `open` + `dup2`, tuberías
-(`|`) con `pipe` + `dup2`, y manejo de `SIGINT`.
+Implementar `minishell` conforme a las especificaciones anteriores: bucle de lectura de línea, troceado con `fragmenta`, comandos internos (`exit`), ejecución de externos con `fork` + `execvp` + `wait`, redirecciones (`<`, `>`, `>>`) con `open` + `dup2`, tuberías (`|`) con `pipe` + `dup2`, y manejo de `SIGINT`.

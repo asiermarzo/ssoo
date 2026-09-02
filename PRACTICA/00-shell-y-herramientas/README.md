@@ -2,10 +2,7 @@
 
 ## Descripción general
 
-El objetivo es familiarizarse con el entorno de trabajo del curso: el sistema operativo
-Linux, el intérprete de comandos (shell) y el lenguaje C, incluyendo el ciclo de
-compilación y las herramientas de depuración y análisis que se usarán durante el
-semestre. Las prácticas se realizan sobre un PC virtualizado con Linux.
+El objetivo es familiarizarse con el entorno de trabajo del curso: el sistema operativo Linux, el intérprete de comandos (shell) y el lenguaje C, incluyendo el ciclo de compilación y las herramientas de depuración y análisis que se usarán durante el semestre. Las prácticas se realizan sobre un PC virtualizado con Linux.
 
 ## Comandos comunes
 
@@ -45,16 +42,11 @@ semestre. Las prácticas se realizan sobre un PC virtualizado con Linux.
 
 ### Tratamiento de ficheros de texto
 
-`cat` (concatena y muestra), `more` / `less` (paginación), `file` (tipo de fichero),
-`wc` (cuenta líneas/palabras/caracteres), `sort` (ordena líneas), `head` / `tail`
-(primeras / últimas líneas, 10 por defecto), `grep <patrón>` (líneas que casan un
-patrón), `find` (busca ficheros), `diff` (diferencias), `man <comando>` (manual).
+`cat` (concatena y muestra), `more` / `less` (paginación), `file` (tipo de fichero), `wc` (cuenta líneas/palabras/caracteres), `sort` (ordena líneas), `head` / `tail` (primeras / últimas líneas, 10 por defecto), `grep <patrón>` (líneas que casan un patrón), `find` (busca ficheros), `diff` (diferencias), `man <comando>` (manual).
 
 ### Permisos de ficheros
 
-Cada fichero tiene tres ternas de permisos (usuario, grupo, otros), cada una con
-lectura (`r`), escritura (`w`) y ejecución (`x`). En notación octal cada terna es un
-dígito: `rw- r-- ---` → `110 100 000` → `640`.
+Cada fichero tiene tres ternas de permisos (usuario, grupo, otros), cada una con lectura (`r`), escritura (`w`) y ejecución (`x`). En notación octal cada terna es un dígito: `rw- r-- ---` → `110 100 000` → `640`.
 
 Forma simbólica: `chmod <u|g|o> <+|-> <r|w|x> <fichero>`, p. ej. `chmod g+r fichero.o`.
 
@@ -81,25 +73,13 @@ flowchart LR
 
 ## Herramientas
 
-- **tmux** — multiplexor de terminales: varias terminales (paneles/ventanas) en una
-  sola sesión, persistente aunque se cierre la conexión.
-- **gdb** — depurador: puntos de ruptura (`break`), ejecución paso a paso (`next`,
-  `step`), inspección de variables (`print`), pila de llamadas (`backtrace`).
-- **strace** — traza las llamadas al sistema que ejecuta un programa:
-  `strace ./programa`.
+- **tmux** — multiplexor de terminales: varias terminales (paneles/ventanas) en una sola sesión, persistente aunque se cierre la conexión.
+- **gdb** — depurador: puntos de ruptura (`break`), ejecución paso a paso (`next`, `step`), inspección de variables (`print`), pila de llamadas (`backtrace`).
+- **strace** — traza las llamadas al sistema que ejecuta un programa: `strace ./programa`.
 
 ## Ejercicios propuestos
 
-1. Escribir un fichero de bienvenida personalizado: al ejecutarse debe pedir el nombre
-   del usuario y presentar en pantalla un mensaje de bienvenida dedicado a ese usuario.
-2. Escribir un menú con cuatro opciones para elegir las cuatro operaciones básicas
-   (suma, resta, multiplicación y división). Usar `switch`. Con cada opción se muestra un
-   mensaje que indica la operación elegida.
-3. Programa que imprima en pantalla, en orden decreciente, tres números enteros
-   introducidos por teclado.
-4. Un *centro numérico* es un número que separa la lista de enteros `1..N` en dos grupos
-   cuyas sumas son iguales. El primer centro numérico es el 6, que separa `(1,2,3,4,5)` y
-   `(7,8)`, ambos con suma 15. El segundo es el 35, que separa `1..34` y `36..49`, ambos
-   con suma 595. Escribir un programa que halle los centros numéricos entre 1 y N, con N
-   introducido por teclado y menor de 7000. Usar una función que compruebe si un número
-   es centro numérico y otra que devuelva la suma de los números de cada grupo.
+1. Escribir un fichero de bienvenida personalizado: al ejecutarse debe pedir el nombre del usuario y presentar en pantalla un mensaje de bienvenida dedicado a ese usuario.
+2. Escribir un menú con cuatro opciones para elegir las cuatro operaciones básicas (suma, resta, multiplicación y división). Usar `switch`. Con cada opción se muestra un mensaje que indica la operación elegida.
+3. Programa que imprima en pantalla, en orden decreciente, tres números enteros introducidos por teclado.
+4. Un *centro numérico* es un número que separa la lista de enteros `1..N` en dos grupos cuyas sumas son iguales. El primer centro numérico es el 6, que separa `(1,2,3,4,5)` y `(7,8)`, ambos con suma 15. El segundo es el 35, que separa `1..34` y `36..49`, ambos con suma 595. Escribir un programa que halle los centros numéricos entre 1 y N, con N introducido por teclado y menor de 7000. Usar una función que compruebe si un número es centro numérico y otra que devuelva la suma de los números de cada grupo.

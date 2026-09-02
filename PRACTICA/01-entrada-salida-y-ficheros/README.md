@@ -4,16 +4,10 @@
 
 C ofrece dos niveles para trabajar con ficheros:
 
-- **Biblioteca estándar (`stdio.h`)**: funciones que empiezan por `f` y trabajan con el
-  tipo `FILE *`. Secuencia habitual: declarar un `FILE *`, abrir con `fopen`, operar
-  (lectura/escritura), cerrar con `fclose`. Usa un búfer propio en espacio de usuario.
-- **Llamadas al sistema (descriptores de fichero)**: se trabaja con *file descriptors*
-  (enteros no negativos). Es más bajo nivel y compatible con tuberías, sockets, etc. Cada
-  proceso arranca con tres descriptores abiertos: `0` = `STDIN_FILENO` (entrada),
-  `1` = `STDOUT_FILENO` (salida), `2` = `STDERR_FILENO` (error).
+- **Biblioteca estándar (`stdio.h`)**: funciones que empiezan por `f` y trabajan con el tipo `FILE *`. Secuencia habitual: declarar un `FILE *`, abrir con `fopen`, operar (lectura/escritura), cerrar con `fclose`. Usa un búfer propio en espacio de usuario.
+- **Llamadas al sistema (descriptores de fichero)**: se trabaja con *file descriptors* (enteros no negativos). Es más bajo nivel y compatible con tuberías, sockets, etc. Cada proceso arranca con tres descriptores abiertos: `0` = `STDIN_FILENO` (entrada), `1` = `STDOUT_FILENO` (salida), `2` = `STDERR_FILENO` (error).
 
-> En este material se prioriza el nivel de *file descriptors* (`open`/`read`/`write`/
-> `close`), más cercano a las llamadas al sistema y coherente con la guía de estilo.
+> En este material se prioriza el nivel de *file descriptors* (`open`/`read`/`write`/ `close`), más cercano a las llamadas al sistema y coherente con la guía de estilo.
 
 ```mermaid
 flowchart TD
@@ -35,9 +29,7 @@ flowchart TD
 | `scanf` | `int scanf(const char *formato, ...)` | Entrada con formato; devuelve nº de asignaciones con éxito |
 | `printf` | `int printf(const char *formato, ...)` | Salida con formato; devuelve nº de caracteres escritos |
 
-Especificadores de formato: `%d`/`%i` entero con signo, `%u` sin signo, `%o` octal,
-`%x`/`%X` hexadecimal, `%c` carácter, `%s` cadena, `%f` punto fijo, `%e`/`%E`
-científica, `%p` puntero, `%%` símbolo `%`. Escapes: `\n`, `\t`, `\a`, `\0`.
+Especificadores de formato: `%d`/`%i` entero con signo, `%u` sin signo, `%o` octal, `%x`/`%X` hexadecimal, `%c` carácter, `%s` cadena, `%f` punto fijo, `%e`/`%E` científica, `%p` puntero, `%%` símbolo `%`. Escapes: `\n`, `\t`, `\a`, `\0`.
 
 ## E/S con `stdio` (`FILE *`)
 
@@ -50,9 +42,7 @@ int   fclose(FILE *stream);
 ```
 
 - `path`: nombre (ruta completa) del fichero.
-- `mode`: `r` (lectura, debe existir), `w` (escritura, crea/trunca), `a` (añadir al
-  final, crea si no existe), `r+` (lectura+escritura, debe existir), `w+`
-  (lectura+escritura, crea/trunca), `a+` (lectura+escritura al final).
+- `mode`: `r` (lectura, debe existir), `w` (escritura, crea/trunca), `a` (añadir al final, crea si no existe), `r+` (lectura+escritura, debe existir), `w+` (lectura+escritura, crea/trunca), `a+` (lectura+escritura al final).
 - **Devuelve** (`fopen`): puntero `FILE *`, o `NULL` si hay error.
 - **Devuelve** (`fclose`): `0` si se cierra correctamente, `EOF` si hay error.
 
@@ -86,8 +76,7 @@ size_t fread(void *ptr, size_t tam, size_t nmemb, FILE *f);  /* nmemb registros 
 int   fscanf(FILE *f, const char *formato, ...);        /* como scanf, desde fichero */
 ```
 
-`fread` devuelve el número de **elementos** leídos (no bytes); usar `feof`/`ferror` para
-distinguir fin de fichero de error.
+`fread` devuelve el número de **elementos** leídos (no bytes); usar `feof`/`ferror` para distinguir fin de fichero de error.
 
 ```c
 #include <stdio.h>
@@ -132,9 +121,7 @@ int open(const char *pathname, int flags, mode_t mode);
 int creat(const char *pathname, mode_t mode);   /* == open con O_WRONLY|O_CREAT|O_TRUNC */
 ```
 
-- `flags`: uno de `O_RDONLY`, `O_WRONLY`, `O_RDWR`, combinable con OR (`|`) con
-  `O_CREAT` (crea si no existe), `O_EXCL` (con `O_CREAT`, error si ya existe),
-  `O_APPEND` (escribe siempre al final), `O_TRUNC` (trunca a 0).
+- `flags`: uno de `O_RDONLY`, `O_WRONLY`, `O_RDWR`, combinable con OR (`|`) con `O_CREAT` (crea si no existe), `O_EXCL` (con `O_CREAT`, error si ya existe), `O_APPEND` (escribe siempre al final), `O_TRUNC` (trunca a 0).
 - `mode`: permisos del fichero si se crea (p. ej. `S_IRUSR|S_IWUSR`, o `0644`).
 - **Devuelve**: el descriptor (el entero libre más bajo), o `-1` y `errno` si hay error.
 
@@ -154,9 +141,7 @@ int     unlink(const char *pathname);              /* <#include <unistd.h>> */
 - `close` / `unlink`: `0` si correcto, `-1` si error.
 - `lseek`: nueva posición, o `-1` si error.
 
-Errores típicos (`errno`, `<errno.h>`): `EACCES` (sin permiso), `ENOENT` (no existe),
-`EEXIST` (ya existe con `O_EXCL`), `ENOSPC` (sin espacio), `EBADF` (descriptor inválido).
-Mostrar el error con `perror("mensaje")` (`#include <stdio.h>`).
+Errores típicos (`errno`, `<errno.h>`): `EACCES` (sin permiso), `ENOENT` (no existe), `EEXIST` (ya existe con `O_EXCL`), `ENOSPC` (sin espacio), `EBADF` (descriptor inválido). Mostrar el error con `perror("mensaje")` (`#include <stdio.h>`).
 
 ### Ejemplo: escritura y lectura por descriptores
 
@@ -211,8 +196,6 @@ int main(int argc, char *argv[]) {
 
 ## Ejercicios propuestos
 
-1. Programa que abra un fichero cuyo nombre se pase como argumento y escriba en él
-   `"Hola mundo"` tras esperar 5 segundos.
-2. Programa que abra un fichero cuyo nombre se pase como argumento, lea su contenido y
-   lo imprima por pantalla.
+1. Programa que abra un fichero cuyo nombre se pase como argumento y escriba en él `"Hola mundo"` tras esperar 5 segundos.
+2. Programa que abra un fichero cuyo nombre se pase como argumento, lea su contenido y lo imprima por pantalla.
 3. Programa que cambie las vocales en minúscula de un fichero a mayúsculas.

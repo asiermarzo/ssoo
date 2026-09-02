@@ -4,15 +4,10 @@
 
 - Modo usuario y modo núcleo (kernel). Bit de modo y protección.
 - El SO como colección de procedimientos con interfaz de entrada/salida definida.
-- Llamadas al sistema: paso de parámetros en lugares bien definidos, cambio de modo,
-  ejecución del servicio y retorno al programa de usuario.
+- Llamadas al sistema: paso de parámetros en lugares bien definidos, cambio de modo, ejecución del servicio y retorno al programa de usuario.
 - Estructuras de los sistemas operativos:
-  - Sistemas monolíticos (programa principal, procedimientos de servicio, utilidades).
-    Núcleos tipo Unix (Linux, BSD, Solaris), tipo DOS, etc.
-  - Microkernels: primitivas mínimas (espacios de direcciones, IPC, planificación básica);
-    el resto de servicios como procesos servidores en espacio de usuario. Ventajas
-    (complejidad, aislamiento de fallos, portabilidad, drivers) e inconvenientes
-    (sincronización entre módulos).
+  - Sistemas monolíticos (programa principal, procedimientos de servicio, utilidades). Núcleos tipo Unix (Linux, BSD, Solaris), tipo DOS, etc.
+  - Microkernels: primitivas mínimas (espacios de direcciones, IPC, planificación básica); el resto de servicios como procesos servidores en espacio de usuario. Ventajas (complejidad, aislamiento de fallos, portabilidad, drivers) e inconvenientes (sincronización entre módulos).
   - Sistemas por capas, máquinas virtuales, exokernels.
 
 ## Flujo de una llamada al sistema
@@ -79,8 +74,7 @@ flowchart TB
     G --> FS
 ```
 
-*Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos
-protegidos deben solicitar un servicio al núcleo.*
+*Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos deben solicitar un servicio al núcleo.*
 
 ### T02.2 · La llamada al sistema como ventanilla
 
@@ -100,8 +94,7 @@ sequenceDiagram
     V-->>A: retorno a modo usuario
 ```
 
-*Una llamada al sistema cruza temporalmente la frontera entre modo usuario y modo kernel sin
-entregar a la aplicación el control directo del hardware.*
+*Una llamada al sistema cruza temporalmente la frontera entre modo usuario y modo kernel sin entregar a la aplicación el control directo del hardware.*
 
 ### T02.3 · Núcleo monolítico y microkernel como talleres
 
@@ -120,10 +113,8 @@ flowchart TB
     end
 ```
 
-*Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado. Un microkernel
-conserva solo los mecanismos esenciales y delega otros servicios a procesos aislados.*
+*Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado. Un microkernel conserva solo los mecanismos esenciales y delega otros servicios a procesos aislados.*
 
 ## Material
 
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en
-[`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

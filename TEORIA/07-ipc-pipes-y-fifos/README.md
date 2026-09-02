@@ -5,8 +5,7 @@ Práctica asociada: [`PRACTICA/03`](../../PRACTICA/03-pipes-y-fifos/).
 ## Contenidos
 
 - Comunicación entre procesos por tuberías.
-- Pipes (tuberías sin nombre): `pipe()`, comunicación entre procesos emparentados,
-  extremos de lectura y escritura.
+- Pipes (tuberías sin nombre): `pipe()`, comunicación entre procesos emparentados, extremos de lectura y escritura.
 - FIFOs (tuberías con nombre): `mkfifo()`, comunicación entre procesos no emparentados.
 - Redirección de una pipe a la E/S estándar (`dup2`).
 - Lecturas y escrituras bloqueantes y no bloqueantes.
@@ -33,8 +32,7 @@ flowchart LR
     X["sentido único"] -.-> P
 ```
 
-*Una pipe es un canal unidireccional administrado por el núcleo: un proceso escribe una secuencia
-de bytes y otro la lee.*
+*Una pipe es un canal unidireccional administrado por el núcleo: un proceso escribe una secuencia de bytes y otro la lee.*
 
 ### T07.2 · Una pipeline de shell
 
@@ -46,8 +44,7 @@ flowchart LR
     D --> R["recuento final"]
 ```
 
-*La shell conecta la salida estándar de un programa con la entrada del siguiente, formando
-herramientas complejas a partir de programas sencillos.*
+*La shell conecta la salida estándar de un programa con la entrada del siguiente, formando herramientas complejas a partir de programas sencillos.*
 
 ### T07.3 · Pipe anónima frente a FIFO con nombre
 
@@ -61,10 +58,8 @@ flowchart TB
     end
 ```
 
-*Las pipes se usan normalmente entre procesos emparentados. Una FIFO posee un nombre y permite
-conectar procesos que no comparten parentesco.*
+*Las pipes se usan normalmente entre procesos emparentados. Una FIFO posee un nombre y permite conectar procesos que no comparten parentesco.*
 
 ## Material
 
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en
-[`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
