@@ -80,8 +80,4 @@ Sobre convenciones de código: aunque cada estudiante puede seguir su propia pre
 
 ## Enlaces a material
 
-- CoreDump — *(pendiente de completar)*
-
-## Licencia
-
-[MIT](LICENSE).
+Vídeos complementarios por tema (canal CoreDumpped) en [`material_adicional.md`](material_adicional.md).

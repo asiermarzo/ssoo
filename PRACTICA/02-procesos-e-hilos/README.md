@@ -49,10 +49,22 @@ Crea un nuevo proceso como copia casi exacta del padre (espacio de direcciones, 
 
 ```mermaid
 flowchart TD
-    U["proceso único: pid = fork()"] --> R{"valor devuelto por fork()"}
+    U(["proceso único: pid = fork()"]) --> R{"valor devuelto por fork()"}
     R -->|"0"| H["rama del proceso HIJO"]
     R -->|"pid del hijo, positivo"| P["rama del proceso PADRE"]
     R -->|"-1"| E["error: no se creó el hijo"]
+
+    classDef inicio fill:#eef2f7,stroke:#444,color:#222;
+    classDef decision fill:#fce5a8,stroke:#a06a1a,color:#222;
+    classDef hijo fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef padre fill:#d9ead3,stroke:#3a7a3a,color:#222;
+    classDef error fill:#fbe0e0,stroke:#a04040,color:#222;
+
+    class U inicio;
+    class R decision;
+    class H hijo;
+    class P padre;
+    class E error;
 ```
 
 ```c
@@ -170,6 +182,16 @@ Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y te
    ```mermaid
    flowchart LR
        A((A)) --> B((B)) --> C((C)) --> D((D))
+
+       classDef p1 fill:#eef2f7,stroke:#2b6f99,color:#222;
+       classDef p2 fill:#cfe2f3,stroke:#2b6f99,color:#222;
+       classDef p3 fill:#9cc3e6,stroke:#2b6f99,color:#222;
+       classDef p4 fill:#6ba3d6,stroke:#2b6f99,color:#ffffff;
+
+       class A p1;
+       class B p2;
+       class C p3;
+       class D p4;
    ```
 
 3. Programa que cree un árbol de procesos de tres niveles de profundidad, de modo que cada rama tenga dos procesos.
@@ -182,6 +204,14 @@ Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y te
        N2a --> N3b((nivel 3))
        N2b --> N3c((nivel 3))
        N2b --> N3d((nivel 3))
+
+       classDef nivel1 fill:#1f3f66,stroke:#132840,color:#ffffff;
+       classDef nivel2 fill:#6ba3d6,stroke:#2b6f99,color:#ffffff;
+       classDef nivel3 fill:#cfe2f3,stroke:#2b6f99,color:#222;
+
+       class N1 nivel1;
+       class N2a,N2b nivel2;
+       class N3a,N3b,N3c,N3d nivel3;
    ```
 4. Programa `ejecutar` que lea de la entrada estándar el nombre de un programa y cree un proceso hijo para ejecutar dicho programa.
 5. Como el ejercicio 2, pero creando cinco hijos y de forma que cada proceso termine ordenadamente 1 segundo después de hacerlo su hijo.

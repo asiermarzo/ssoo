@@ -109,7 +109,6 @@ En un proceso **monohilo**, el código, los datos y los ficheros, junto con los 
   <text x="95" y="305" text-anchor="middle">hilo</text>
   <line x1="118" y1="300" x2="170" y2="300" stroke="#333" stroke-width="1.5"/>
   <path d="M 170 296 L 178 300 L 170 304 z" fill="#333"/>
-
   <text x="595" y="30" text-anchor="middle" font-size="16" font-weight="bold">Proceso multihilo</text>
   <rect x="440" y="45" width="310" height="370" fill="#eef6ee" stroke="#4a7a4a" stroke-width="1.5"/>
   <rect x="455" y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="500" y="88" text-anchor="middle">código</text>
@@ -215,6 +214,17 @@ flowchart LR
     CPU -->|expira el cuanto| RQ
     CPU -->|E/S o suceso| BQ[Cola de bloqueados]
     BQ -->|finaliza la E/S / ocurre el suceso| RQ
+
+    classDef nuevo fill:#eef2f7,stroke:#555,color:#000;
+    classDef listo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef ejecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef bloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef fin fill:#d9d9d9,stroke:#555,color:#000;
+    class NEW,INT,JQ nuevo;
+    class RQ listo;
+    class CPU ejecutando;
+    class BQ bloqueado;
+    class FIN fin;
 ```
 
 ## 2.5 Estados de un proceso
@@ -228,6 +238,13 @@ stateDiagram-v2
     en_ejecución --> en_espera
     en_espera --> listo
     en_ejecución --> [*]: proceso finalizado
+
+    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    class listo stListo;
+    class en_ejecución stEjecutando;
+    class en_espera stBloqueado;
 ```
 
 ### Estados de un proceso en UNIX
@@ -272,6 +289,19 @@ stateDiagram-v2
     LM --> LD: descargar (swap out)
     EN --> Z: salir
     Z --> [*]: exit()
+
+    classDef stCreado fill:#fdf3d0,stroke:#a67c00,color:#000;
+    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef stExpulsado fill:#fce5a8,stroke:#a67c00,color:#000;
+    classDef stZombie fill:#d9d9d9,stroke:#555,color:#000;
+    class CR stCreado;
+    class LM,LD stListo;
+    class EU,EN stEjecutando;
+    class DM,DD stBloqueado;
+    class EX stExpulsado;
+    class Z stZombie;
 ```
 
 ## 2.6 Mecanismos de comunicación entre procesos
@@ -314,6 +344,17 @@ stateDiagram-v2
     Parado --> Listo: Despertar
     Ejecución --> Zombie: Finalizar
     Zombie --> [*]
+
+    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef stParado fill:#fce5a8,stroke:#a67c00,color:#000;
+    classDef stZombie fill:#d9d9d9,stroke:#555,color:#000;
+    class Listo stListo;
+    class Ejecución stEjecutando;
+    class Espera stBloqueado;
+    class Parado stParado;
+    class Zombie stZombie;
 ```
 
 Y el modelo de estados con suspensión (carga/descarga de memoria):
@@ -333,6 +374,13 @@ stateDiagram-v2
     bloqueadoActivo --> bloqueadoSuspendido: suspender
     bloqueadoSuspendido --> bloqueadoActivo: activar
     ejecución --> bloqueadoActivo: solicitud
+
+    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    class listoSuspendido,listoActivo stListo;
+    class ejecución stEjecutando;
+    class bloqueadoActivo,bloqueadoSuspendido stBloqueado;
 ```
 
 ### Creación de procesos: `fork()` / `wait()`
@@ -424,6 +472,13 @@ flowchart LR
     R["Herramientas abiertas<br/>ficheros y recursos"] --> X
     C["Punto de trabajo<br/>PC · registros · pila"] --> X
     X(("Cocinero trabajando<br/>PROCESO<br/>entidad activa"))
+
+    classDef pasivo fill:#d9d9d9,stroke:#555,color:#000;
+    classDef insumo fill:#eef2f7,stroke:#555,color:#000;
+    classDef activo fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    class P pasivo;
+    class D,R,C insumo;
+    class X activo;
 ```
 
 *Un programa es código almacenado. Un proceso aparece cuando ese código se ejecuta junto con sus datos, pila, recursos y contexto del procesador.*
@@ -438,6 +493,11 @@ flowchart TB
     B -->|fork| D["nieto · PID 1243"]
     A -. wait .-> B
     A -. wait .-> C
+
+    classDef existente fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef creado fill:#d9ead3,stroke:#4d7a33,color:#000;
+    class S,A existente;
+    class B,C,D creado;
 ```
 
 *La llamada `fork()` crea un nuevo proceso a partir del proceso actual. Desde ese punto, padre e hijo continúan como ejecuciones independientes.*
@@ -455,16 +515,30 @@ stateDiagram-v2
     Parado --> Listo: recibe SIGCONT
     Ejecución --> Terminado: finaliza
     Terminado --> [*]
+
+    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef stParado fill:#fce5a8,stroke:#a67c00,color:#000;
+    classDef stTerminado fill:#d9d9d9,stroke:#555,color:#000;
+    class Listo stListo;
+    class Ejecución stEjecutando;
+    class Espera stBloqueado;
+    class Parado stParado;
+    class Terminado stTerminado;
 ```
 
 *Un proceso no permanece siempre ejecutándose: alterna entre esperar su turno, usar la CPU y quedar bloqueado por sucesos o recursos.*
 
 ### T03.5 · El sistema visto desde un monitor de procesos
 
-```mermaid
-flowchart TB
-    T["MONITOR DE PROCESOS<br/><br/>PID · USUARIO · ESTADO · CPU · MEMORIA · COMANDO<br/>1200 · ana · R · 37% · 82 MiB · simulador<br/>1240 · ana · S · 02% · 18 MiB · editor<br/>1241 · root · S · 00% · 06 MiB · servicio<br/><br/>CPU 42%      RAM 5,1 / 8 GiB"]
-```
+| PID | Usuario | Estado | CPU | Memoria | Comando |
+|-----|---------|--------|-----|---------|---------|
+| 1200 | ana | R | 37% | 82 MiB | simulador |
+| 1240 | ana | S | 02% | 18 MiB | editor |
+| 1241 | root | S | 00% | 06 MiB | servicio |
+
+*Resumen del sistema: CPU 42 % · RAM 5,1 / 8 GiB.*
 
 *Las abstracciones del sistema operativo pueden observarse en tiempo real: cada fila representa una tarea cuyo estado y consumo controla el núcleo.*
 

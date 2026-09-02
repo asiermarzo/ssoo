@@ -67,8 +67,18 @@ flowchart LR
     C["programa.c"] -->|"preprocesador · gcc -E"| I["texto expandido"]
     I -->|"compilador · gcc -S"| S["programa.s (ensamblador)"]
     S -->|"ensamblador · gcc -c"| O["programa.o (objeto)"]
-    O -->|"enlazador · gcc -o"| B["programa (binario ejecutable)"]
-    LIB["bibliotecas (libc, ...)"] -.-> B
+    O -->|"enlazador · gcc -o"| B(["programa (binario ejecutable)"])
+    LIB[("bibliotecas (libc, ...)")] -.-> B
+
+    classDef fuente fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef intermedio fill:#fdf3d0,stroke:#a06a1a,color:#222;
+    classDef binario fill:#d9ead3,stroke:#3a7a3a,color:#222;
+    classDef biblioteca fill:#d9d9d9,stroke:#555,color:#222;
+
+    class C fuente;
+    class I,S,O intermedio;
+    class B binario;
+    class LIB biblioteca;
 ```
 
 ## Herramientas

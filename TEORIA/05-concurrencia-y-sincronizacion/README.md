@@ -56,7 +56,6 @@ En un sistema monoprocesador multiprogramado los procesos se **intercalan** en e
   <rect x="310" y="50" width="90" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="355" y="72" text-anchor="middle" fill="#fff">Proc 2</text>
   <rect x="400" y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="445" y="72" text-anchor="middle">Proc 1</text>
   <line x1="40" y1="100" x2="520" y2="100" stroke="#333"/><path d="M520 96 l8 4 l-8 4 z" fill="#333"/><text x="534" y="104">tiempo</text>
-
   <text x="30" y="160" font-size="15" font-weight="bold">Paralelismo (2 CPU)</text>
   <rect x="40" y="180" width="440" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="260" y="202" text-anchor="middle">Proc 1  (CPU A)</text>
   <rect x="40" y="220" width="440" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="260" y="242" text-anchor="middle" fill="#fff">Proc 2  (CPU B)</text>
@@ -82,6 +81,13 @@ flowchart LR
     P1(("P1")) -->|accede alternativamente| R[(Recurso R)]
     P2(("P2")) -->|accede alternativamente| R
     P3(("P3")) -.->|inanición: nunca obtiene acceso| R
+
+    classDef activo fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef hambriento fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
+    classDef recurso fill:#d9d9d9,stroke:#555555,color:#222222;
+    class P1,P2 activo;
+    class P3 hambriento;
+    class R recurso;
 ```
 
 - Los recursos no compartibles a los que dos o más procesos desean acceder simultáneamente se denominan **recursos críticos**. La parte del programa en la que se accede a los recursos críticos es la **sección crítica**.
@@ -451,6 +457,9 @@ flowchart LR
     P1(("P1")) -->|espera SemA| P2(("P2"))
     P2 -->|espera SemB| P3(("P3"))
     P3 -->|espera SemC| P1
+
+    classDef bloqueado fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
+    class P1,P2,P3 bloqueado;
 ```
 
 ### Resolución del interbloqueo
@@ -514,8 +523,10 @@ sequenceDiagram
     participant B as Cajero B
     A->>S: lee 100 €
     B->>S: lee 100 €
+    rect rgb(251, 224, 224)
     A->>S: escribe 20 € tras retirar 80 €
     B->>S: escribe 30 € tras retirar 70 €
+    end
     Note over A,B: se autorizaron 150 € partiendo de 100 €
 ```
 
@@ -523,25 +534,40 @@ sequenceDiagram
 
 ### T05.2 · Exclusión mutua mediante una única llave
 
-```mermaid
-flowchart LR
-    A[Trabajador A] -->|solicita| K{{"ÚNICA LLAVE<br/>mutex"}}
-    B[Trabajador B] -->|espera| K
-    K -->|propietario actual| R["Sala del recurso<br/>SECCIÓN CRÍTICA"]
-    R -->|devuelve la llave| K
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" font-family="sans-serif" font-size="13" role="img" aria-label="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
+  <rect width="620" height="200" fill="#ffffff"/>
+  <text x="20" y="30" font-weight="bold">Trabajador A</text>
+  <rect x="150" y="15" width="180" height="30" fill="#57c78a" stroke="#2e7d4f"/><text x="240" y="35" text-anchor="middle">tiene la llave · SC</text>
+  <rect x="330" y="15" width="120" height="30" fill="#eeeeee" stroke="#999"/><text x="390" y="35" text-anchor="middle" fill="#777">espera</text>
+  <text x="20" y="90" font-weight="bold">Trabajador B</text>
+  <rect x="150" y="75" width="180" height="30" fill="#eeeeee" stroke="#999"/><text x="240" y="95" text-anchor="middle" fill="#777">espera la llave</text>
+  <rect x="330" y="75" width="120" height="30" fill="#3f9dd6" stroke="#2b6f99"/><text x="390" y="95" text-anchor="middle" fill="#fff">tiene la llave · SC</text>
+  <line x1="150" y1="130" x2="600" y2="130" stroke="#333"/><path d="M600 126 l8 4 l-8 4 z" fill="#333"/><text x="610" y="134" font-size="12">t</text>
+  <line x1="330" y1="120" x2="330" y2="140" stroke="#333" stroke-dasharray="3 3"/>
+  <text x="330" y="155" text-anchor="middle" font-size="12">A libera la llave</text>
+  <text x="240" y="185" text-anchor="middle" font-size="12" fill="#555">la llave (mutex) solo puede estar en una mano: mientras A la tiene, B espera</text>
+</svg>
 
 *El mutex garantiza que solo una ejecución entre en la sección crítica. Las demás esperan hasta que el propietario libere el recurso.*
 
 ### T05.3 · Productor y consumidor en una cinta
 
-```mermaid
-flowchart LR
-    P[Productor] -->|produce| B[["búfer limitado<br/>▣ ▣ ▣ □"]]
-    B -->|consume| C[Consumidor]
-    B -. lleno: productor espera .-> P
-    B -. vacío: consumidor espera .-> C
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 220" font-family="sans-serif" font-size="13" role="img" aria-label="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
+  <rect width="560" height="220" fill="#ffffff"/>
+  <rect x="40" y="80" width="70" height="50" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="75" y="108" text-anchor="middle">Productor</text>
+  <rect x="180" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="224" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="268" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="312" y="85" width="42" height="42" fill="#ffffff" stroke="#999"/>
+  <text x="267" y="70" text-anchor="middle" font-size="12">búfer circular (3 llenas, 1 vacía)</text>
+  <rect x="450" y="80" width="70" height="50" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="485" y="108" text-anchor="middle">Consumidor</text>
+  <line x1="112" y1="106" x2="178" y2="106" stroke="#2e7d4f" stroke-width="2"/><path d="M178 106 l-10 -4 l0 8 z" fill="#2e7d4f"/><text x="145" y="96" text-anchor="middle" font-size="11">deposita</text>
+  <line x1="356" y1="106" x2="448" y2="106" stroke="#2b6f99" stroke-width="2"/><path d="M448 106 l-10 -4 l0 8 z" fill="#2b6f99"/><text x="400" y="96" text-anchor="middle" font-size="11">retira</text>
+  <path d="M180 130 Q 110 175 60 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M60 132 l4 12 l10 -6 z" fill="#b03030"/>
+  <text x="120" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está lleno, el productor espera</text>
+  <path d="M354 130 Q 430 175 480 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M480 132 l-13 -2 l3 -11 z" fill="#b03030"/>
+  <text x="420" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está vacío, el consumidor espera</text>
+</svg>
 
 *Productor y consumidor deben coordinarse: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.*
 
@@ -553,19 +579,23 @@ flowchart LR
 
 ### T05.5 · Los filósofos comensales
 
-```mermaid
-flowchart LR
-    P1((Filósofo 1)) -->|toma| T1[Tenedor 1]
-    T1 --> P2((Filósofo 2))
-    P2 -->|toma| T2[Tenedor 2]
-    T2 --> P3((Filósofo 3))
-    P3 -->|toma| T3[Tenedor 3]
-    T3 --> P4((Filósofo 4))
-    P4 -->|toma| T4[Tenedor 4]
-    T4 --> P5((Filósofo 5))
-    P5 -->|toma| T5[Tenedor 5]
-    T5 --> P1
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
+  <rect width="340" height="340" fill="#ffffff"/>
+  <circle cx="170" cy="170" r="120" fill="none" stroke="#ccc" stroke-dasharray="2 4"/>
+  <circle cx="170" cy="50"  r="26" fill="#ffe14d" stroke="#b59a00"/><text x="170" y="55" text-anchor="middle">F1</text>
+  <circle cx="284" cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="284" y="138" text-anchor="middle">F2</text>
+  <circle cx="240" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="240" y="272" text-anchor="middle">F3</text>
+  <circle cx="100" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="100" y="272" text-anchor="middle">F4</text>
+  <circle cx="56"  cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="56"  y="138" text-anchor="middle">F5</text>
+  <g stroke="#555" stroke-width="3">
+    <line x1="232" y1="73"  x2="248" y2="57"/>
+    <line x1="278" y1="197" x2="296" y2="205"/>
+    <line x1="170" y1="253" x2="170" y2="275"/>
+    <line x1="62"  y1="205" x2="44"  y2="213"/>
+    <line x1="108" y1="73"  x2="92"  y2="57"/>
+  </g>
+  <text x="170" y="320" text-anchor="middle" font-size="12" fill="#555">cada tenedor (—) es un recurso compartido por dos filósofos vecinos</text>
+</svg>
 
 *El problema de los filósofos muestra cómo competir por varios recursos puede causar bloqueo o inanición incluso cuando cada participante sigue una regla aparentemente razonable.*
 

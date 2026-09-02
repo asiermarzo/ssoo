@@ -28,6 +28,16 @@ flowchart LR
         G["stdin redirigido desde la pipe con dup2"]
     end
     M ==> PIPE[["pipe"]] ==> G ==> TTY["terminal"]
+
+    classDef hijo1 fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef hijo2 fill:#d9ead3,stroke:#3a7a3a,color:#222;
+    classDef nucleo fill:#d9d9d9,stroke:#555,color:#222;
+    classDef terminal fill:#eef2f7,stroke:#444,color:#222;
+
+    class M hijo1;
+    class G hijo2;
+    class PIPE nucleo;
+    class TTY terminal;
 ```
 
 Redirección `orden < entrada > salida` — se abre el fichero y se duplica sobre el descriptor 0 ó 1 antes del `execvp`:
@@ -36,6 +46,14 @@ Redirección `orden < entrada > salida` — se abre el fichero y se duplica sobr
 flowchart LR
     IN["fichero de entrada"] -->|"open + dup2(fd, 0)"| CMD(("comando"))
     CMD -->|"open + dup2(fd, 1)"| OUT["fichero de salida"]
+
+    classDef entrada fill:#fdf3d0,stroke:#a06a1a,color:#222;
+    classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef salida fill:#d9ead3,stroke:#3a7a3a,color:#222;
+
+    class IN entrada;
+    class CMD proceso;
+    class OUT salida;
 ```
 
 ## Biblioteca `fragmenta`

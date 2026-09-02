@@ -22,6 +22,17 @@ flowchart TD
     DISP -->|SIG_DFL| DEF["acción por defecto: Term / Core / Stop / Ign / Cont"]
     DISP -->|SIG_IGN| IGN["se descarta"]
     DISP -->|manejador| H["se ejecuta el manejador y se reanuda el proceso"]
+
+    classDef origen fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef decision fill:#fdf3d0,stroke:#333,color:#000;
+    classDef bloqueada fill:#fbe0e0,stroke:#333,color:#000;
+    classDef ok fill:#d9ead3,stroke:#333,color:#000;
+    classDef neutro fill:#d9d9d9,stroke:#333,color:#000;
+    class SRC,PEND origen;
+    class M,DISP decision;
+    class WAIT,DEF bloqueada;
+    class H ok;
+    class IGN neutro;
 ```
 
 Detalle y tabla de señales: [`PRACTICA/04`](../../PRACTICA/04-senales/).
@@ -36,9 +47,11 @@ sequenceDiagram
     participant K as Núcleo
     participant H as Manejador
     K-->>P: señal · aviso inesperado
-    P->>P: guarda el punto de reanudación
-    P->>H: ejecuta una acción breve
-    H-->>P: retorna
+    rect rgb(252, 229, 168)
+        P->>P: guarda el punto de reanudación
+        P->>H: ejecuta una acción breve
+        H-->>P: retorna
+    end
     P->>P: continúa donde estaba
 ```
 
@@ -52,8 +65,19 @@ flowchart LR
     T --> SO["núcleo genera SIGINT"]
     SO --> FG["grupo de procesos<br/>en primer plano"]
     FG --> D{"disposición"}
-    D -->|por defecto| F[terminar]
-    D -->|manejador| H[atender y continuar]
+    D -->|por defecto| F(("terminar"))
+    D -->|manejador| H["atender y continuar"]
+
+    classDef hw fill:#d9d9d9,stroke:#333,color:#000;
+    classDef nucleo fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef fin fill:#fbe0e0,stroke:#333,color:#000;
+    classDef ok fill:#d9ead3,stroke:#333,color:#000;
+    class K,T hw;
+    class SO nucleo;
+    class FG proceso;
+    class F fin;
+    class H ok;
 ```
 
 *Al pulsar `Ctrl+C`, el terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.*
@@ -68,6 +92,13 @@ stateDiagram-v2
     Pendiente --> Entregada: se retira de la máscara
     Generada --> Entregada: no está bloqueada
     Entregada --> [*]
+
+    classDef generada fill:#cfe2f3,stroke:#2b6f99,color:#000
+    classDef pendiente fill:#fbe0e0,stroke:#333,color:#000
+    classDef entregada fill:#d9ead3,stroke:#333,color:#000
+    class Generada generada
+    class Pendiente pendiente
+    class Entregada entregada
 ```
 
 *Bloquear una señal no implica necesariamente descartarla: puede permanecer pendiente hasta que la máscara permita su entrega.*
@@ -78,9 +109,18 @@ stateDiagram-v2
 flowchart TB
     TERM["SIGTERM<br/>petición de cierre"] --> P{"¿hay manejador?"}
     P -->|sí| L["guardar estado<br/>cerrar ficheros<br/>liberar recursos"]
-    P -->|no| X[terminar]
+    P -->|no| X(("terminar"))
     L --> X
     KILL["SIGKILL<br/>terminación forzosa"] --> D["el núcleo termina el proceso<br/>no se captura ni se ignora"]
+
+    classDef term fill:#fdf3d0,stroke:#333,color:#000;
+    classDef decision fill:#fdf3d0,stroke:#333,color:#000;
+    classDef ok fill:#d9ead3,stroke:#333,color:#000;
+    classDef fin fill:#fbe0e0,stroke:#333,color:#000;
+    class TERM term;
+    class P decision;
+    class L ok;
+    class X,KILL,D fin;
 ```
 
 *`SIGTERM` permite que el proceso responda y libere recursos. `SIGKILL` no puede capturarse ni ignorarse y provoca su terminación inmediata.*

@@ -23,18 +23,35 @@ flowchart TD
     CR[Control de recursos] --> SO
     PL[Planificación] --> SO
     SV[Servicios] --> SO
+
+    classDef core fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef func fill:#eef2f7,stroke:#555,color:#000;
+    class SO core;
+    class CP,CR,PL,SV func;
 ```
 
 ## 1.2 Componentes del sistema operativo
 
 El software de un computador se organiza en capas sobre el hardware. El sistema operativo se sitúa entre el hardware y el resto del software (compiladores, ensambladores, utilidades y aplicaciones):
 
-```mermaid
-flowchart TD
-    A[Aplicaciones] --> U[Utilidades]
-    U --> SO[Sistema operativo]
-    SO --> HW[Hardware]
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 300" font-family="sans-serif" font-size="14" role="img" aria-label="Capas de software: aplicaciones, utilidades, sistema operativo y hardware apilados">
+  <rect width="460" height="300" fill="#ffffff"/>
+  <rect x="50" y="20" width="360" height="55" fill="#cfe2f3" stroke="#333"/>
+  <text x="230" y="53" text-anchor="middle">Aplicaciones</text>
+  <path d="M 230 75 L 230 85 L 224 85 M 230 85 L 236 85" stroke="#333" fill="none"/>
+  <line x1="230" y1="75" x2="230" y2="85" stroke="#333"/>
+  <path d="M 224 82 L 230 88 L 236 82" fill="none" stroke="#333"/>
+  <rect x="50" y="88" width="360" height="55" fill="#d9ead3" stroke="#333"/>
+  <text x="230" y="121" text-anchor="middle">Utilidades</text>
+  <line x1="230" y1="143" x2="230" y2="153" stroke="#333"/>
+  <path d="M 224 150 L 230 156 L 236 150" fill="none" stroke="#333"/>
+  <rect x="50" y="156" width="360" height="55" fill="#fff2cc" stroke="#333"/>
+  <text x="230" y="189" text-anchor="middle">Sistema operativo</text>
+  <line x1="230" y1="211" x2="230" y2="221" stroke="#333"/>
+  <path d="M 224 218 L 230 224 L 236 218" fill="none" stroke="#333"/>
+  <rect x="50" y="224" width="360" height="55" fill="#e2e2e2" stroke="#333"/>
+  <text x="230" y="257" text-anchor="middle">Hardware</text>
+</svg>
 
 Por debajo del sistema operativo hay una máquina física que sigue la **arquitectura de Von Neumann**.
 
@@ -42,19 +59,31 @@ Por debajo del sistema operativo hay una máquina física que sigue la **arquite
 
 En ella se basan los ordenadores actuales: la máquina tiene un conjunto **fijo** de componentes electrónicos cuyas acciones están determinadas por un **programa variable**.
 
-```mermaid
-flowchart TB
-    subgraph CPU["Unidad Central de Procesamiento (CPU)"]
-        ALU["Unidad Aritmético-Lógica (ALU)"]
-        CU["Unidad de Control (CU)"]
-    end
-    CPU --- BD["bus de direcciones"]
-    CPU --- BDA["bus de datos"]
-    BD --- MP["Memoria principal (memoria de ejecución)"]
-    BDA --- MP
-    BD --- ES["Dispositivos de E/S"]
-    BDA --- ES
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" font-family="sans-serif" font-size="13" role="img" aria-label="Arquitectura de Von Neumann: CPU conectada por bus de direcciones y de datos a la memoria principal y a los dispositivos de E/S">
+  <rect width="640" height="360" fill="#ffffff"/>
+  <rect x="190" y="20" width="260" height="100" fill="#9dc3e6" stroke="#333"/>
+  <text x="320" y="36" text-anchor="middle" font-weight="bold" font-size="12">Unidad Central de Procesamiento (CPU)</text>
+  <rect x="205" y="55" width="110" height="50" fill="#cfe2f3" stroke="#333"/>
+  <text x="260" y="76" text-anchor="middle" font-size="11">Unidad Aritmético-</text>
+  <text x="260" y="90" text-anchor="middle" font-size="11">Lógica (ALU)</text>
+  <rect x="330" y="55" width="105" height="50" fill="#cfe2f3" stroke="#333"/>
+  <text x="382" y="76" text-anchor="middle" font-size="11">Unidad de</text>
+  <text x="382" y="90" text-anchor="middle" font-size="11">Control (CU)</text>
+  <line x1="320" y1="120" x2="320" y2="220" stroke="#333"/>
+  <line x1="60" y1="180" x2="580" y2="180" stroke="#c9622f" stroke-width="3"/>
+  <text x="65" y="173" font-size="12">bus de direcciones</text>
+  <line x1="60" y1="220" x2="580" y2="220" stroke="#c9622f" stroke-width="3"/>
+  <text x="65" y="238" font-size="12">bus de datos</text>
+  <line x1="150" y1="180" x2="150" y2="270" stroke="#333"/>
+  <line x1="190" y1="220" x2="190" y2="270" stroke="#333"/>
+  <line x1="450" y1="180" x2="450" y2="270" stroke="#333"/>
+  <line x1="490" y1="220" x2="490" y2="270" stroke="#333"/>
+  <rect x="80" y="270" width="200" height="60" fill="#d9ead3" stroke="#333"/>
+  <text x="180" y="296" text-anchor="middle" font-size="12">Memoria principal</text>
+  <text x="180" y="312" text-anchor="middle" font-size="11">(memoria de ejecución)</text>
+  <rect x="380" y="270" width="200" height="60" fill="#d9ead3" stroke="#333"/>
+  <text x="480" y="305" text-anchor="middle" font-size="12">Dispositivos de E/S</text>
+</svg>
 
 ### Unidad de Control (CU)
 
@@ -66,16 +95,21 @@ Se encarga de obtener y ejecutar las instrucciones contenidas en la memoria prin
 - contador de programa (**PC**),
 - registro de instrucción (**IR**).
 
-```mermaid
-flowchart TB
-    subgraph CU["Unidad de Control (CU)"]
-        UO[Unidad de obtención]
-        UD[Unidad de decodificación]
-        UF[Unidad funcional]
-        PC[PC]
-        IR[IR]
-    end
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 260" font-family="sans-serif" font-size="13" role="img" aria-label="Componentes de la Unidad de Control: unidad de obtención, de decodificación, funcional, PC e IR">
+  <rect width="560" height="260" fill="#ffffff"/>
+  <rect x="20" y="20" width="520" height="220" fill="#1f3864"/>
+  <text x="35" y="45" fill="#ffffff" font-weight="bold" font-size="14">Unidad de Control (CU)</text>
+  <rect x="40" y="60" width="280" height="50" fill="#fce5a8" stroke="#333"/>
+  <text x="180" y="90" text-anchor="middle">Unidad de obtención</text>
+  <rect x="40" y="120" width="280" height="50" fill="#fce5a8" stroke="#333"/>
+  <text x="180" y="150" text-anchor="middle">Unidad de decodificación</text>
+  <rect x="40" y="180" width="280" height="50" fill="#fce5a8" stroke="#333"/>
+  <text x="180" y="210" text-anchor="middle">Unidad funcional</text>
+  <rect x="340" y="80" width="180" height="50" fill="#fce5a8" stroke="#333"/>
+  <text x="430" y="110" text-anchor="middle">PC</text>
+  <rect x="340" y="160" width="180" height="50" fill="#fce5a8" stroke="#333"/>
+  <text x="430" y="190" text-anchor="middle">IR</text>
+</svg>
 
 La ejecución de un fragmento de código de alto nivel se traduce a instrucciones máquina que operan sobre registros (`R1`, `R2`, …, `Rn`), la unidad funcional y los registros de estado, intercambiando datos con la memoria primaria:
 
@@ -107,6 +141,11 @@ flowchart LR
     REG -->|"operando izquierdo"| UF
     REG -->|"operando derecho"| UF
     UF -->|"resultado"| RE
+
+    classDef memoria fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    class MP memoria;
+    class REG,UF,RE cpu;
 ```
 
 ### Memoria Principal (PM)
@@ -148,6 +187,13 @@ flowchart LR
     C --> E[Ejecución de la instrucción]
     E --> C
     E --> H((Halt))
+
+    classDef inicio fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef fin fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef paso fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    class S inicio;
+    class H fin;
+    class C,E paso;
 ```
 
 ### Interrupciones
@@ -185,6 +231,15 @@ flowchart TD
     E -->|interrupción habilitada| I[Ciclo de interrupción: espera de interrupciones / interrupción del proceso]
     I --> B
     E --> B
+
+    classDef inicio fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef fin fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef paso fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef interrupcion fill:#fce5a8,stroke:#a67c00,color:#000;
+    class S inicio;
+    class H fin;
+    class B,E paso;
+    class I interrupcion;
 ```
 
 **Interrupciones simultáneas.** Cuando se producen varias interrupciones a la vez se puede:
@@ -196,14 +251,26 @@ flowchart TD
 
 De más rápida y pequeña (arriba) a más lenta y grande (abajo):
 
-```mermaid
-flowchart TD
-    R[Registros] --> C[Caché]
-    C --> MP[Memoria Principal]
-    MP --> CD[Caché del disco]
-    CD --> DM[Discos magnéticos]
-    DM --> UO[Unidades magnéticas y ópticas]
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 350" font-family="sans-serif" font-size="12" role="img" aria-label="Pirámide de la jerarquía de memoria, de registros arriba a unidades magnéticas y ópticas abajo">
+  <rect width="620" height="350" fill="#ffffff"/>
+  <polygon points="280,20 330,70 230,70" fill="#d9ead3" stroke="#333"/>
+  <text x="280" y="60" text-anchor="middle" font-size="11">Registros</text>
+  <polygon points="230,70 330,70 370,120 190,120" fill="#cfe2f3" stroke="#333"/>
+  <text x="280" y="102" text-anchor="middle" font-size="11">Caché</text>
+  <polygon points="190,120 370,120 410,180 150,180" fill="#fce5a8" stroke="#333"/>
+  <text x="280" y="155" text-anchor="middle" font-size="12">Memoria Principal</text>
+  <polygon points="150,180 410,180 450,230 110,230" fill="#f4cccc" stroke="#333"/>
+  <text x="280" y="210" text-anchor="middle" font-size="12">Caché del disco</text>
+  <polygon points="110,230 450,230 490,285 70,285" fill="#e2c9f7" stroke="#333"/>
+  <text x="280" y="262" text-anchor="middle" font-size="12">Discos magnéticos</text>
+  <polygon points="70,285 490,285 530,330 30,330" fill="#e2e2e2" stroke="#333"/>
+  <text x="280" y="312" text-anchor="middle" font-size="12">Unidades magnéticas y ópticas</text>
+  <line x1="560" y1="30" x2="560" y2="320" stroke="#333"/>
+  <path d="M 554 38 L 560 30 L 566 38" fill="#333"/>
+  <path d="M 554 312 L 560 320 L 566 312" fill="#333"/>
+  <text x="600" y="35" text-anchor="end" font-size="11">rápida / pequeña</text>
+  <text x="600" y="322" text-anchor="end" font-size="11">lenta / grande</text>
+</svg>
 
 ## 1.4 Características de los sistemas operativos
 
@@ -228,25 +295,64 @@ Visión general: el sistema operativo es una **colección de procedimientos**.
 
 Comparativa de estructuras (usuario / núcleo):
 
-```mermaid
-flowchart TB
-    subgraph MONO["Monolítico"]
-        direction TB
-        AM[Application] --- KM["VFS, llamadas al sistema · IPC, sistema de ficheros · planificador, memoria virtual · drivers, dispatcher"]
-        KM --- HM[Hardware]
-    end
-    subgraph MICRO["Microkernel"]
-        direction TB
-        Am[Application] --- Sm["servidores en espacio de usuario: App IPC · Unix server · device driver · file server"]
-        Sm --- Km["núcleo: IPC básica, memoria virtual, planificación"]
-        Km --- Hm[Hardware]
-    end
-    subgraph HYB["Híbrido"]
-        direction TB
-        Ah[Application] --- Kh["parte de los servidores (file server, Unix server) dentro del núcleo por rendimiento"]
-        Kh --- Hh[Hardware]
-    end
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" font-family="sans-serif" font-size="11" role="img" aria-label="Comparativa de estructuras: monolítico, microkernel e híbrido, con espacio de usuario y espacio de núcleo">
+  <rect width="800" height="340" fill="#ffffff"/>
+  <!-- Monolítico -->
+  <text x="140" y="15" text-anchor="middle" font-weight="bold" font-size="13">Monolítico</text>
+  <rect x="95" y="30" width="90" height="28" fill="#d9ead3" stroke="#333"/>
+  <text x="140" y="48" text-anchor="middle">Application</text>
+  <rect x="20" y="58" width="240" height="22" fill="#eaf2fb" stroke="#333"/>
+  <text x="140" y="73" text-anchor="middle" font-size="10">espacio de usuario</text>
+  <rect x="20" y="80" width="240" height="200" fill="#fbe8e8" stroke="#333"/>
+  <text x="140" y="94" text-anchor="middle" font-size="10">espacio de núcleo</text>
+  <rect x="35" y="100" width="210" height="160" fill="#f4b6a2" stroke="#333"/>
+  <text x="140" y="150" text-anchor="middle" font-size="10">VFS, llamadas al sistema</text>
+  <text x="140" y="168" text-anchor="middle" font-size="10">IPC, sistema de ficheros</text>
+  <text x="140" y="186" text-anchor="middle" font-size="10">Planificador, memoria virtual</text>
+  <text x="140" y="204" text-anchor="middle" font-size="10">Drivers, dispatcher</text>
+  <rect x="95" y="286" width="90" height="26" fill="#d9d9d9" stroke="#333"/>
+  <text x="140" y="303" text-anchor="middle">Hardware</text>
+  <!-- Microkernel -->
+  <text x="400" y="15" text-anchor="middle" font-weight="bold" font-size="13">Microkernel</text>
+  <rect x="355" y="30" width="90" height="28" fill="#d9ead3" stroke="#333"/>
+  <text x="400" y="48" text-anchor="middle">Application</text>
+  <rect x="280" y="58" width="240" height="112" fill="#eaf2fb" stroke="#333"/>
+  <text x="400" y="72" text-anchor="middle" font-size="10">espacio de usuario: servidores</text>
+  <rect x="288" y="80" width="52" height="80" fill="#cfe2f3" stroke="#333"/>
+  <text x="314" y="115" text-anchor="middle" font-size="9">App IPC</text>
+  <rect x="344" y="80" width="52" height="80" fill="#cfe2f3" stroke="#333"/>
+  <text x="370" y="112" text-anchor="middle" font-size="9">Unix</text>
+  <text x="370" y="124" text-anchor="middle" font-size="9">server</text>
+  <rect x="400" y="80" width="52" height="80" fill="#cfe2f3" stroke="#333"/>
+  <text x="426" y="112" text-anchor="middle" font-size="9">Device</text>
+  <text x="426" y="124" text-anchor="middle" font-size="9">driver</text>
+  <rect x="456" y="80" width="52" height="80" fill="#cfe2f3" stroke="#333"/>
+  <text x="482" y="112" text-anchor="middle" font-size="9">File</text>
+  <text x="482" y="124" text-anchor="middle" font-size="9">server</text>
+  <rect x="280" y="170" width="240" height="110" fill="#fbe8e8" stroke="#333"/>
+  <text x="400" y="184" text-anchor="middle" font-size="10">espacio de núcleo</text>
+  <rect x="295" y="195" width="210" height="70" fill="#f4b6a2" stroke="#333"/>
+  <text x="400" y="222" text-anchor="middle" font-size="10">IPC básica, memoria virtual,</text>
+  <text x="400" y="238" text-anchor="middle" font-size="10">planificación</text>
+  <rect x="355" y="286" width="90" height="26" fill="#d9d9d9" stroke="#333"/>
+  <text x="400" y="303" text-anchor="middle">Hardware</text>
+  <!-- Híbrido -->
+  <text x="660" y="15" text-anchor="middle" font-weight="bold" font-size="13">Híbrido</text>
+  <rect x="615" y="30" width="90" height="28" fill="#d9ead3" stroke="#333"/>
+  <text x="660" y="48" text-anchor="middle">Application</text>
+  <rect x="540" y="58" width="240" height="22" fill="#eaf2fb" stroke="#333"/>
+  <text x="660" y="73" text-anchor="middle" font-size="10">espacio de usuario</text>
+  <rect x="540" y="80" width="240" height="200" fill="#fbe8e8" stroke="#333"/>
+  <text x="660" y="94" text-anchor="middle" font-size="10">espacio de núcleo</text>
+  <rect x="555" y="100" width="210" height="110" fill="#f4b6a2" stroke="#333"/>
+  <text x="660" y="150" text-anchor="middle" font-size="10">IPC básica, memoria virtual,</text>
+  <text x="660" y="166" text-anchor="middle" font-size="10">planificación</text>
+  <rect x="555" y="220" width="210" height="40" fill="#e69138" stroke="#333"/>
+  <text x="660" y="236" text-anchor="middle" font-size="9" fill="#fff">file server, Unix server</text>
+  <text x="660" y="250" text-anchor="middle" font-size="9" fill="#fff">(en núcleo por rendimiento)</text>
+  <rect x="615" y="286" width="90" height="26" fill="#d9d9d9" stroke="#333"/>
+  <text x="660" y="303" text-anchor="middle">Hardware</text>
+</svg>
 
 ### Sistemas monolíticos
 
@@ -319,7 +425,6 @@ Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas
   <rect x="590" y="45" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="645" y="65" text-anchor="middle" fill="#fff">Tarea 2</text>
   <rect x="190" y="85" width="90"  height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="235" y="105" text-anchor="middle">Tarea 1</text>
   <rect x="500" y="85" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="545" y="105" text-anchor="middle" fill="#fff">Tarea 2</text>
-
   <text x="20" y="180" font-size="15" font-weight="bold">Multiprogramado</text>
   <text x="70" y="214" text-anchor="end">CPU</text>
   <text x="70" y="254" text-anchor="end">E/S</text>
@@ -330,7 +435,6 @@ Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas
   <rect x="390" y="197" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="435" y="217" text-anchor="middle" fill="#fff">Tarea 2</text>
   <rect x="190" y="237" width="90"  height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="235" y="257" text-anchor="middle">Tarea 1</text>
   <rect x="280" y="237" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="335" y="257" text-anchor="middle" fill="#fff">Tarea 2</text>
-
   <line x1="80" y1="300" x2="710" y2="300" stroke="#333"/>
   <path d="M 710 296 L 718 300 L 710 304 z" fill="#333"/>
   <text x="724" y="304">tiempo</text>
@@ -456,13 +560,24 @@ Comparación batch multiprogramado vs tiempo compartido:
 
 ### T01.4 · La jerarquía de memoria como espacio de trabajo
 
-```mermaid
-flowchart LR
-    R["Bandeja inmediata<br/>REGISTROS<br/>mínima · ultrarrápida"] --> C["Mesa auxiliar<br/>CACHÉ<br/>pequeña · muy rápida"]
-    C --> M["Mesa de trabajo<br/>RAM<br/>capacidad media"]
-    M --> D["Archivador<br/>SSD / DISCO<br/>grande · persistente"]
-    D --> T["Almacén<br/>CINTA / ARCHIVO<br/>enorme · lento"]
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 330" font-family="sans-serif" font-size="11" role="img" aria-label="Pirámide metafórica de la jerarquía de memoria como espacio de trabajo físico">
+  <rect width="620" height="330" fill="#ffffff"/>
+  <polygon points="280,20 330,70 230,70" fill="#d9ead3" stroke="#333"/>
+  <text x="280" y="50" text-anchor="middle" font-weight="bold" font-size="10">Bandeja inmediata</text>
+  <text x="280" y="63" text-anchor="middle" font-size="9">REGISTROS</text>
+  <polygon points="230,70 330,70 370,130 190,130" fill="#cfe2f3" stroke="#333"/>
+  <text x="280" y="98" text-anchor="middle" font-weight="bold" font-size="10">Mesa auxiliar</text>
+  <text x="280" y="112" text-anchor="middle" font-size="9">CACHÉ · pequeña, muy rápida</text>
+  <polygon points="190,130 370,130 410,190 150,190" fill="#fce5a8" stroke="#333"/>
+  <text x="280" y="158" text-anchor="middle" font-weight="bold" font-size="11">Mesa de trabajo</text>
+  <text x="280" y="174" text-anchor="middle" font-size="9">RAM · capacidad media</text>
+  <polygon points="150,190 410,190 450,250 110,250" fill="#f4cccc" stroke="#333"/>
+  <text x="280" y="218" text-anchor="middle" font-weight="bold" font-size="11">Archivador</text>
+  <text x="280" y="234" text-anchor="middle" font-size="9">SSD / DISCO · grande, persistente</text>
+  <polygon points="110,250 450,250 490,320 70,320" fill="#e2e2e2" stroke="#333"/>
+  <text x="280" y="280" text-anchor="middle" font-weight="bold" font-size="11">Almacén</text>
+  <text x="280" y="296" text-anchor="middle" font-size="9">CINTA / ARCHIVO · enorme, lento</text>
+</svg>
 
 *Cuanto más cerca está la memoria de la CPU, más rápida y costosa es, pero también menor es su capacidad.*
 
@@ -474,9 +589,11 @@ sequenceDiagram
     participant D as Dispositivo de E/S
     CPU->>D: inicia una operación
     CPU->>CPU: ejecuta otro proceso
-    D-->>CPU: interrupción: operación terminada
-    CPU->>CPU: guarda contexto y atiende el evento
-    CPU-->>CPU: reanuda el trabajo interrumpido
+    rect rgb(253, 238, 242)
+        D-->>CPU: interrupción: operación terminada
+        CPU->>CPU: guarda contexto y atiende el evento
+        CPU-->>CPU: reanuda el trabajo interrumpido
+    end
 ```
 
 *Una interrupción permite que el procesador haga otro trabajo mientras espera a un dispositivo y recupere la operación cuando este anuncia que ha terminado.*
@@ -504,19 +621,40 @@ timeline
 
 ### T01.8 · Máquinas virtuales y contenedores
 
-```mermaid
-flowchart TB
-    subgraph VM["Máquinas virtuales: viviendas completas"]
-        HW1[Hardware] --> H[Hipervisor]
-        H --> V1["VM 1<br/>SO invitado + aplicaciones"]
-        H --> V2["VM 2<br/>SO invitado + aplicaciones"]
-    end
-    subgraph CT["Contenedores: espacios aislados con servicios comunes"]
-        HW2[Hardware] --> K[SO anfitrión · núcleo compartido]
-        K --> C1["Contenedor 1<br/>aplicación + dependencias"]
-        K --> C2["Contenedor 2<br/>aplicación + dependencias"]
-    end
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" font-family="sans-serif" font-size="11" role="img" aria-label="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
+  <rect width="700" height="300" fill="#ffffff"/>
+  <text x="165" y="22" text-anchor="middle" font-weight="bold" font-size="13">Máquinas virtuales</text>
+  <text x="165" y="37" text-anchor="middle" font-size="10" font-style="italic">viviendas completas</text>
+  <rect x="50" y="50" width="110" height="70" fill="#cfe2f3" stroke="#333"/>
+  <text x="105" y="75" text-anchor="middle" font-size="10">VM 1</text>
+  <text x="105" y="90" text-anchor="middle" font-size="9">SO invitado +</text>
+  <text x="105" y="103" text-anchor="middle" font-size="9">aplicaciones</text>
+  <rect x="170" y="50" width="110" height="70" fill="#cfe2f3" stroke="#333"/>
+  <text x="225" y="75" text-anchor="middle" font-size="10">VM 2</text>
+  <text x="225" y="90" text-anchor="middle" font-size="9">SO invitado +</text>
+  <text x="225" y="103" text-anchor="middle" font-size="9">aplicaciones</text>
+  <rect x="50" y="120" width="230" height="45" fill="#fce5a8" stroke="#333"/>
+  <text x="165" y="147" text-anchor="middle">Hipervisor</text>
+  <rect x="50" y="165" width="230" height="35" fill="#d9d9d9" stroke="#333"/>
+  <text x="165" y="188" text-anchor="middle">Hardware</text>
+  <text x="505" y="22" text-anchor="middle" font-weight="bold" font-size="13">Contenedores</text>
+  <text x="505" y="37" text-anchor="middle" font-size="10" font-style="italic">espacios aislados, núcleo común</text>
+  <rect x="390" y="50" width="110" height="70" fill="#d9ead3" stroke="#333"/>
+  <text x="445" y="75" text-anchor="middle" font-size="10">Contenedor 1</text>
+  <text x="445" y="90" text-anchor="middle" font-size="9">aplicación +</text>
+  <text x="445" y="103" text-anchor="middle" font-size="9">dependencias</text>
+  <rect x="510" y="50" width="110" height="70" fill="#d9ead3" stroke="#333"/>
+  <text x="565" y="75" text-anchor="middle" font-size="10">Contenedor 2</text>
+  <text x="565" y="90" text-anchor="middle" font-size="9">aplicación +</text>
+  <text x="565" y="103" text-anchor="middle" font-size="9">dependencias</text>
+  <rect x="390" y="120" width="230" height="45" fill="#fce5a8" stroke="#333"/>
+  <text x="505" y="140" text-anchor="middle" font-size="10">SO anfitrión</text>
+  <text x="505" y="154" text-anchor="middle" font-size="9">núcleo compartido</text>
+  <rect x="390" y="165" width="230" height="35" fill="#d9d9d9" stroke="#333"/>
+  <text x="505" y="188" text-anchor="middle">Hardware</text>
+  <text x="165" y="225" text-anchor="middle" font-size="10" fill="#555">cada VM incluye su propio SO invitado</text>
+  <text x="505" y="225" text-anchor="middle" font-size="10" fill="#555">los contenedores comparten el núcleo del anfitrión</text>
+</svg>
 
 *La virtualización permite ejecutar varios entornos aislados sobre una misma máquina física. Las máquinas virtuales reproducen un sistema completo; los contenedores comparten el núcleo.*
 

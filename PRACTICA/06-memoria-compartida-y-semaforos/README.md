@@ -35,6 +35,16 @@ flowchart TD
     A["proceso A<br/>shmget → shmat → puntero"] <--> SEG
     B["proceso B<br/>shmget → shmat → puntero"] <--> SEG
     C["proceso C<br/>shmget → shmat → puntero"] <--> SEG
+
+    classDef nucleo fill:#d9d9d9,stroke:#555,color:#222;
+    classDef procA fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef procB fill:#d9ead3,stroke:#3a7a3a,color:#222;
+    classDef procC fill:#fce5a8,stroke:#a06a1a,color:#222;
+
+    class SEG nucleo;
+    class A procA;
+    class B procB;
+    class C procC;
 ```
 
 ### `shmget` — crear / obtener
@@ -107,6 +117,16 @@ flowchart TD
     Q -->|no| BL["proceso bloqueado en la cola del semáforo"]
     BL -. otro proceso hace signal .-> CS
     CS --> S["semop(sem, +1)  ·  SIGNAL / V<br/>(despierta a un proceso bloqueado)"]
+
+    classDef accion fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef decision fill:#fce5a8,stroke:#a06a1a,color:#222;
+    classDef critica fill:#d9ead3,stroke:#3a7a3a,color:#222;
+    classDef bloqueado fill:#fbe0e0,stroke:#a04040,color:#222;
+
+    class W,S accion;
+    class Q decision;
+    class CS critica;
+    class BL bloqueado;
 ```
 
 ### `semget` — obtener un array de semáforos

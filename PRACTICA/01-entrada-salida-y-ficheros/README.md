@@ -16,6 +16,18 @@ flowchart TD
     STDIO -->|"read / write"| FD["descriptor de fichero (0, 1, 2, 3 ...)"]
     FD --> K["núcleo: tabla de descriptores → inodo<br/>caché de disco"]
     K --> DISK[("fichero en disco / tubería / dispositivo")]
+
+    classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef userspace fill:#fdf3d0,stroke:#a06a1a,color:#222;
+    classDef descriptor fill:#eef2f7,stroke:#444,color:#222;
+    classDef nucleo fill:#6ba3d6,stroke:#2b6f99,color:#ffffff;
+    classDef almacen fill:#d9d9d9,stroke:#555,color:#222;
+
+    class APP proceso;
+    class STDIO userspace;
+    class FD descriptor;
+    class K nucleo;
+    class DISK almacen;
 ```
 
 ## E/S por consola (`#include <stdio.h>`)

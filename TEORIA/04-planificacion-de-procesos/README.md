@@ -23,13 +23,25 @@ La planificación se produce **siempre que un proceso abandona la CPU** o **se i
 
 ```mermaid
 flowchart LR
-    NEW["Nuevo hilo"] --> LP[Lista de Preparados]
+    NEW(["Nuevo hilo"]) --> LP[Lista de Preparados]
     LP --> PL{Planificador}
     PL --> CPU((CPU))
-    CPU --> HECHO["Hecho"]
+    CPU --> HECHO(["Hecho"])
     CPU -->|petición de recurso| GR[Gestor de Recursos]
     GR -->|recurso asignado| LP
     CPU -->|apropiación o cesión voluntaria| LP
+
+    classDef inicio fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
+    classDef cola fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef decision fill:#eef2f7,stroke:#475569,color:#1f2937;
+    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef recurso fill:#d9d9d9,stroke:#555555,color:#222222;
+    class NEW inicio;
+    class HECHO inicio;
+    class LP cola;
+    class PL decision;
+    class CPU cpu;
+    class GR recurso;
 ```
 
 Sucesos que disparan la planificación: solicitud de E/S (el proceso pasa a la cola de E/S), fin de la porción de tiempo, creación de un hijo, fin del hijo, o una interrupción.
@@ -110,11 +122,22 @@ flowchart LR
     CT[Cola de trabajo] -->|Planificador a largo plazo| CPL[Cola de procesos listos]
     CPS[Cola de procesos suspendidos] -->|Planificador a medio plazo| CPL
     CPL -->|Planificador a corto plazo| CPU((CPU))
-    CPU --> T["Terminados"]
+    CPU --> T(["Terminados"])
     CPU -->|fin de cuanto| CPL
     CPU -->|E/S o suceso| CPB[Cola de procesos bloqueados]
     CPB --> CPL
     CPL --> CPS
+
+    classDef externa fill:#d9d9d9,stroke:#555555,color:#222222;
+    classDef espera fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef bloqueada fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
+    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef fin fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
+    class CT externa;
+    class CPL,CPS espera;
+    class CPB bloqueada;
+    class CPU cpu;
+    class T fin;
 ```
 
 ### El dispatcher
@@ -287,6 +310,13 @@ flowchart TB
     subgraph R["Round Robin · turnos breves"]
         R1["A · un turno"] --> R2["B · un turno"] --> R3["C · un turno"] --> R1
     end
+
+    classDef clienteA fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef clienteB fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
+    classDef clienteC fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    class F1,S3,R1 clienteA;
+    class F2,S1,R2 clienteB;
+    class F3,S2,R3 clienteC;
 ```
 
 *FCFS respeta el orden de llegada, SJF favorece los trabajos cortos y Round Robin reparte la CPU en cuantos de tiempo.*
@@ -301,6 +331,11 @@ flowchart LR
     CPU -->|vence el cuanto| Q3["P3<br/>cuanto"]
     Q3 --> CPU
     CPU -->|vence el cuanto| Q1
+
+    classDef cola fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    class Q1,Q2,Q3 cola;
+    class CPU cpu;
 ```
 
 *Round Robin evita que un proceso monopolice la CPU. Cada proceso dispone de un intervalo limitado antes de ceder el turno.*
@@ -315,9 +350,13 @@ sequenceDiagram
     participant PCB2 as PCB de P2
     participant P2 as Proceso entrante
     P1->>SO: interrupción o cesión
+    rect rgb(207, 226, 243)
     SO->>PCB1: guarda PC, registros y pila
+    end
+    rect rgb(217, 234, 211)
     SO->>PCB2: carga PC, registros y pila
     SO->>P2: reanuda en su siguiente instrucción
+    end
 ```
 
 *Para sustituir un proceso, el núcleo guarda su contexto y restaura el de otro. Durante ese tiempo la CPU administra la ejecución, pero no avanza en el trabajo de las aplicaciones.*
@@ -330,10 +369,12 @@ sequenceDiagram
     participant P as Planificador de tiempo real
     participant T as Tarea de control
     participant A as Actuador
+    rect rgb(217, 234, 211)
     S->>P: evento en t = 0 ms
     P->>T: despacha con máxima prioridad
     T->>T: calcula respuesta
     T->>A: orden en t = 7 ms
+    end
     Note over S,A: plazo máximo = 10 ms · respuesta válida
 ```
 

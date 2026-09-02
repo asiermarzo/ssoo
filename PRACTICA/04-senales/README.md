@@ -14,6 +14,18 @@ flowchart TD
     D -->|"SIG_IGN"| I["se descarta"]
     D -->|"SIG_DFL"| DEF["acción por defecto<br/>(Term / Core / Stop / Ign / Cont)"]
     D -->|"función manejadora"| H["se interrumpe el flujo normal<br/>→ se ejecuta el manejador<br/>→ se reanuda el flujo"]
+
+    classDef origen fill:#eef2f7,stroke:#444,color:#222;
+    classDef decision fill:#fce5a8,stroke:#a06a1a,color:#222;
+    classDef ignorado fill:#d9d9d9,stroke:#555,color:#222;
+    classDef pordefecto fill:#fbe0e0,stroke:#a04040,color:#222;
+    classDef manejador fill:#cfe2f3,stroke:#2b6f99,color:#222;
+
+    class K origen;
+    class D decision;
+    class I ignorado;
+    class DEF pordefecto;
+    class H manejador;
 ```
 
 ## Comandos comunes

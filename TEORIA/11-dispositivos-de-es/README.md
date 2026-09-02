@@ -10,12 +10,29 @@
 - Para lograr **homogeneidad** en el conjunto de instrucciones que el SO puede invocar sobre un dispositivo, se dispone de **manejadores de dispositivos**: un conjunto de funciones que abstraen el funcionamiento de un controlador concreto.
 - Se construyen **APIs** con las funciones básicas de acceso a un dispositivo: `open`, `close`, `control`, `seek`… El manejador exporta al SO una **interfaz común de llamadas al sistema** para los dispositivos.
 
-```mermaid
-flowchart TD
-    PU[Programas de usuario] --> RSO[Rutinas del sistema operativo]
-    RSO --> MD[Manejadores de dispositivos]
-    MD --> CMI[Controladores y manejadores de interrupciones]
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" font-family="sans-serif" font-size="12" role="img" aria-label="Pirámide de capas de la E/S: de abajo arriba, controladores y manejadores de interrupciones, manejadores de dispositivos, rutinas del sistema operativo y programas de usuario">
+  <rect width="420" height="300" fill="#ffffff"/>
+  <defs>
+    <marker id="t11-01-arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#333"/>
+    </marker>
+  </defs>
+  <polygon points="210,20 257.5,85 162.5,85" fill="#dcebc9" stroke="#333"/>
+  <polygon points="162.5,85 257.5,85 305,150 115,150" fill="#cfd6f5" stroke="#333"/>
+  <polygon points="115,150 305,150 352.5,215 67.5,215" fill="#f7d9a8" stroke="#333"/>
+  <polygon points="67.5,215 352.5,215 400,280 20,280" fill="#faf3b0" stroke="#333"/>
+  <text x="210" y="56" text-anchor="middle">Programas</text>
+  <text x="210" y="70" text-anchor="middle">de usuario</text>
+  <text x="210" y="121" text-anchor="middle">Rutinas del sistema</text>
+  <text x="210" y="135" text-anchor="middle">operativo</text>
+  <text x="210" y="186" text-anchor="middle">Manejadores de</text>
+  <text x="210" y="200" text-anchor="middle">dispositivos</text>
+  <text x="210" y="245" text-anchor="middle">Controladores y manejadores</text>
+  <text x="210" y="259" text-anchor="middle">de interrupciones</text>
+  <line x1="30" y1="278" x2="30" y2="22" stroke="#333" marker-end="url(#t11-01-arrow)"/>
+  <text x="12" y="288" font-size="10">HW</text>
+  <text x="8" y="18" font-size="10">apps</text>
+</svg>
 
 - Las operaciones de lectura y escritura son **secuenciales**. Interesa **paralelizar** al máximo las actividades de las aplicaciones durante los intervalos de acceso a los dispositivos ⇒ **solapamiento de E/S y procesador**. Requisitos:
   - El lenguaje de programación y el SO deben permitir que el hilo **inicie** una operación de E/S y **sondee** si ha concluido.
@@ -45,9 +62,11 @@ sequenceDiagram
     participant C as Controlador del dispositivo
     P->>C: 1-2. leer(dispositivo, …): programa la operación
     P->>C: 3. escribe la orden en el registro «Operación»
-    loop 4. sondeo
-        P->>C: consulta el registro «Estado»
-        C-->>P: ¿operación completada?
+    rect rgb(253, 243, 208)
+        loop 4. sondeo
+            P->>C: consulta el registro «Estado»
+            C-->>P: ¿operación completada?
+        end
     end
     C-->>P: 5. lee el registro «Datos» y lo copia a memoria
 ```
@@ -66,10 +85,14 @@ sequenceDiagram
     P->>D: 1-3. leer(dispositivo, …)
     D->>T: 4. registra la operación pendiente
     D->>C: 5. programa Operación / Estado / Datos
-    Note over P: el proceso queda BLOQUEADO; la CPU ejecuta otro proceso
-    C-->>MI: 6. interrupción al completar
-    MI->>T: 7. actualiza la tabla de estado
-    MI->>D: 8a-8b. copia los datos
+    rect rgb(251, 224, 224)
+        Note over P: el proceso queda BLOQUEADO, la CPU ejecuta otro proceso
+    end
+    rect rgb(207, 226, 243)
+        C-->>MI: 6. interrupción al completar
+        MI->>T: 7. actualiza la tabla de estado
+        MI->>D: 8a-8b. copia los datos
+    end
     D-->>P: 9. proceso LISTO (datos disponibles)
 ```
 
@@ -110,12 +133,29 @@ Un **búfer** es un almacenamiento en memoria principal que se emplea en la gest
 - Los **búferes hardware** están en el **controlador** del dispositivo (registros electrónicos).
 - Los sistemas de **doble búfer** disponen de búferes **hardware** en el controlador y de búferes **software** en el manejador del dispositivo.
 
-```mermaid
-flowchart BT
-    D1[Dispositivo] --> C1["Controlador: búfer HW (A/B)"]
-    C1 --> M1["Manejador: búfer SW (A/B)"]
-    M1 --> P1((Proceso))
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" font-family="sans-serif" font-size="12" role="img" aria-label="Doble búfer: mientras el dispositivo llena un búfer, el proceso vacía el otro; los papeles se alternan en el instante siguiente">
+  <rect width="520" height="260" fill="#ffffff"/>
+  <defs>
+    <marker id="t11-04-o" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#c0632b"/></marker>
+    <marker id="t11-04-b" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#2b5ac0"/></marker>
+  </defs>
+  <rect x="10" y="95" width="100" height="50" rx="4" fill="#eeeeee" stroke="#333"/>
+  <text x="60" y="124" text-anchor="middle">Dispositivo</text>
+  <rect x="150" y="55" width="220" height="150" rx="4" fill="none" stroke="#666" stroke-dasharray="3,2"/>
+  <text x="260" y="45" text-anchor="middle" font-size="11">Controlador + manejador (búferes HW/SW)</text>
+  <rect x="170" y="75" width="80" height="45" fill="#fde3c0" stroke="#b56a1f"/>
+  <text x="210" y="102" text-anchor="middle">A</text>
+  <rect x="270" y="140" width="80" height="45" fill="#cfe0fb" stroke="#2b5ac0"/>
+  <text x="310" y="167" text-anchor="middle">B</text>
+  <ellipse cx="460" cy="130" rx="45" ry="30" fill="#eeeeee" stroke="#333"/>
+  <text x="460" y="134" text-anchor="middle">Proceso</text>
+  <path d="M110,110 L168,95" stroke="#c0632b" stroke-width="2" marker-end="url(#t11-04-o)" fill="none"/>
+  <path d="M350,155 L418,138" stroke="#c0632b" stroke-width="2" marker-end="url(#t11-04-o)" fill="none"/>
+  <path d="M110,130 L268,160" stroke="#2b5ac0" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#t11-04-b)" fill="none"/>
+  <path d="M250,90 L418,122" stroke="#2b5ac0" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#t11-04-b)" fill="none"/>
+  <text x="20" y="225" fill="#c0632b">— instante t: dispositivo llena A · proceso vacía B</text>
+  <text x="20" y="245" fill="#2b5ac0">- - instante t+1: dispositivo llena B · proceso vacía A</text>
+</svg>
 
 ## 7.4 Tipos de discos duros
 
@@ -248,16 +288,25 @@ Como la memoria es mucho más rápida que el disco y los bloques más frecuentes
 
 ## 7.7 Entrada/salida en UNIX
 
-```mermaid
-flowchart TD
-    APP["Programas y aplicaciones de otros niveles"] --> TOOLS
-    subgraph TOOLS["Programas de sistema y de aplicación"]
-        CC["cc (cpp · comp · as · ld)"]
-        SH["sh · a.out · date · vi · …"]
-    end
-    TOOLS --> K[Kernel]
-    K --> HW[Hardware]
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 260" font-family="sans-serif" font-size="12" role="img" aria-label="Capas de E/S en UNIX: programas y aplicaciones, herramientas del sistema, kernel y hardware">
+  <rect width="420" height="260" fill="#ffffff"/>
+  <defs><marker id="t11-05-a" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#333"/></marker></defs>
+  <rect x="40" y="20" width="340" height="45" fill="#dcebc9" stroke="#333"/>
+  <text x="210" y="47" text-anchor="middle">Programas y aplicaciones de otros niveles</text>
+  <rect x="40" y="75" width="340" height="65" fill="#cfd6f5" stroke="#333"/>
+  <text x="210" y="93" text-anchor="middle">Programas de sistema y de aplicación</text>
+  <rect x="55" y="102" width="150" height="28" fill="#ffffff" stroke="#666"/>
+  <text x="130" y="121" text-anchor="middle" font-size="11">cc (cpp · comp · as · ld)</text>
+  <rect x="215" y="102" width="150" height="28" fill="#ffffff" stroke="#666"/>
+  <text x="290" y="121" text-anchor="middle" font-size="11">sh · a.out · date · vi · …</text>
+  <rect x="40" y="150" width="340" height="45" fill="#f7d9a8" stroke="#333"/>
+  <text x="210" y="177" text-anchor="middle">Kernel</text>
+  <rect x="40" y="205" width="340" height="45" fill="#faf3b0" stroke="#333"/>
+  <text x="210" y="232" text-anchor="middle">Hardware</text>
+  <line x1="210" y1="65" x2="210" y2="75" stroke="#333" marker-end="url(#t11-05-a)"/>
+  <line x1="210" y1="140" x2="210" y2="150" stroke="#333" marker-end="url(#t11-05-a)"/>
+  <line x1="210" y1="195" x2="210" y2="205" stroke="#333" marker-end="url(#t11-05-a)"/>
+</svg>
 
 - **Dispositivos orientados a bloques**: se pueden **direccionar** (el programador puede leer o escribir cualquier bloque tras una operación de posicionamiento); emplean bloques de **tamaño fijo** (512 o 1024 bytes). Ejemplos: discos duros, la memoria, discos compactos, unidades de cinta.
 - **Dispositivos orientados a caracteres**: trabajan con secuencias de bytes sin agrupación; **no son direccionables**; funcionan byte a byte. Ejemplos: teclado, pantalla, impresora.
@@ -285,6 +334,13 @@ flowchart TB
     C --> KEY[Teclado]
     C --> MOUSE[Ratón]
     C --> SER[Puerto serie · sensor]
+
+    classDef raiz fill:#d9d9d9,stroke:#333,color:#000;
+    classDef bloque fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef caracter fill:#fce5a8,stroke:#333,color:#000;
+    class IO raiz;
+    class B,SSD,HDD,USB bloque;
+    class C,KEY,MOUSE,SER caracter;
 ```
 
 *Los dispositivos de bloque transfieren unidades direccionables de datos; los de carácter producen o consumen secuencias continuas.*
@@ -299,16 +355,30 @@ flowchart TB
 
 ### T11.3 · SCAN como ascensor
 
-```mermaid
-flowchart LR
-    C10[cilindro 10] --> C22[22 · petición]
-    C22 --> C35[35 · petición]
-    C35 --> C61[61 · petición]
-    C61 --> C88[88 · petición]
-    C88 --> E[extremo]
-    E -->|invierte el sentido| C74[74 · petición]
-    C74 --> C40[40 · petición]
-```
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" font-family="sans-serif" font-size="12" role="img" aria-label="Movimiento de la cabeza con SCAN en forma de ascensor: 10, 22, 35, 61, 88, extremo, invierte sentido, 74, 40">
+  <rect width="480" height="300" fill="#ffffff"/>
+  <line x1="55" y1="20" x2="55" y2="250" stroke="#333"/>
+  <line x1="55" y1="250" x2="460" y2="250" stroke="#333"/>
+  <text x="15" y="25">pista</text>
+  <text x="20" y="250">0</text>
+  <polyline fill="none" stroke="#2b4a8b" stroke-width="1.6"
+    points="55,229 112,204 169,177 226,123 284,66 341,41 398,95 455,166"/>
+  <g fill="#c0392b">
+    <circle cx="55" cy="229" r="3"/><circle cx="112" cy="204" r="3"/><circle cx="169" cy="177" r="3"/>
+    <circle cx="226" cy="123" r="3"/><circle cx="284" cy="66" r="3"/>
+    <circle cx="398" cy="95" r="3"/><circle cx="455" cy="166" r="3"/>
+  </g>
+  <circle cx="341" cy="41" r="4" fill="none" stroke="#c0392b" stroke-width="1.5"/>
+  <g fill="#333">
+    <text x="45" y="225">10</text><text x="102" y="200">22</text><text x="159" y="173">35</text>
+    <text x="216" y="119">61</text><text x="274" y="62">88</text>
+    <text x="316" y="34">extremo</text>
+    <text x="388" y="91">74</text><text x="445" y="180">40</text>
+  </g>
+  <text x="170" y="270" font-size="11">orden de atención →</text>
+  <line x1="284" y1="55" x2="341" y2="45" stroke="#999" stroke-dasharray="2,2"/>
+  <text x="345" y="20" font-size="11" fill="#666">invierte el sentido</text>
+</svg>
 
 *SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor.*
 
@@ -322,8 +392,10 @@ sequenceDiagram
     participant M as Memoria RAM
     CPU->>DMA: origen, destino y tamaño
     DMA->>D: inicia transferencia
-    loop bloque completo
-        D->>M: dato directo a memoria
+    rect rgb(207, 226, 243)
+        loop bloque completo
+            D->>M: dato directo a memoria
+        end
     end
     DMA-->>CPU: interrupción de fin
 ```
@@ -339,7 +411,9 @@ sequenceDiagram
     participant D as Dispositivo
     P->>CPU: solicita E/S
     CPU->>D: encarga la operación
-    CPU->>CPU: ejecuta otro proceso
+    rect rgb(217, 234, 211)
+        CPU->>CPU: ejecuta otro proceso
+    end
     D-->>CPU: timbre · interrupción de fin
     CPU-->>P: datos disponibles · vuelve a listo
 ```
