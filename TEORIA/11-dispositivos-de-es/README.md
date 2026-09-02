@@ -282,9 +282,9 @@ tiempo de búsqueda, pero puede producir **inanición** (*starvation*). Orden de
   mismo sentido**, de forma circular; se reducen los tiempos de espera al evitar que la cabeza
   vaya y regrese hasta alcanzar la posición deseada.
 
-Recorridos totales para la cola del ejemplo (según las gráficas del PDF): **LOOK ≈ 512** ·
-**SCAN ≈ 512** (con vuelta a extremo) · **C‑LOOK** y **C‑SCAN** reducen la espera media al
-recorrer siempre en el mismo sentido.
+Recorridos totales para la cola del ejemplo: **LOOK ≈ 512** · **SCAN ≈ 512** (con vuelta a
+extremo) · **C‑LOOK** y **C‑SCAN** reducen la espera media al recorrer siempre en el mismo
+sentido.
 
 ## 7.6 Caché de disco
 
@@ -421,21 +421,10 @@ la operación de E/S ha concluido.*
 
 ---
 
-## Lecturas recomendadas
-
-- Capítulos 12 y 13 de [Silb99].
-- Capítulos 12 y 13 de [Silb05].
-- Capítulo 5 de [Nutt04].
-- Capítulo 10 de [Stal97].
-- Capítulo 9 de [Henn93].
-
----
-
 ## Material gráfico
 
 Todos los diagramas del Tema 7 están replicados como mermaid, SVG o tabla dentro de este
 documento (capas de la E/S, E/S con sondeo y con interrupciones, doble búfer, geometría del
 disco, FCFS y SSTF, arquitectura UNIX). Queda como **material fotográfico** (ilustrativo): las
-fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD (pp. 518‑522) y el render 3D del
-disco con pistas y sectores (p. 529). Ver
-[`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).
+fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD y el render 3D del disco con pistas y
+sectores.

@@ -664,22 +664,6 @@ máquinas virtuales reproducen un sistema completo; los contenedores comparten e
 
 ---
 
-## Lecturas recomendadas
-
-- Capítulos 1 y 2 de [Silb09].
-- Capítulos 3 y 4 de [Nutt06].
-- Capítulos 3 y 21 de [Silb99].
-- Capítulo 6 de [Stal98]: arquitecturas de los sistemas operativos.
-- Información sobre UNIX en [Tane88].
-- [Computer History Museum — timeline](http://www.computerhistory.org/timeline/).
-
-## Actividades recomendadas
-
-Virtualización · Cloud computing · Sistemas operativos libres · SSOO para dispositivos móviles
-· Android vs iOS · Sistemas hiperconvergentes.
-
----
-
 ## Material gráfico
 
 Todos los diagramas del Tema 1 están replicados como mermaid o SVG dentro de este documento.
@@ -688,5 +672,3 @@ Quedan como **material fotográfico** (no reproducible), a criterio del profesor
 - Retratos y fotos históricas: Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I.
 - Cronologías (*timelines*) de familias de sistemas operativos (imágenes externas): se enlazan
   a Wikipedia en la sección «Cronologías».
-
-Ver [`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).

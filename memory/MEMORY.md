@@ -1,1 +1,0 @@
-- [Transcripción PDF teoría](teoria-transcripcion-pdf.md) — tarea en curso: volcar el PDF de Sistemas Operativos a los README de TEORIA; criterios y mapa de temas

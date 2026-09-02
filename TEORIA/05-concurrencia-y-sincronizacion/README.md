@@ -694,22 +694,10 @@ inanición incluso cuando cada participante sigue una regla aparentemente razona
 
 ---
 
-## Lecturas recomendadas
-
-- Capítulos 6 y 7 de [Silb05].
-- Capítulos 5 y 6 de [Silb99].
-- Capítulos 8, 9 y 10 de [Nutt04].
-- Animaciones de *deadlock*:
-  <http://cs.uttyler.edu/Faculty/Rainwater/COSC3355/Animations/deadlock.htm> ·
-  <http://mcs109.bu.edu/site/?p=deadlock>
-
----
-
 ## Material gráfico
 
 Todos los diagramas del Tema 4 están replicados como mermaid o SVG dentro de este documento
 (concurrencia vs paralelismo, inanición sobre un recurso, mesa de los filósofos, espera
 circular, grafo de asignación de recursos). Queda como **material fotográfico** (ilustrativo,
 no reproducible): la lámina de los filósofos monjes, los *clipart* de lectores‑escritores, las
-fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo». Ver
-[`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).
+fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo».

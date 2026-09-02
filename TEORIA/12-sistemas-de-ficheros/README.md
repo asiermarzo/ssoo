@@ -562,23 +562,11 @@ con formatos diferentes.*
 
 ---
 
-## Lecturas recomendadas
-
-- Capítulos 10, 11 y 12 de [Silb05].
-- Capítulos 10 y 11 de [Silb99].
-- Capítulos 13 y 14 de [Nutt04].
-- <http://linuxgazette.net/122/TWDT.html#piszcz>
-- <http://mindplusplus.wordpress.com/2011/02/02/finding-the-fastest-filesystem-2011-edition/>
-- <http://www.usenix.org/event/hotos11/tech/final_files/Tarasov.pdf>
-
----
-
 ## Material gráfico
 
 Todos los diagramas del Tema 8 están replicados como mermaid, SVG o tabla dentro de este
 documento (traducción flujo/registro‑bloque, resolución de rutas con nodos‑i, estructura del
 nodo‑i con indirecciones, VFS, comparativa de sistemas de ficheros, RAID 0/1/5, tabla de
 niveles RAID). Queda como **material fotográfico** (ilustrativo): fotos de cabinas y
-*enclosures* RAID (p. 631). Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E,
-50, 100) se resumen en la tabla de niveles; se pueden añadir sus SVG si se desea. Ver
-[`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).
+*enclosures* RAID. Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E, 50, 100)
+se resumen en la tabla de niveles; se pueden añadir sus SVG si se desea.

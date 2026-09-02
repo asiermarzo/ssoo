@@ -7,8 +7,7 @@ procesos (`fork`, `wait`, `exec`, `dup2`, `pipe`, `signal`, `open`, `close`) que
 ejecutar cualquier comando del sistema, con tuberías (`|`) y redirección de entrada y
 salida (`<`, `>`, `>>`). Pone en contexto los conceptos de las prácticas anteriores.
 
-> Esta práctica va **antes** que memoria compartida y semáforos (P6). El primer examen
-> parcial de prácticas se sitúa entre ambas; el segundo, el 18/12/2025.
+> Esta práctica va **antes** que memoria compartida y semáforos (P6).
 
 ## Especificaciones
 

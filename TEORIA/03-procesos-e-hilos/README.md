@@ -545,18 +545,8 @@ una tarea cuyo estado y consumo controla el núcleo.*
 
 ---
 
-## Lecturas recomendadas
-
-- Capítulos 4 y 5 de [Silb99].
-- Capítulo 2 de [Tane88] y [Tane92].
-- Secciones 3.1, 3.3 y 3.4 de [Stal98].
-- Capítulo 4 de [Stal98].
-
----
-
 ## Material gráfico
 
 Todos los diagramas del Tema 2 están replicados como mermaid o SVG dentro de este documento
 (disposición de memoria monohilo/multihilo, diagrama básico de estados, diagrama completo de
 estados en UNIX, colas de estado, estados en Linux). No queda material fotográfico pendiente.
-Ver [`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).

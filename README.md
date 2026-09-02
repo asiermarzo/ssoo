@@ -37,7 +37,7 @@ gcc -Wall -Wextra -o programa programa.c
 | Procesos e hilos | [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) |
 | Planificación de procesos | [`TEORIA/04`](TEORIA/04-planificacion-de-procesos/) |
 | Concurrencia y sincronización | [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) |
-| Gestión de memoria (incluye memoria virtual) | [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) |
+| Gestión de memoria | [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) |
 | IPC: pipes y fifos | [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/) |
 | IPC: señales | [`TEORIA/08`](TEORIA/08-ipc-senales/) |
 | IPC: colas de mensajes | [`TEORIA/09`](TEORIA/09-ipc-colas-de-mensajes/) |
@@ -45,10 +45,6 @@ gcc -Wall -Wextra -o programa programa.c
 | Dispositivos de E/S | [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) |
 | Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
 | GUI (ampliación) | [`TEORIA/13`](TEORIA/13-gui/) |
-
-La teoría incorpora una galería complementaria de **57 figuras**. El inventario, los prompts de
-las ilustraciones generadas y los créditos de las fotografías externas están en
-[`TEORIA/IMAGENES.md`](TEORIA/IMAGENES.md).
 
 ## Prácticas
 
@@ -60,12 +56,10 @@ las ilustraciones generadas y los créditos de las fotografías externas están 
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
 | P4 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/04`](PRACTICA/04-senales/) |
 | P5 — Minishell | [`PRACTICA/05`](PRACTICA/05-minishell/) |
-| *Primer examen parcial de prácticas* | |
 | P6 — Memoria compartida y semáforos | [`PRACTICA/06`](PRACTICA/06-memoria-compartida-y-semaforos/) |
 | P7 — Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`PRACTICA/07`](PRACTICA/07-colas-de-mensajes/) |
-| P8 — Planificador de procesos (colas multinivel) — *entrega evaluable* | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
-| P9 — Sistema concurrente — *entrega evaluable* | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
-| *Segundo examen parcial de prácticas* | |
+| P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
+| P9 — Sistema concurrente | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
 
 El `README.md` de cada práctica es autocontenido: incluye la descripción del tema, los
 comandos y llamadas al sistema utilizadas (prototipo, parámetros, valor devuelto, errores,

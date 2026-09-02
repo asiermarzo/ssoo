@@ -431,21 +431,9 @@ inútil o peligrosa.*
 
 ---
 
-## Lecturas recomendadas
-
-- Capítulo 5 de [Silb99].
-- Capítulos 3 y 8 de [Stal97].
-- Capítulo 2 de [Tane92].
-- Capítulo 2 de [Mile94].
-- Capítulo 7 de [Nutt04] (ilustra muy bien cómo operan los distintos algoritmos de
-  planificación).
-
----
-
 ## Material gráfico
 
 Todos los diagramas del Tema 3 están replicados como mermaid, SVG o tabla dentro de este
 documento (flujo de planificación, niveles de planificador, cambio de contexto, tabla de
 prioridades de Windows 2000). Las capturas de pantalla del Administrador de tareas y del
-Monitor de recursos de Windows se omiten. No queda material fotográfico pendiente. Ver
-[`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).
+Monitor de recursos de Windows se omiten. No queda material fotográfico pendiente.

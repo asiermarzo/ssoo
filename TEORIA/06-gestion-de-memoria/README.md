@@ -332,8 +332,7 @@ del programa; cada página se divide en segmentos. **No se emplea.**
 ## Casos prácticos
 
 Windows y Linux usan **segmentación paginada** (Windows 10 incluido). El estado de la gestión
-de memoria se observa con las herramientas del sistema. *(Ilustraciones de las herramientas de
-Windows y Linux: material fotográfico, ver [`IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).)*
+de memoria se observa con las herramientas del sistema.
 
 ### Bibliografía (Tema 5)
 
@@ -742,20 +741,10 @@ instrucciones útiles.*
 
 ---
 
-## Lecturas recomendadas (Tema 6)
-
-- Capítulos 9, 21 y 22 de [Silb05].
-- Capítulo 4 de [Tane03].
-- Capítulo 7 de [Stal05].
-- Capítulo 12 de [Nutt04].
-
----
-
 ## Material gráfico
 
 Todos los diagramas de los Temas 5 y 6 están replicados como mermaid, SVG o tabla dentro de
 este documento (base/límite, traducción en paginación y en segmentación, segmentación paginada,
 esquema de memoria virtual, intercambio, tratamiento del fallo de página, anomalía de Belady).
-Queda como **material fotográfico** (ilustrativo): el símil del aparcamiento (pp. 384‑385) y
-las capturas de las herramientas de gestión de memoria de Windows y Linux (pp. 428‑430). Ver
-[`TEORIA/IMAGENES-PENDIENTES.md`](../IMAGENES-PENDIENTES.md).
+Queda como **material fotográfico** (ilustrativo): el símil del aparcamiento y las capturas de
+las herramientas de gestión de memoria de Windows y Linux.
