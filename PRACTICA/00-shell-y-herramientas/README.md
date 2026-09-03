@@ -2,20 +2,20 @@
 
 ## Objetivo
 
-Familiarizarse con el entorno de trabajo del curso: Linux, el intérprete de comandos (shell) y el ciclo completo del lenguaje C — **editar, compilar, ejecutar y depurar** — con las herramientas que se usarán durante el semestre.
+Familiarizarse con el entorno de trabajo del curso: Linux, el intérprete de comandos (shell) y el ciclo de un programa C — **editar, compilar, ejecutar y depurar**.
 
 ## Cómo abrir una terminal
 
-La terminal es una ventana donde se escriben comandos, uno por línea, y se pulsa <kbd>Enter</kbd> para ejecutarlos.
+La terminal es una ventana donde se escriben comandos, uno por línea, y se pulsa `Enter` para ejecutarlos.
 
-- Atajo de teclado: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd> (el habitual en GNOME; en otros escritorios puede variar).
+- Atajo de teclado: `Ctrl+Alt+T` (puede variar).
 - Icono **Terminal** en la barra de aplicaciones o en el menú de aplicaciones (categoría *Sistema* / *Accesorios*).
 - Desde el explorador de archivos: clic derecho sobre una carpeta → *Abrir en un terminal*.
-- Dentro de VS Code: menú *Terminal → Nuevo terminal*, o <kbd>Ctrl</kbd>+<kbd>`</kbd>.
+- Dentro de VS Code: menú *Terminal → Nuevo terminal*, o `` Ctrl+` ``.
 
 ### El prompt
 
-Al abrirla aparece una línea parecida a esta, el *prompt*, que indica que la shell espera un comando:
+Al abrirla aparece una línea, el *prompt*, que indica que la shell espera un comando:
 
 ```
 usuario@equipo:~$
@@ -23,12 +23,12 @@ usuario@equipo:~$
 
 | Parte | Significado |
 |-------|-------------|
-| `usuario` | tu nombre de usuario (el mismo de `whoami`) |
+| `usuario` | tu nombre de usuario (el mismo que devuelve el comando `whoami`) |
 | `equipo` | nombre de la máquina o *hostname* (el de `hostname`) |
 | `~` | directorio de trabajo actual; `~` es tu carpeta personal, `/home/usuario` |
 | `$` | shell lista, usuario sin privilegios (`#` si fueras `root`) |
 
-## Moverse y mirar
+## Moverse y mirar ficheros
 
 Primeros comandos para orientarse en el sistema de ficheros:
 
@@ -38,18 +38,19 @@ Primeros comandos para orientarse en el sistema de ficheros:
 | `ls` | lista el contenido del directorio. `ls -l` formato largo (permisos, tamaño, fecha), `ls -a` incluye ocultos, `ls -la` ambos |
 | `cd <dir>` | cambia de directorio. `cd ..` sube uno, `cd` o `cd ~` va a tu carpeta personal, `cd -` vuelve al anterior |
 | `cat <fichero>` | vuelca el contenido completo de un fichero en la terminal |
-| `more <fichero>` | muestra el fichero **página a página**: <kbd>Espacio</kbd> avanza, <kbd>Enter</kbd> una línea, `q` sale |
+| `more <fichero>` | muestra el fichero **página a página**: `Espacio` avanza, `Enter` una línea, `q` sale |
 | `less <fichero>` | como `more` pero también permite retroceder y buscar (`/patrón`); `q` sale |
 | `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece |
-| `clear` | limpia la pantalla (<kbd>Ctrl</kbd>+<kbd>L</kbd> hace lo mismo) |
+| `clear` | limpia la pantalla (`Ctrl+L` hace lo mismo) |
 | `man <comando>` | manual del comando; se navega como `less`. También `<comando> --help` |
 
-Comodidades de la shell que conviene usar desde el principio:
+Atajos de la shell que conviene usar desde el principio:
 
-- **<kbd>Tab</kbd>**: autocompleta nombres de comandos y de ficheros. Doble <kbd>Tab</kbd> lista las opciones posibles.
-- **<kbd>↑</kbd> / <kbd>↓</kbd>**: recorren los comandos anteriores. `history` los lista todos.
-- **<kbd>Ctrl</kbd>+<kbd>C</kbd>**: interrumpe el programa en ejecución.
-- **<kbd>Ctrl</kbd>+<kbd>D</kbd>**: marca fin de entrada (cierra la terminal si está vacía).
+- **`Tab`**: autocompleta nombres de comandos y de ficheros. Doble `Tab` lista las opciones posibles.
+- **`↑` / `↓`**: recorren los comandos anteriores. `history` los lista todos.
+- **`Ctrl+C`**: interrumpe el programa en ejecución (le manda la señal `SIGINT`).
+- **`Ctrl+Z`**: suspende el programa en ejecución (`SIGTSTP`) y devuelve el prompt; luego comandos `fg` lo reanuda en primer plano y `bg` en segundo plano.
+- **`Ctrl+\`**: como `Ctrl+C` pero con `SIGQUIT`, que además genera un *coredump* para depurar.
 
 ## Procesos
 
@@ -58,9 +59,10 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 | Comando | Uso |
 |---------|-----|
 | `ps` | lista procesos. Habitual: `ps axu \| less` (todos, con detalle) |
+| `pstree` | muestra los procesos como árbol, según quién creó a quién (`pstree -p` añade el pid) |
 | `top` / `htop` | procesos ordenados por consumo de CPU y memoria, en tiempo real; `q` sale |
-| `kill <pid>` | envía una señal a un proceso. `kill -9 <pid>` lo termina de forma incondicional |
-| `killall <nombre>` | como `kill` pero por nombre de programa |
+| `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine, y este puede capturarla para limpiar antes de salir. `kill -9 <pid>` manda `SIGKILL` (9), que el núcleo aplica directamente: no se puede capturar ni ignorar |
+| `killall <nombre>` | como `kill` pero por nombre de programa en vez de pid|
 | `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |
 
 ## Referencia rápida de comandos
@@ -83,15 +85,26 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 
 `file` (tipo de fichero), `wc` (cuenta líneas/palabras/caracteres), `sort` (ordena líneas), `grep <patrón>` (líneas que casan un patrón), `find` (busca ficheros), `diff` (diferencias entre dos ficheros).
 
+```bash
+file hola          # -> "ELF 64-bit ... executable"
+wc -l hola.c       # número de líneas del fichero
+grep printf hola.c            # líneas que contienen "printf"
+grep -rn "int main" .        # búsqueda recursiva, con número de línea
+find . -name "*.c"           # todos los .c bajo el directorio actual
+sort nombres.txt             # ordena alfabéticamente por líneas
+diff hola.c hola_v2.c        # qué cambió entre dos versiones
+```
+
+
 ### Compresión
 
 | Comando | Uso |
 |---------|-----|
+| `zip` / `unzip` | comprime / descomprime en formato ZIP |
 | `tar` | empaqueta y comprime: `tar czvf <destino>.tar.gz <origen>`; extrae: `tar xzvf <fichero>.tar.gz` |
 | `gzip` / `gunzip` | comprime / descomprime un fichero |
-| `zip` / `unzip` | comprime / descomprime en formato ZIP |
 
-### Permisos
+### Permisos de ficheros
 
 Cada fichero tiene tres ternas de permisos (usuario, grupo, otros), cada una con lectura (`r`), escritura (`w`) y ejecución (`x`). En notación octal cada terna es un dígito: `rw- r-- ---` → `110 100 000` → `640`.
 
@@ -103,7 +116,7 @@ Un programa en C es texto plano en un fichero `.c`. Se puede escribir con cualqu
 
 ### Editores en la terminal
 
-**`nano`** — el más sencillo; muestra los atajos en pantalla (`^` significa <kbd>Ctrl</kbd>):
+**`nano`** — el más sencillo; muestra los atajos en pantalla (`^` significa `Ctrl`):
 
 ```bash
 nano hola.c
@@ -111,10 +124,10 @@ nano hola.c
 
 | Atajo | Acción |
 |-------|--------|
-| <kbd>Ctrl</kbd>+<kbd>O</kbd> | guardar (*write out*) |
-| <kbd>Ctrl</kbd>+<kbd>X</kbd> | salir |
-| <kbd>Ctrl</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>U</kbd> | cortar / pegar línea |
-| <kbd>Ctrl</kbd>+<kbd>W</kbd> | buscar |
+| `Ctrl+O` | guardar (*write out*) |
+| `Ctrl+X` | salir |
+| `Ctrl+K` / `Ctrl+U` | cortar / pegar línea |
+| `Ctrl+W` | buscar |
 
 **`vim`** — más potente y presente en cualquier máquina, pero tiene *modos*. Supervivencia mínima:
 
@@ -125,7 +138,7 @@ vim hola.c
 | Tecla | Acción |
 |-------|--------|
 | `i` | entra en **modo inserción** (escribir texto) |
-| <kbd>Esc</kbd> | vuelve a **modo normal** (para dar órdenes) |
+| `Esc` | vuelve a **modo normal** (para dar órdenes) |
 | `:w` | guardar |
 | `:q` | salir · `:q!` salir descartando cambios · `:wq` guardar y salir |
 | `dd` / `yy` / `p` | borrar / copiar / pegar línea (en modo normal) |
@@ -133,8 +146,8 @@ vim hola.c
 ### Editores gráficos
 
 ```bash
-gedit hola.c &     # editor sencillo de GNOME
 geany hola.c &     # editor ligero con resaltado y compilación para C
+gedit hola.c &     # editor sencillo de GNOME
 kate  hola.c &     # editor de KDE
 ```
 
@@ -147,7 +160,7 @@ code hola.c        # abre un fichero
 code .             # abre la carpeta actual como proyecto
 ```
 
-Trae terminal integrada (<kbd>Ctrl</kbd>+<kbd>`</kbd>) y depurador gráfico sobre `gdb`. Es el editor recomendado para las prácticas largas.
+Trae terminal integrada (`` Ctrl+` ``) y depurador gráfico sobre `gdb`.
 
 ### Fichero de ejemplo: [`hola.c`](hola.c)
 
@@ -165,58 +178,20 @@ int main(void) {
 El compilador `gcc` transforma el `.c` en un binario ejecutable.
 
 ```bash
+# 1. Mínima: solo el fuente. El binario se llama a.out
+gcc hola.c
+
+# 2. Estricta: nombra el binario y activa todos los avisos
 gcc -Wall -Wextra -o hola hola.c
+
+# 3. Para depurar: añade símbolos (-g) y desactiva optimizaciones (-O0)
+gcc -Wall -Wextra -g -O0 -o hola hola.c
 ```
 
-- `-Wall -Wextra`: activan **todos los avisos**; úsalos siempre y corrige lo que señalen.
 - `-o hola`: nombre del binario de salida (sin `-o`, el binario se llama `a.out`).
-- `-g`: incluye información para el depurador (ver [Depurar](#depurar)).
-- `-O2`: optimiza; para depurar es preferible `-O0` (por defecto).
-
-El proceso interno tiene cuatro fases; normalmente se ejecutan de una vez, pero `gcc` puede parar en cada una:
-
-```bash
-gcc -E hola.c            # solo preprocesador (expande #include y #define)
-gcc -S hola.c            # genera ensamblador (hola.s)
-gcc -c hola.c            # genera objeto (hola.o), sin enlazar
-gcc -o hola hola.o       # enlaza el objeto con las bibliotecas → binario
-```
-
-```mermaid
-flowchart LR
-    C["hola.c"] -->|"preprocesador · gcc -E"| I["texto expandido"]
-    I -->|"compilador · gcc -S"| S["hola.s (ensamblador)"]
-    S -->|"ensamblador · gcc -c"| O["hola.o (objeto)"]
-    O -->|"enlazador · gcc -o"| B(["hola (binario ejecutable)"])
-    LIB[("bibliotecas (libc, ...)")] -.-> B
-
-    classDef fuente fill:#cfe2f3,stroke:#2b6f99,color:#222;
-    classDef intermedio fill:#fdf3d0,stroke:#a06a1a,color:#222;
-    classDef binario fill:#d9ead3,stroke:#3a7a3a,color:#222;
-    classDef biblioteca fill:#d9d9d9,stroke:#555,color:#222;
-
-    class C fuente;
-    class I,S,O intermedio;
-    class B binario;
-    class LIB biblioteca;
-```
-
-### Leer los errores del compilador
-
-Si `hola.c` tuviera un `;` de menos antes del `return`:
-
-```
-$ gcc -Wall -Wextra -o hola hola.c
-hola.c: In function 'main':
-hola.c:4:34: error: expected ';' before 'return'
-    4 |     printf("Hola, Sistemas Operativos\n")
-      |                                  ^
-      |                                  ;
-    5 |     return 0;
-      |     ~~~~~~
-```
-
-Se lee: **fichero : línea : columna : tipo** y mensaje. Corrige la primera línea que aparezca y vuelve a compilar; un error suele arrastrar otros.
+- `-Wall -Wextra`: activan **todos los avisos**; úsalos siempre y corrige lo que señalen.
+- `-g`: incluye información (nombres de variables, números de línea) para el depurador (ver [Depurar](#depurar)).
+- `-O0`: sin optimizar; el código ejecutado se corresponde con el fuente, imprescindible para depurar paso a paso. `-O2` optimiza para producción pero reordena y elimina código.
 
 ## Ejecutar
 
@@ -250,8 +225,6 @@ $ ./saluda
 Uso: ./saluda <nombre>
 ```
 
-`argc` es el número de palabras de la orden y `argv` el vector con ellas: `argv[0]` es el nombre del programa, `argv[1]` el primer argumento, etc.
-
 ### Código de salida y redirección
 
 ```bash
@@ -264,15 +237,20 @@ Uso: ./saluda <nombre>
 ```
 
 ```bash
+./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, muy útil para no tener que escribir por teclado las entradas todo el rato
 ./saluda Ana > salida.txt     # salida estándar (stdout) a un fichero
-./programa  < datos.txt       # entrada estándar (stdin) desde un fichero
 ./programa 2> errores.txt     # salida de error (stderr) a un fichero
-./programa  | less            # tubería: la salida alimenta a otro comando
+./programa  | less            # tubería: la salida va a la stdin a otro comando
 ```
 
 ## Depurar
 
-Depurar es ejecutar el programa de forma controlada para ver **dónde y por qué** falla. Requiere compilar con `-g`.
+Depurar es ejecutar el programa de forma controlada (p.ej paso a paso) para ver **dónde y por qué** falla. Requiere compilar con `-g`.
+
+Hay dos formas de hacerlo con `gdb`:
+
+- **En vivo**: se lanza el programa desde `gdb` y se controla su ejecución (`Caso 1` a `Caso 3`).
+- **Post-mortem (autopsia)**: el programa ya se ha caído y ha dejado un **coredump** —un fichero con la foto de toda su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina el estado final sin necesidad de reproducir el fallo (`Caso 4`).
 
 ### Fichero de ejemplo: [`depura.c`](depura.c)
 
@@ -303,8 +281,6 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-*(los números de línea de abajo se refieren al fichero completo, que incluye el comentario de cabecera.)*
-
 ```bash
 $ gcc -g -Wall -Wextra -o depura depura.c     # compila sin avisos...
 $ ./depura 5
@@ -317,51 +293,54 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 
 | Comando (abreviatura) | Acción |
 |-----------------------|--------|
-| `run [args]` (`r`) | inicia el programa con esos argumentos |
-| `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break depura.c:18` |
+| `run [args]` (`r`) | inicia el programa con esos argumentos; corre hasta un `break` o el final |
+| `start [args]` | como `run` pero para nada más entrar en `main` (breakpoint temporal) |
 | `next` (`n`) | ejecuta la línea actual **sin entrar** en las funciones |
 | `step` (`s`) | ejecuta la línea actual **entrando** en las funciones |
 | `continue` (`c`) | reanuda hasta el próximo `break` o el final |
 | `print <expr>` (`p`) | muestra el valor de una variable o expresión: `print i`, `print valores[0]` |
+| `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break depura.c:18` |
+| `info breakpoints` (`i b`) | lista los puntos de ruptura y su número |
+| `delete [N]` (`d`) | borra el punto de ruptura `N`; sin número, borra todos. `disable`/`enable N` lo desactiva sin borrarlo |
 | `list` (`l`) | muestra el código fuente alrededor de la línea actual |
 | `backtrace` (`bt`) | pila de llamadas: qué función llamó a cuál hasta el punto actual |
 | `info locals` | valor de todas las variables locales |
 | `quit` (`q`) | salir de gdb |
 
-### Sesión 1 — localizar la caída (segfault)
+### Caso 1 — localizar la caída (segfault)
 
-```
-$ gdb ./depura
-(gdb) run 500
-Program received signal SIGSEGV, Segmentation fault.
-0x0000555555555199 in main (argc=2, argv=0x7fffffffe2b8) at depura.c:22
-22              valores[i] = i;
-(gdb) print i
-$1 = 108
-(gdb) print n
-$2 = 500
-(gdb) backtrace
-#0  main (argc=2, argv=0x7fffffffe2b8) at depura.c:22
-(gdb) quit
+```bash
+$ gdb ./depura                 # abre el depurador para el programa depura
+(gdb) run 500                  # ejecuta con argv[1] = "500", como ./depura 500
+Program received signal SIGSEGV, Segmentation fault.    # el programa casca
+0x0000555555555199 in main (argc=2, argv=0x7fffffffe2b8) at depura.c:22    # dónde: función main, línea 22
+22              valores[i] = i;    # la instrucción exacta que provocó el fallo
+(gdb) print i                  # ¿cuánto valía i?
+$1 = 108                       # i = 108, fuera del array valores[100] (0..99)
+(gdb) print n                  # ¿y n?
+$2 = 500                       # el bucle llega hasta 500, mucho más allá del tamaño
+(gdb) backtrace                # pila de llamadas hasta el punto del fallo
+#0  main (argc=2, argv=0x7fffffffe2b8) at depura.c:22    # solo un marco: el fallo está en main
+(gdb) quit                     # salir del depurador
 ```
 
 `gdb` detiene el programa justo en la instrucción que provoca el fallo: la línea 22 escribe en `valores[i]` con `i = 108`, fuera del array `valores[100]` (índices válidos `0..99`).
 
-### Sesión 2 — entender el resultado erróneo
+### Caso 2 — entender el resultado erróneo
 
-```
-$ gdb ./depura
-(gdb) break 25                 # línea del segundo bucle (el de la suma)
-(gdb) run 5
-Breakpoint 1, main (...) at depura.c:25
-25          for (int i = 0; i < n; i++)
-(gdb) print valores[0]
-$1 = 21845                     # nunca se le asignó nada: es basura de la pila
-(gdb) print valores[1]
-$2 = 1
-(gdb) print valores[5]
+```bash
+$ gdb ./depura                 # abre el depurador con el binario
+(gdb) break 25                 # pon un punto de ruptura en la línea 25 (el bucle de la suma)
+(gdb) run 5                    # ejecuta con argv[1] = "5", como ./depura 5
+Breakpoint 1, main (...) at depura.c:25    # gdb para al llegar a la línea 25
+25          for (int i = 0; i < n; i++)    # línea donde está detenido, aún sin ejecutar
+(gdb) print valores[0]         # imprime el primer elemento del array
+$1 = 21845                     # nunca se le asignó nada - valor indeterminado
+(gdb) print valores[1]         # el segundo elemento
+$2 = 1                         # el primer bucle sí lo escribió (valores[1] = 1)
+(gdb) print valores[5]         # el elemento de índice 5
 $3 = 5                         # se escribió aquí, pero el bucle de suma no lo lee
-(gdb) quit
+(gdb) quit                     # salir del depurador
 ```
 
 **Diagnóstico:** el primer bucle rellena `valores[1..n]` y el segundo suma `valores[0..n-1]`. Sobra `valores[0]` (basura) y falta `valores[n]`. Los índices de un array de C van de `0` a `n-1`.
@@ -377,11 +356,81 @@ for (int i = 0; i < n; i++)
     suma += valores[i];
 ```
 
-### Lanzar gdb con argumentos
+### Caso 3 — recorrer el programa paso a paso
+
+Sin buscar ningún fallo: ejecutar línea a línea y observar cómo cambian las variables.
 
 ```bash
-gdb --args ./depura 500       # equivale a abrir gdb y luego 'run 500'
+$ gdb ./depura                 # abre el depurador con el binario
+(gdb) start 3                   # 'start' es como 'run' pero con un breakpoint automático en main
+Temporary breakpoint 1, main (argc=2, argv=...) at depura.c:18
+18          int n = atoi(argv[1]);         # detenido aquí, aún sin ejecutar
+(gdb) display n                # muestra n automáticamente tras cada paso
+(gdb) next                     # ejecuta la línea 18 y para en la siguiente
+21          for (int i = 1; i <= n; i++)
+1: n = 3                       # ya tiene valor tras el atoi
+(gdb) next                     # entra en el cuerpo del bucle
+22              valores[i] = i;
+(gdb) next                     # vuelve a la cabecera del for (i++)
+21          for (int i = 1; i <= n; i++)
+(gdb) print i                  # inspecciona i puntualmente
+$1 = 1
+(gdb) print valores[1]         # el bucle ya escribió esta posición
+$2 = 1
+(gdb) info locals              # todas las variables locales visibles ahora
+i = 1
+n = 3
+(gdb) continue                 # deja correr hasta el final (no hay más breakpoints)
+Suma 1..3 = 6
+[Inferior 1 (process 12345) exited normally]
+(gdb) quit                     # salir del depurador
 ```
+
+`next` pasa por encima de las llamadas a función; `step` entra en ellas. `display <expr>` fija una expresión para verla en cada parada; `undisplay <n>` la quita.
+
+Casi todo se abrevia: `n`, `s`, `c`, `p`, `b`… Y **`Enter` a secas repite el último comando**, así que se avanza dando solo a `Enter` tras el primer `next`.
+
+### Modo TUI (código y ejecución a la vez)
+
+`gdb -tui ./depura` —o, ya dentro, `tui enable` (o `Ctrl+X` `A`)— divide la pantalla: el código fuente arriba, con la línea actual resaltada y actualizándose en cada `next`/`step`, y la consola de gdb abajo.
+
+- `Ctrl+X` `2` — añade una segunda ventana (registros, o ensamblador); púlsalo de nuevo para rotarla.
+- `Ctrl+X` `O` — cambia el foco entre ventanas.
+- flechas `↑` `↓` — hacen scroll de la ventana con el foco.
+- `tui disable` — vuelve a la vista normal de solo texto.
+
+### Caso 4 — autopsia de un coredump
+
+Cuando el fallo ya ha ocurrido (por ejemplo, en la máquina de otra persona) se puede analizar el coredump que dejó, sin volver a ejecutar el programa.
+
+Por defecto el sistema no escribe coredumps; hay que habilitarlos en la sesión de shell actual:
+
+```bash
+$ ulimit -c unlimited          # sin límite de tamaño para el coredump (por defecto: 0, desactivado)
+$ ./depura 500
+Segmentation fault (core dumped)
+$ ls
+core   depura   depura.c       # 'core' (a veces core.<pid>) es el volcado de memoria
+```
+
+Se abre pasando a `gdb` el binario y el coredump:
+
+```bash
+$ gdb ./depura core            # binario + coredump
+Core was generated by './depura 500'.                   # qué orden lo produjo
+Program terminated with signal SIGSEGV, Segmentation fault.
+#0  0x0000555555555199 in main (argc=2, argv=...) at depura.c:22    # dónde murió
+22              valores[i] = i;
+(gdb) print i                  # ¿qué valor tenía i cuando el programa casco?
+$1 = 108
+(gdb) backtrace                # pila de llamadas en el momento del fallo
+#0  main (argc=2, argv=...) at depura.c:22
+(gdb) quit
+```
+
+No se puede `continue` ni `next`: el proceso ya no existe, solo su "cadáver". Sirve para `backtrace`, `print` e `info locals`.
+
+> A veces los coredumps los recoge `systemd` en vez de dejar un fichero `core`. Se listan con `coredumpctl list` y se abren con `coredumpctl gdb depura`.
 
 ### Otras herramientas de diagnóstico
 
@@ -394,9 +443,9 @@ strace ./hola                 # traza las llamadas al sistema que hace el progra
 
 ## Herramientas del curso
 
-- **tmux** — multiplexor de terminales: varias terminales (paneles y ventanas) en una sola sesión, que sigue viva aunque se cierre la conexión. Útil para tener a la vez el editor, la compilación y la ejecución.
 - **gdb** — depurador de C/C++ (sección anterior). VS Code y `ddd` son interfaces gráficas sobre él.
 - **valgrind** — instrumenta el binario para detectar errores de memoria (lecturas/escrituras fuera de rango, uso de memoria sin inicializar, fugas de `malloc`).
+- **tmux** — multiplexor de terminales: varias terminales (paneles y ventanas) en una sola sesión, que sigue viva aunque se cierre la conexión. Útil para tener a la vez el editor, la compilación y la ejecución.
 - **strace** — muestra la secuencia de llamadas al sistema (`open`, `read`, `write`, `fork`…) que ejecuta un programa; imprescindible en los temas de procesos y ficheros.
 
 ## Ejercicios propuestos
