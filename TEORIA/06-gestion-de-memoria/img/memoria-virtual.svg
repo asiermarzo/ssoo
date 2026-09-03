@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 280" font-family="sans-serif" font-size="12" role="img" aria-label="La memoria lógica se traduce mediante la MMU a memoria física; el área de swap actúa como respaldo de la memoria física para las páginas que no caben en ella">
+  <rect width="680" height="280" fill="#ffffff"/>
+  <rect x="30" y="40" width="160" height="70" fill="#cfe0f2" stroke="#2b6f99"/>
+  <text x="110" y="65" text-anchor="middle" font-weight="bold">Memoria lógica</text>
+  <text x="110" y="82" text-anchor="middle" font-size="10">(2³²/2⁶⁴ direcciones</text>
+  <text x="110" y="95" text-anchor="middle" font-size="10">por proceso)</text>
+  <rect x="250" y="55" width="90" height="40" fill="#fff2a8" stroke="#b59f00"/>
+  <text x="295" y="80" text-anchor="middle" font-weight="bold">MMU</text>
+  <rect x="400" y="40" width="170" height="70" fill="#cfe0f2" stroke="#2b6f99"/>
+  <text x="485" y="65" text-anchor="middle" font-weight="bold">Memoria física</text>
+  <text x="485" y="82" text-anchor="middle" font-size="10">(total disponible en el sistema)</text>
+  <line x1="190" y1="75" x2="248" y2="75" stroke="#333"/><path d="M248 75 l-9 -4 l0 8 z" fill="#333"/>
+  <line x1="340" y1="75" x2="398" y2="75" stroke="#333"/><path d="M398 75 l-9 -4 l0 8 z" fill="#333"/>
+  <rect x="400" y="190" width="170" height="70" fill="#f7d9d9" stroke="#b3261e"/>
+  <text x="485" y="215" text-anchor="middle" font-weight="bold">Área de swap</text>
+  <text x="485" y="232" text-anchor="middle" font-size="10">(memoria lógica que no cabe</text>
+  <text x="485" y="245" text-anchor="middle" font-size="10">en la física)</text>
+  <line x1="485" y1="110" x2="485" y2="188" stroke="#333"/>
+  <path d="M485 110 l-4 9 l8 0 z" fill="#333"/><path d="M485 188 l-4 -9 l8 0 z" fill="#333"/>
+  <text x="500" y="150" font-size="10" fill="#777">respaldo, no</text>
+  <text x="500" y="163" font-size="10" fill="#777">un paso más</text>
+</svg>

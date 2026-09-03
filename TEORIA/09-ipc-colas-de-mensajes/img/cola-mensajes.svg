@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" font-family="sans-serif" font-size="13" role="img" aria-label="Productores envían mensajes a una cola FIFO con prioridad; los consumidores extraen mensajes completos de la cola">
+  <rect width="640" height="200" fill="#ffffff"/>
+  <rect x="20" y="70" width="140" height="60" rx="6" fill="#eef2f7" stroke="#666"/>
+  <text x="90" y="95" text-anchor="middle">productor(es)</text>
+  <text x="90" y="112" text-anchor="middle" font-size="11" fill="#555">send / msgsnd</text>
+  <rect x="230" y="55" width="60" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="260" y="77" text-anchor="middle" fill="#fff">m1</text>
+  <rect x="292" y="55" width="60" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="322" y="77" text-anchor="middle" fill="#fff">m2</text>
+  <rect x="354" y="55" width="60" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="384" y="77" text-anchor="middle" fill="#fff">m3</text>
+  <rect x="222" y="45" width="200" height="100" fill="none" stroke="#333" stroke-dasharray="4 3"/>
+  <text x="322" y="132" text-anchor="middle" font-size="11" fill="#555">cola FIFO, con tipo/prioridad</text>
+  <rect x="460" y="70" width="150" height="60" rx="6" fill="#eef2f7" stroke="#666"/>
+  <text x="535" y="95" text-anchor="middle">consumidor(es)</text>
+  <text x="535" y="112" text-anchor="middle" font-size="11" fill="#555">receive / msgrcv</text>
+  <line x1="160" y1="100" x2="222" y2="100" stroke="#333" stroke-width="2"/><path d="M222 100 l-10 -5 l0 10 z" fill="#333"/>
+  <line x1="422" y1="100" x2="460" y2="100" stroke="#333" stroke-width="2"/><path d="M460 100 l-10 -5 l0 10 z" fill="#333"/>
+</svg>

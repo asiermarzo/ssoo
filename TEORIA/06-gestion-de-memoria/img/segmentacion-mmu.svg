@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 300" font-family="sans-serif" font-size="12" role="img" aria-label="Cada segmento del espacio virtual se traduce mediante la MMU a una zona de memoria física distinta y no contigua; los datos compartidos son accesibles desde varios procesos">
+  <rect width="780" height="300" fill="#ffffff"/>
+  <text x="115" y="18" text-anchor="middle" font-weight="bold">Espacio virtual</text>
+  <rect x="40" y="30" width="150" height="40" fill="#b0b0b0" stroke="#666"/><text x="115" y="54" text-anchor="middle">Código</text>
+  <rect x="40" y="80" width="150" height="60" fill="#f3b183" stroke="#b5651d"/><text x="115" y="114" text-anchor="middle">Datos</text>
+  <rect x="40" y="150" width="150" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="115" y="174" text-anchor="middle" fill="#fff">Datos compartidos</text>
+  <rect x="40" y="200" width="150" height="40" fill="#4fa08a" stroke="#2f6f5c"/><text x="115" y="224" text-anchor="middle" fill="#fff">Pila</text>
+  <rect x="340" y="110" width="100" height="50" fill="#fff2a8" stroke="#b59f00"/>
+  <text x="390" y="140" text-anchor="middle" font-weight="bold">MMU</text>
+  <text x="665" y="18" text-anchor="middle" font-weight="bold">Memoria física (zonas no contiguas)</text>
+  <rect x="590" y="30" width="150" height="60" fill="#f3b183" stroke="#b5651d"/><text x="665" y="64" text-anchor="middle">Datos</text>
+  <rect x="590" y="110" width="150" height="40" fill="#b0b0b0" stroke="#666"/><text x="665" y="134" text-anchor="middle">Código</text>
+  <rect x="590" y="170" width="150" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="665" y="188" text-anchor="middle" font-size="10" fill="#fff">Datos compartidos</text>
+  <text x="665" y="200" text-anchor="middle" font-size="9" fill="#fff">(accesible desde varios procesos)</text>
+  <rect x="590" y="230" width="150" height="40" fill="#4fa08a" stroke="#2f6f5c"/><text x="665" y="254" text-anchor="middle" fill="#fff">Pila</text>
+  <line x1="190" y1="50" x2="340" y2="128" stroke="#666"/>
+  <line x1="190" y1="110" x2="340" y2="132" stroke="#b5651d"/>
+  <line x1="190" y1="170" x2="340" y2="140" stroke="#2b6f99"/>
+  <line x1="190" y1="220" x2="340" y2="148" stroke="#2f6f5c"/>
+  <line x1="440" y1="128" x2="590" y2="60" stroke="#b5651d"/><path d="M590 60 l-9 3 l1 -9 z" fill="#b5651d"/>
+  <line x1="440" y1="132" x2="590" y2="130" stroke="#666"/><path d="M590 130 l-10 -2 l3 -8 z" fill="#666"/>
+  <line x1="440" y1="140" x2="590" y2="190" stroke="#2b6f99"/><path d="M590 190 l-10 2 l2 -9 z" fill="#2b6f99"/>
+  <line x1="440" y1="148" x2="590" y2="250" stroke="#2f6f5c"/><path d="M590 250 l-9 -3 l4 -8 z" fill="#2f6f5c"/>
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 280" font-family="sans-serif" font-size="12" role="img" aria-label="El intercambio copia la imagen de un proceso de memoria primaria a memoria secundaria (desalojo) y de vuelta (realojo)">
+  <rect width="640" height="280" fill="#ffffff"/>
+  <rect x="50" y="60" width="150" height="150" fill="#cfe0f2" stroke="#2b6f99"/>
+  <rect x="50" y="60" width="150" height="60" fill="#6ba3d6" stroke="#2b6f99"/>
+  <ellipse cx="470" cy="80" rx="90" ry="18" fill="#eef2f7" stroke="#666"/>
+  <line x1="380" y1="80" x2="380" y2="200" stroke="#666"/>
+  <line x1="560" y1="80" x2="560" y2="200" stroke="#666"/>
+  <ellipse cx="470" cy="200" rx="90" ry="18" fill="#eef2f7" stroke="#666"/>
+  <rect x="410" y="95" width="45" height="35" fill="#6ba3d6" stroke="#2b6f99"/><text x="432" y="116" text-anchor="middle" font-size="9" fill="#fff">Pᵢ</text>
+  <rect x="485" y="150" width="45" height="35" fill="#f3b183" stroke="#b5651d"/><text x="507" y="171" text-anchor="middle" font-size="9">Pⱼ</text>
+  <line x1="200" y1="110" x2="378" y2="110" stroke="#333"/><path d="M378 110 l-9 -4 l0 8 z" fill="#333"/>
+  <text x="290" y="100" text-anchor="middle" font-size="10">Desalojo de Pᵢ (swap out)</text>
+  <line x1="378" y1="170" x2="200" y2="170" stroke="#333"/><path d="M200 170 l9 -4 l0 8 z" fill="#333"/>
+  <text x="290" y="188" text-anchor="middle" font-size="10">Realojo de Pⱼ (swap in)</text>
+  <text x="125" y="235" text-anchor="middle" font-weight="bold">Memoria primaria</text>
+  <text x="470" y="235" text-anchor="middle" font-weight="bold">Memoria secundaria (swap)</text>
+</svg>

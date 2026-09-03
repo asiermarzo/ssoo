@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" font-family="sans-serif" font-size="13" role="img" aria-label="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
+  <rect width="620" height="200" fill="#ffffff"/>
+  <text x="20" y="30" font-weight="bold">Trabajador A</text>
+  <rect x="150" y="15" width="180" height="30" fill="#57c78a" stroke="#2e7d4f"/><text x="240" y="35" text-anchor="middle">tiene la llave · SC</text>
+  <rect x="330" y="15" width="120" height="30" fill="#eeeeee" stroke="#999"/><text x="390" y="35" text-anchor="middle" fill="#777">espera</text>
+  <text x="20" y="90" font-weight="bold">Trabajador B</text>
+  <rect x="150" y="75" width="180" height="30" fill="#eeeeee" stroke="#999"/><text x="240" y="95" text-anchor="middle" fill="#777">espera la llave</text>
+  <rect x="330" y="75" width="120" height="30" fill="#3f9dd6" stroke="#2b6f99"/><text x="390" y="95" text-anchor="middle" fill="#fff">tiene la llave · SC</text>
+  <line x1="150" y1="130" x2="600" y2="130" stroke="#333"/><path d="M600 126 l8 4 l-8 4 z" fill="#333"/><text x="610" y="134" font-size="12">t</text>
+  <line x1="330" y1="120" x2="330" y2="140" stroke="#333" stroke-dasharray="3 3"/>
+  <text x="330" y="155" text-anchor="middle" font-size="12">A libera la llave</text>
+  <text x="240" y="185" text-anchor="middle" font-size="12" fill="#555">la llave (mutex) solo puede estar en una mano: mientras A la tiene, B espera</text>
+</svg>

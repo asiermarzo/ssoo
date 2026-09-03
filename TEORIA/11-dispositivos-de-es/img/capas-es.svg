@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" font-family="sans-serif" font-size="12" role="img" aria-label="Pirámide de capas de la E/S: de abajo arriba, controladores y manejadores de interrupciones, manejadores de dispositivos, rutinas del sistema operativo y programas de usuario">
+  <rect width="420" height="300" fill="#ffffff"/>
+  <defs>
+    <marker id="t11-01-arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#333"/>
+    </marker>
+  </defs>
+  <polygon points="210,20 257.5,85 162.5,85" fill="#dcebc9" stroke="#333"/>
+  <polygon points="162.5,85 257.5,85 305,150 115,150" fill="#cfd6f5" stroke="#333"/>
+  <polygon points="115,150 305,150 352.5,215 67.5,215" fill="#f7d9a8" stroke="#333"/>
+  <polygon points="67.5,215 352.5,215 400,280 20,280" fill="#faf3b0" stroke="#333"/>
+  <text x="210" y="56" text-anchor="middle">Programas</text>
+  <text x="210" y="70" text-anchor="middle">de usuario</text>
+  <text x="210" y="121" text-anchor="middle">Rutinas del sistema</text>
+  <text x="210" y="135" text-anchor="middle">operativo</text>
+  <text x="210" y="186" text-anchor="middle">Manejadores de</text>
+  <text x="210" y="200" text-anchor="middle">dispositivos</text>
+  <text x="210" y="245" text-anchor="middle">Controladores y manejadores</text>
+  <text x="210" y="259" text-anchor="middle">de interrupciones</text>
+  <line x1="30" y1="278" x2="30" y2="22" stroke="#333" marker-end="url(#t11-01-arrow)"/>
+  <text x="12" y="288" font-size="10">HW</text>
+  <text x="8" y="18" font-size="10">apps</text>
+</svg>

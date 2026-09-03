@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" font-family="sans-serif" font-size="12" role="img" aria-label="Linea de tiempo vertical: el proceso A bloquea el mutex, trabaja y libera; el proceso B permanece bloqueado durante exactamente ese intervalo y solo entonces empieza su propia sección critica">
+  <rect width="640" height="340" fill="#ffffff"/>
+  <text x="130" y="24" text-anchor="middle" font-weight="bold">Proceso A</text>
+  <text x="500" y="24" text-anchor="middle" font-weight="bold">Proceso B</text>
+  <text x="15" y="34" font-size="10" fill="#777">tiempo</text>
+  <line x1="15" y1="40" x2="15" y2="320" stroke="#999" marker-end="url(#arrT10t)"/>
+  <defs><marker id="arrT10t" markerWidth="7" markerHeight="7" refX="3" refY="6" orient="auto"><path d="M0,0 L6,0 L3,6 z" fill="#999"/></marker></defs>
+  <line x1="320" y1="35" x2="320" y2="320" stroke="#ccc" stroke-dasharray="3 3"/>
+  <rect x="60" y="45" width="140" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="130" y="67" text-anchor="middle" fill="#fff">lock(mutex)</text>
+  <line x1="130" y1="79" x2="130" y2="90" stroke="#333"/>
+  <rect x="60" y="90" width="140" height="34" fill="#3f7fb5" stroke="#2b6f99"/><text x="130" y="112" text-anchor="middle" fill="#fff">leer/escribir SEG</text>
+  <line x1="130" y1="124" x2="130" y2="135" stroke="#333"/>
+  <rect x="60" y="135" width="140" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="130" y="157" text-anchor="middle" fill="#fff">unlock(mutex)</text>
+  <rect x="430" y="45" width="140" height="124" fill="#eeeeee" stroke="#999" stroke-dasharray="4 3"/>
+  <text x="500" y="63" text-anchor="middle" font-size="11">lock(mutex)</text>
+  <text x="500" y="100" text-anchor="middle" font-size="10" fill="#a33">bloqueado, esperando</text>
+  <text x="500" y="114" text-anchor="middle" font-size="10" fill="#a33">a que A libere</text>
+  <path d="M200,152 C260,152 260,197 428,197" stroke="#2b6f99" stroke-width="1.6" fill="none" stroke-dasharray="5 3" marker-end="url(#arrT10h)"/>
+  <defs><marker id="arrT10h" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2b6f99"/></marker></defs>
+  <text x="315" y="180" text-anchor="middle" font-size="10" fill="#2b6f99">A libera ⇒ B entra</text>
+  <rect x="430" y="180" width="140" height="34" fill="#3f7fb5" stroke="#2b6f99"/><text x="500" y="202" text-anchor="middle" fill="#fff">leer/escribir SEG</text>
+  <line x1="500" y1="214" x2="500" y2="225" stroke="#333"/>
+  <rect x="430" y="225" width="140" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="500" y="247" text-anchor="middle" fill="#fff">unlock(mutex)</text>
+  <rect x="250" y="290" width="140" height="34" rx="6" fill="#eef2f7" stroke="#666"/><text x="320" y="312" text-anchor="middle" font-size="11">zona de memoria compartida</text>
+  <line x1="130" y1="124" x2="290" y2="290" stroke="#333" stroke-dasharray="2 2"/>
+  <line x1="500" y1="214" x2="350" y2="290" stroke="#333" stroke-dasharray="2 2"/>
+</svg>

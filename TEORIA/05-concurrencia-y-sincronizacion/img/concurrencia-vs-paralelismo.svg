@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" font-family="sans-serif" font-size="13" role="img" aria-label="Concurrencia: un procesador alternando dos procesos. Paralelismo: dos procesadores ejecutando un proceso cada uno.">
+  <rect width="760" height="260" fill="#ffffff"/>
+  <text x="30" y="30" font-size="15" font-weight="bold">Concurrencia (1 CPU)</text>
+  <rect x="40"  y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="85"  y="72" text-anchor="middle">Proc 1</text>
+  <rect x="130" y="50" width="90" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="175" y="72" text-anchor="middle" fill="#fff">Proc 2</text>
+  <rect x="220" y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="265" y="72" text-anchor="middle">Proc 1</text>
+  <rect x="310" y="50" width="90" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="355" y="72" text-anchor="middle" fill="#fff">Proc 2</text>
+  <rect x="400" y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="445" y="72" text-anchor="middle">Proc 1</text>
+  <line x1="40" y1="100" x2="520" y2="100" stroke="#333"/><path d="M520 96 l8 4 l-8 4 z" fill="#333"/><text x="534" y="104">tiempo</text>
+  <text x="30" y="160" font-size="15" font-weight="bold">Paralelismo (2 CPU)</text>
+  <rect x="40" y="180" width="440" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="260" y="202" text-anchor="middle">Proc 1  (CPU A)</text>
+  <rect x="40" y="220" width="440" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="260" y="242" text-anchor="middle" fill="#fff">Proc 2  (CPU B)</text>
+  <line x1="40" y1="264" x2="40" y2="264" stroke="#333"/>
+</svg>

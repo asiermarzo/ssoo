@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" font-family="sans-serif" font-size="12" role="img" aria-label="RAID 5: cuatro discos con bloques de datos y paridad distribuida">
+  <rect width="520" height="260" fill="#ffffff"/>
+  <text x="260" y="18" text-anchor="middle" font-weight="bold">RAID 5</text>
+  <g stroke="#666" fill="#f2f2f2">
+    <rect x="30"  y="30" width="90" height="180" rx="8"/>
+    <rect x="150" y="30" width="90" height="180" rx="8"/>
+    <rect x="270" y="30" width="90" height="180" rx="8"/>
+    <rect x="390" y="30" width="90" height="180" rx="8"/>
+  </g>
+  <g text-anchor="middle">
+    <rect x="30"  y="35"  width="90" height="35" fill="#f6c85f"/><text x="75"  y="58">A1</text>
+    <rect x="150" y="35"  width="90" height="35" fill="#f6c85f"/><text x="195" y="58">A2</text>
+    <rect x="270" y="35"  width="90" height="35" fill="#f6c85f"/><text x="315" y="58">A3</text>
+    <rect x="390" y="35"  width="90" height="35" fill="#e8a0a0"/><text x="435" y="58">Ap</text>
+    <rect x="30"  y="72"  width="90" height="35" fill="#a7d489"/><text x="75"  y="95">B1</text>
+    <rect x="150" y="72"  width="90" height="35" fill="#a7d489"/><text x="195" y="95">B2</text>
+    <rect x="270" y="72"  width="90" height="35" fill="#e8a0a0"/><text x="315" y="95">Bp</text>
+    <rect x="390" y="72"  width="90" height="35" fill="#a7d489"/><text x="435" y="95">B3</text>
+    <rect x="30"  y="109" width="90" height="35" fill="#7db8e0"/><text x="75"  y="132">C1</text>
+    <rect x="150" y="109" width="90" height="35" fill="#e8a0a0"/><text x="195" y="132">Cp</text>
+    <rect x="270" y="109" width="90" height="35" fill="#7db8e0"/><text x="315" y="132">C2</text>
+    <rect x="390" y="109" width="90" height="35" fill="#7db8e0"/><text x="435" y="132">C3</text>
+    <rect x="30"  y="146" width="90" height="35" fill="#e8a0a0"/><text x="75"  y="169">Dp</text>
+    <rect x="150" y="146" width="90" height="35" fill="#c7a3e0"/><text x="195" y="169">D1</text>
+    <rect x="270" y="146" width="90" height="35" fill="#c7a3e0"/><text x="315" y="169">D2</text>
+    <rect x="390" y="146" width="90" height="35" fill="#c7a3e0"/><text x="435" y="169">D3</text>
+  </g>
+  <g text-anchor="middle" font-size="11">
+    <text x="75"  y="200">Disco 0</text><text x="195" y="200">Disco 1</text>
+    <text x="315" y="200">Disco 2</text><text x="435" y="200">Disco 3</text>
+  </g>
+  <text x="260" y="235" text-anchor="middle" font-size="11" fill="#a05050">Xp = bloque de paridad (rota entre discos)</text>
+</svg>

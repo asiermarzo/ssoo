@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
+  <rect width="340" height="340" fill="#ffffff"/>
+  <circle cx="170" cy="170" r="120" fill="none" stroke="#ccc" stroke-dasharray="2 4"/>
+  <circle cx="170" cy="50"  r="26" fill="#ffe14d" stroke="#b59a00"/><text x="170" y="55" text-anchor="middle">F1</text>
+  <circle cx="284" cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="284" y="138" text-anchor="middle">F2</text>
+  <circle cx="240" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="240" y="272" text-anchor="middle">F3</text>
+  <circle cx="100" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="100" y="272" text-anchor="middle">F4</text>
+  <circle cx="56"  cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="56"  y="138" text-anchor="middle">F5</text>
+  <g stroke="#555" stroke-width="3">
+    <line x1="232" y1="73"  x2="248" y2="57"/>
+    <line x1="278" y1="197" x2="296" y2="205"/>
+    <line x1="170" y1="253" x2="170" y2="275"/>
+    <line x1="62"  y1="205" x2="44"  y2="213"/>
+    <line x1="108" y1="73"  x2="92"  y2="57"/>
+  </g>
+  <text x="170" y="320" text-anchor="middle" font-size="12" fill="#555">cada tenedor (—) es un recurso compartido por dos filósofos vecinos</text>
+</svg>

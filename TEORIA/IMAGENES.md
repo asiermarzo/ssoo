@@ -21,7 +21,12 @@ Este documento registra la campaña visual de los 13 temas. Cada figura está in
 | 13 · GUI | T13.1–T13.4 | 1 de archivo, 3 Mermaid |
 | **Total** | **57** | **5 generadas, 4 de archivo, 48 Mermaid** |
 
-Las ilustraciones generadas no contienen texto ni marcas, de modo que la explicación y la localización permanecen en Markdown. Los diagramas Mermaid son editables y se renderizan como gráficos vectoriales en visores compatibles.
+Las ilustraciones generadas no contienen texto ni marcas, de modo que la explicación y la localización permanecen en Markdown.
+
+En los `README.md` conviven dos formatos de diagrama:
+
+- **Mermaid**: embebido como bloque de código ` ```mermaid ` en el propio `.md`; editable y renderizado por el visor.
+- **SVG**: archivo `.svg` independiente en la carpeta `img/` del tema, referenciado con `<img src="img/…​.svg">`. En la columna «Técnica» de la tabla anterior, los SVG están contabilizados junto con Mermaid.
 
 ## Ilustraciones generadas
 

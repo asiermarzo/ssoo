@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" font-family="sans-serif" font-size="12" role="img" aria-label="Nodo-i con 10 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
+  <rect width="700" height="400" fill="#ffffff"/>
+  <!-- nodo i -->
+  <rect x="20" y="30" width="180" height="330" fill="#eef2f7" stroke="#444"/>
+  <text x="110" y="22" text-anchor="middle" font-weight="bold">Nodo-i</text>
+  <g font-size="10">
+    <rect x="20" y="30" width="180" height="18" fill="#dbe4ee" stroke="#888"/><text x="26" y="43">metadatos: modo, enlaces, UID/GID</text>
+    <rect x="20" y="48" width="180" height="18" fill="#dbe4ee" stroke="#888"/><text x="26" y="61">tamaño, tiempos</text>
+  </g>
+  <g font-size="10">
+    <rect x="20" y="72" width="180" height="150" fill="#ffffff" stroke="#888"/>
+    <text x="110" y="88" text-anchor="middle">10 punteros directos</text>
+    <line x1="20" y1="96" x2="200" y2="96" stroke="#ccc"/>
+  </g>
+  <rect x="20" y="228" width="180" height="24" fill="#ffe9c9" stroke="#888"/><text x="26" y="244" font-size="10">indirecto individual</text>
+  <rect x="20" y="252" width="180" height="24" fill="#ffd7a0" stroke="#888"/><text x="26" y="268" font-size="10">indirecto doble</text>
+  <rect x="20" y="276" width="180" height="24" fill="#ffc078" stroke="#888"/><text x="26" y="292" font-size="10">indirecto triple</text>
+  <!-- bloques de datos directos -->
+  <g>
+    <rect x="300" y="90" width="90" height="60" fill="#cfe0f2" stroke="#3773a0"/>
+    <text x="345" y="80" text-anchor="middle" font-size="10">bloques de datos</text>
+    <line x1="120" y1="150" x2="300" y2="120" stroke="#333"/><path d="M300 120 l-11 -1 l3 -7 z" fill="#333"/>
+  </g>
+  <!-- indirecto individual -->
+  <g>
+    <rect x="300" y="200" width="60" height="70" fill="#e8eef5" stroke="#888"/>
+    <text x="330" y="192" text-anchor="middle" font-size="10">bloque de punteros</text>
+    <rect x="420" y="200" width="90" height="70" fill="#cfe0f2" stroke="#3773a0"/>
+    <text x="465" y="192" text-anchor="middle" font-size="10">bloques de datos</text>
+    <line x1="200" y1="240" x2="300" y2="235" stroke="#333"/><path d="M300 235 l-10 -3 l1 7 z" fill="#333"/>
+    <line x1="360" y1="235" x2="420" y2="235" stroke="#333"/><path d="M420 235 l-10 -3 l0 7 z" fill="#333"/>
+  </g>
+  <!-- indirecto doble -->
+  <g>
+    <rect x="300" y="290" width="45" height="60" fill="#e8eef5" stroke="#888"/>
+    <rect x="380" y="290" width="45" height="60" fill="#e8eef5" stroke="#888"/>
+    <rect x="470" y="290" width="90" height="60" fill="#cfe0f2" stroke="#3773a0"/>
+    <text x="360" y="284" text-anchor="middle" font-size="10">2 niveles de bloques de punteros</text>
+    <text x="515" y="284" text-anchor="middle" font-size="10">datos</text>
+    <line x1="200" y1="264" x2="300" y2="312" stroke="#333"/><path d="M300 312 l-10 -3 l0 7 z" fill="#333"/>
+    <line x1="345" y1="318" x2="380" y2="318" stroke="#333"/><path d="M380 318 l-9 -3 l0 6 z" fill="#333"/>
+    <line x1="425" y1="318" x2="470" y2="318" stroke="#333"/><path d="M470 318 l-9 -3 l0 6 z" fill="#333"/>
+    <line x1="200" y1="288" x2="298" y2="332" stroke="#333" stroke-dasharray="3 2"/><path d="M298 332 l-10 -3 l0 7 z" fill="#333"/>
+    <text x="230" y="352" font-size="9" fill="#777">indirecto triple: 3 niveles</text>
+  </g>
+</svg>

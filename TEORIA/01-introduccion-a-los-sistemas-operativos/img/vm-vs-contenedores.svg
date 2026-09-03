@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" font-family="sans-serif" font-size="11" role="img" aria-label="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
+  <rect width="700" height="300" fill="#ffffff"/>
+  <text x="165" y="22" text-anchor="middle" font-weight="bold" font-size="13">Máquinas virtuales</text>
+  <text x="165" y="37" text-anchor="middle" font-size="10" font-style="italic">viviendas completas</text>
+  <rect x="50" y="50" width="110" height="70" fill="#cfe2f3" stroke="#333"/>
+  <text x="105" y="75" text-anchor="middle" font-size="10">VM 1</text>
+  <text x="105" y="90" text-anchor="middle" font-size="9">SO invitado +</text>
+  <text x="105" y="103" text-anchor="middle" font-size="9">aplicaciones</text>
+  <rect x="170" y="50" width="110" height="70" fill="#cfe2f3" stroke="#333"/>
+  <text x="225" y="75" text-anchor="middle" font-size="10">VM 2</text>
+  <text x="225" y="90" text-anchor="middle" font-size="9">SO invitado +</text>
+  <text x="225" y="103" text-anchor="middle" font-size="9">aplicaciones</text>
+  <rect x="50" y="120" width="230" height="45" fill="#fce5a8" stroke="#333"/>
+  <text x="165" y="147" text-anchor="middle">Hipervisor</text>
+  <rect x="50" y="165" width="230" height="35" fill="#d9d9d9" stroke="#333"/>
+  <text x="165" y="188" text-anchor="middle">Hardware</text>
+  <text x="505" y="22" text-anchor="middle" font-weight="bold" font-size="13">Contenedores</text>
+  <text x="505" y="37" text-anchor="middle" font-size="10" font-style="italic">espacios aislados, núcleo común</text>
+  <rect x="390" y="50" width="110" height="70" fill="#d9ead3" stroke="#333"/>
+  <text x="445" y="75" text-anchor="middle" font-size="10">Contenedor 1</text>
+  <text x="445" y="90" text-anchor="middle" font-size="9">aplicación +</text>
+  <text x="445" y="103" text-anchor="middle" font-size="9">dependencias</text>
+  <rect x="510" y="50" width="110" height="70" fill="#d9ead3" stroke="#333"/>
+  <text x="565" y="75" text-anchor="middle" font-size="10">Contenedor 2</text>
+  <text x="565" y="90" text-anchor="middle" font-size="9">aplicación +</text>
+  <text x="565" y="103" text-anchor="middle" font-size="9">dependencias</text>
+  <rect x="390" y="120" width="230" height="45" fill="#fce5a8" stroke="#333"/>
+  <text x="505" y="140" text-anchor="middle" font-size="10">SO anfitrión</text>
+  <text x="505" y="154" text-anchor="middle" font-size="9">núcleo compartido</text>
+  <rect x="390" y="165" width="230" height="35" fill="#d9d9d9" stroke="#333"/>
+  <text x="505" y="188" text-anchor="middle">Hardware</text>
+  <text x="165" y="225" text-anchor="middle" font-size="10" fill="#555">cada VM incluye su propio SO invitado</text>
+  <text x="505" y="225" text-anchor="middle" font-size="10" fill="#555">los contenedores comparten el núcleo del anfitrión</text>
+</svg>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" font-family="sans-serif" font-size="12" role="img" aria-label="Movimiento de la cabeza con SSTF: 76, 29, 17, 12, 124, 137, 201, 269">
+  <rect width="480" height="300" fill="#ffffff"/>
+  <line x1="55" y1="20" x2="55" y2="250" stroke="#333"/>
+  <line x1="55" y1="250" x2="460" y2="250" stroke="#333"/>
+  <text x="10" y="25">300</text><text x="20" y="250">0</text>
+  <!-- cum: 0,47,59,64,176,189,253,321 -> x = 55 + cum*(400/321) ; pistas 76,29,17,12,124,137,201,269 -->
+  <polyline fill="none" stroke="#2b4a8b" stroke-width="1.6"
+    points="55,192 114,228 130,237 135,241 194,155 210,145 260,96 384,44"/>
+  <g fill="#c0392b">
+    <circle cx="55" cy="192" r="3"/><circle cx="114" cy="228" r="3"/><circle cx="130" cy="237" r="3"/>
+    <circle cx="135" cy="241" r="3"/><circle cx="194" cy="155" r="3"/><circle cx="210" cy="145" r="3"/>
+    <circle cx="260" cy="96" r="3"/><circle cx="384" cy="44" r="3"/>
+  </g>
+  <g fill="#333">
+    <text x="45" y="188">76</text><text x="106" y="244">29</text><text x="118" y="252">17</text>
+    <text x="138" y="255">12</text><text x="180" y="152">124</text><text x="204" y="140">137</text>
+    <text x="264" y="94">201</text><text x="388" y="42">269</text>
+  </g>
+</svg>

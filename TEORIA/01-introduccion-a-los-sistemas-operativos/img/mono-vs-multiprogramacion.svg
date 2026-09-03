@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cronograma comparando el uso de CPU y E/S en un sistema monoprogramado y en uno multiprogramado">
+  <rect width="780" height="340" fill="#ffffff"/>
+  <text x="20" y="28" font-size="15" font-weight="bold">Monoprogramado</text>
+  <text x="70" y="62" text-anchor="end">CPU</text>
+  <text x="70" y="102" text-anchor="end">E/S</text>
+  <line x1="80" y1="38" x2="80" y2="118" stroke="#333"/>
+  <rect x="80"  y="45" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="135" y="65" text-anchor="middle">Tarea 1</text>
+  <rect x="190" y="45" width="90"  height="30" fill="none" stroke="#999" stroke-dasharray="4 3"/><text x="235" y="64" text-anchor="middle" fill="#777" font-size="11">(ociosa)</text>
+  <rect x="280" y="45" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="335" y="65" text-anchor="middle">Tarea 1</text>
+  <rect x="390" y="45" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="445" y="65" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="500" y="45" width="90"  height="30" fill="none" stroke="#999" stroke-dasharray="4 3"/><text x="545" y="64" text-anchor="middle" fill="#777" font-size="11">(ociosa)</text>
+  <rect x="590" y="45" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="645" y="65" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="190" y="85" width="90"  height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="235" y="105" text-anchor="middle">Tarea 1</text>
+  <rect x="500" y="85" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="545" y="105" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <text x="20" y="180" font-size="15" font-weight="bold">Multiprogramado</text>
+  <text x="70" y="214" text-anchor="end">CPU</text>
+  <text x="70" y="254" text-anchor="end">E/S</text>
+  <line x1="80" y1="190" x2="80" y2="270" stroke="#333"/>
+  <rect x="80"  y="197" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="135" y="217" text-anchor="middle">Tarea 1</text>
+  <rect x="190" y="197" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="235" y="217" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="280" y="197" width="110" height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="335" y="217" text-anchor="middle">Tarea 1</text>
+  <rect x="390" y="197" width="90"  height="30" fill="#808080" stroke="#4d4d4d"/><text x="435" y="217" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <rect x="190" y="237" width="90"  height="30" fill="#9dc3e6" stroke="#2f5f8a"/><text x="235" y="257" text-anchor="middle">Tarea 1</text>
+  <rect x="280" y="237" width="110" height="30" fill="#808080" stroke="#4d4d4d"/><text x="335" y="257" text-anchor="middle" fill="#fff">Tarea 2</text>
+  <line x1="80" y1="300" x2="710" y2="300" stroke="#333"/>
+  <path d="M 710 296 L 718 300 L 710 304 z" fill="#333"/>
+  <text x="724" y="304">tiempo</text>
+</svg>

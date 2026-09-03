@@ -25,55 +25,12 @@ Un **dispositivo RAID** es un conjunto de discos duros que actúan como una úni
 
 Un **sistema de archivos** es la estructura de datos que permite almacenar archivos en los bloques de bytes direccionables linealmente de los dispositivos. Vincula los bloques del almacenamiento para el **empaquetado** (*marshalling*) de los archivos; el **desempaquetado** (*unmarshalling*) los descompone en bloques. A este proceso se le denomina **traducción flujo‑bloque**.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 640 140" font-family="sans-serif" font-size="13" role="img" aria-label="Traducción flujo-bloque entre el flujo de bytes del archivo y los bloques del dispositivo de almacenamiento">
-  <rect width="640" height="140" fill="#ffffff"/>
-  <rect x="10" y="45" width="190" height="50" rx="6" fill="#eef2f7" stroke="#444"/>
-  <text x="105" y="66" text-anchor="middle">Flujo de bytes</text>
-  <text x="105" y="82" text-anchor="middle">del archivo</text>
-  <rect x="235" y="50" width="170" height="40" rx="20" fill="#cfe0f2" stroke="#3773a0"/>
-  <text x="320" y="75" text-anchor="middle">Traducción flujo-bloque</text>
-  <rect x="440" y="45" width="190" height="50" rx="6" fill="#eef2f7" stroke="#444"/>
-  <text x="535" y="66" text-anchor="middle">Bloques del dispositivo</text>
-  <text x="535" y="82" text-anchor="middle">de almacenamiento</text>
-  <line x1="203" y1="70" x2="232" y2="70" stroke="#333"/>
-  <path d="M203 70 l11 -4 l0 8 z" fill="#333"/>
-  <path d="M232 70 l-11 -4 l0 8 z" fill="#333"/>
-  <line x1="408" y1="70" x2="437" y2="70" stroke="#333"/>
-  <path d="M408 70 l11 -4 l0 8 z" fill="#333"/>
-  <path d="M437 70 l-11 -4 l0 8 z" fill="#333"/>
-  <text x="320" y="120" text-anchor="middle" font-size="11" fill="#666">empaquetado (marshalling) / desempaquetado (unmarshalling)</text>
-</svg>
+<img src="img/traduccion-flujo-bloque.svg" width="520" alt="Traducción flujo-bloque entre el flujo de bytes del archivo y los bloques del dispositivo de almacenamiento">
 
 - **Bajo nivel**: el SO solo provee traducción **flujo‑bloque**; la estructuración de los datos recae en las aplicaciones.
 - **Alto nivel / estructurado**: el SO provee traducción **registro‑flujo**; requiere estructuras de datos específicas para el almacenamiento.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="620" viewBox="0 0 900 150" font-family="sans-serif" font-size="12" role="img" aria-label="Cadena de traducción registro-flujo-bloque: de registros a flujo y de flujo a bloques">
-  <rect width="900" height="150" fill="#ffffff"/>
-  <rect x="10" y="55" width="120" height="40" rx="6" fill="#eef2f7" stroke="#444"/>
-  <text x="70" y="79" text-anchor="middle">Registros</text>
-  <rect x="150" y="45" width="190" height="55" rx="20" fill="#ffe9c9" stroke="#a06a1a"/>
-  <text x="245" y="68" text-anchor="middle" font-size="11">Traducción registro-flujo</text>
-  <text x="245" y="84" text-anchor="middle" font-size="10" fill="#775">(solo alto nivel)</text>
-  <rect x="365" y="55" width="100" height="40" rx="6" fill="#eef2f7" stroke="#444"/>
-  <text x="415" y="79" text-anchor="middle">Flujo</text>
-  <rect x="490" y="50" width="180" height="45" rx="20" fill="#cfe0f2" stroke="#3773a0"/>
-  <text x="580" y="77" text-anchor="middle" font-size="11">Traducción flujo-bloque</text>
-  <rect x="695" y="55" width="120" height="40" rx="6" fill="#eef2f7" stroke="#444"/>
-  <text x="755" y="79" text-anchor="middle">Bloques</text>
-  <g stroke="#333">
-    <line x1="132" y1="75" x2="148" y2="75"/>
-    <line x1="342" y1="75" x2="363" y2="75"/>
-    <line x1="467" y1="75" x2="488" y2="75"/>
-    <line x1="672" y1="75" x2="693" y2="75"/>
-  </g>
-  <g fill="#333">
-    <path d="M132 75 l10 -4 l0 8 z"/><path d="M148 75 l-10 -4 l0 8 z"/>
-    <path d="M342 75 l10 -4 l0 8 z"/><path d="M363 75 l-10 -4 l0 8 z"/>
-    <path d="M467 75 l10 -4 l0 8 z"/><path d="M488 75 l-10 -4 l0 8 z"/>
-    <path d="M672 75 l10 -4 l0 8 z"/><path d="M693 75 l-10 -4 l0 8 z"/>
-  </g>
-  <text x="450" y="130" text-anchor="middle" font-size="11" fill="#666">nivel alto / estructurado (registros) frente a nivel bajo (bloques)</text>
-</svg>
+<img src="img/traduccion-registro-flujo-bloque.svg" width="620" alt="Cadena de traducción registro-flujo-bloque: de registros a flujo y de flujo a bloques">
 
 ## 8.2 Conceptos de fichero y directorio
 
@@ -112,58 +69,7 @@ Estructuras para gestionar los bloques no adyacentes:
 
 Como plazas de aparcamiento: la asignación **contigua** ocupa plazas consecutivas (favorece el acceso rápido); la **enlazada** deja que cada plaza señale la siguiente (no exige continuidad); la **indexada** concentra todas las referencias en una estructura específica.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="620" viewBox="0 0 900 220" font-family="sans-serif" font-size="11" role="img" aria-label="Comparación de estrategias de asignación de bloques como plazas de aparcamiento: contigua, enlazada e indexada">
-  <rect width="900" height="220" fill="#ffffff"/>
-  <text x="140" y="20" text-anchor="middle" font-weight="bold">Contigua</text>
-  <g stroke="#666" fill="#f2f2f2">
-    <rect x="30" y="40" width="55" height="50"/>
-    <rect x="90" y="40" width="55" height="50"/>
-    <rect x="150" y="40" width="55" height="50"/>
-    <rect x="210" y="40" width="55" height="50"/>
-  </g>
-  <g text-anchor="middle">
-    <text x="57" y="70">12</text><text x="117" y="70">13</text><text x="177" y="70">14</text><text x="237" y="70">15</text>
-  </g>
-  <line x1="30" y1="100" x2="265" y2="100" stroke="#333"/>
-  <text x="147" y="118" text-anchor="middle" font-size="10" fill="#666">plazas consecutivas</text>
-  <text x="147" y="134" text-anchor="middle" font-size="10" fill="#666">(inicio + nº de plazas)</text>
-  <text x="450" y="20" text-anchor="middle" font-weight="bold">Enlazada</text>
-  <g stroke="#666" fill="#f2f2f2">
-    <rect x="335" y="40" width="55" height="50"/>
-    <rect x="420" y="40" width="55" height="50"/>
-    <rect x="505" y="40" width="55" height="50"/>
-    <rect x="590" y="40" width="55" height="50"/>
-  </g>
-  <g text-anchor="middle">
-    <text x="362" y="70">4</text><text x="447" y="70">19</text><text x="532" y="70">7</text><text x="617" y="70">31</text>
-  </g>
-  <g stroke="#333" fill="#333">
-    <line x1="390" y1="65" x2="418" y2="65"/><path d="M418 65 l-10 -4 l0 8 z"/>
-    <line x1="475" y1="65" x2="503" y2="65"/><path d="M503 65 l-10 -4 l0 8 z"/>
-    <line x1="560" y1="65" x2="588" y2="65"/><path d="M588 65 l-10 -4 l0 8 z"/>
-  </g>
-  <text x="462" y="118" text-anchor="middle" font-size="10" fill="#666">cada plaza señala la siguiente</text>
-  <text x="462" y="134" text-anchor="middle" font-size="10" fill="#666">(no necesitan estar juntas)</text>
-  <text x="770" y="20" text-anchor="middle" font-weight="bold">Indexada</text>
-  <rect x="735" y="40" width="80" height="50" fill="#ffe9c9" stroke="#a06a1a"/>
-  <text x="775" y="60" text-anchor="middle" font-size="9">índice</text>
-  <text x="775" y="74" text-anchor="middle" font-size="9">4·19·7·31</text>
-  <g stroke="#666" fill="#f2f2f2">
-    <rect x="640" y="150" width="45" height="45"/>
-    <rect x="700" y="150" width="45" height="45"/>
-    <rect x="760" y="150" width="45" height="45"/>
-    <rect x="820" y="150" width="45" height="45"/>
-  </g>
-  <g text-anchor="middle">
-    <text x="662" y="177">4</text><text x="722" y="177">19</text><text x="782" y="177">7</text><text x="842" y="177">31</text>
-  </g>
-  <g stroke="#333">
-    <line x1="755" y1="90" x2="662" y2="148"/>
-    <line x1="765" y1="90" x2="722" y2="148"/>
-    <line x1="785" y1="90" x2="782" y2="148"/>
-    <line x1="795" y1="90" x2="842" y2="148"/>
-  </g>
-</svg>
+<img src="img/asignacion-bloques-aparcamiento.svg" width="620" alt="Comparación de estrategias de asignación de bloques como plazas de aparcamiento: contigua, enlazada e indexada">
 
 *La asignación contigua favorece el acceso rápido; la enlazada evita exigir continuidad; la indexada concentra las referencias en una estructura específica.*
 
@@ -281,52 +187,7 @@ Al acceder a un archivo, el gestor de ficheros crea una instancia de un **descri
 
 El nodo‑i de un archivo contiene: nodo del archivo · número de enlaces · UID y GID del propietario · tamaño del archivo · tiempos de creación, último acceso y última modificación · **10 números de bloque del disco** (punteros **directos**) · un puntero **indirecto individual** · un puntero **indirecto doble** · un puntero **indirecto triple**.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 400" font-family="sans-serif" font-size="12" role="img" aria-label="Nodo-i con 10 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
-  <rect width="700" height="400" fill="#ffffff"/>
-  <!-- nodo i -->
-  <rect x="20" y="30" width="180" height="330" fill="#eef2f7" stroke="#444"/>
-  <text x="110" y="22" text-anchor="middle" font-weight="bold">Nodo-i</text>
-  <g font-size="10">
-    <rect x="20" y="30" width="180" height="18" fill="#dbe4ee" stroke="#888"/><text x="26" y="43">metadatos: modo, enlaces, UID/GID</text>
-    <rect x="20" y="48" width="180" height="18" fill="#dbe4ee" stroke="#888"/><text x="26" y="61">tamaño, tiempos</text>
-  </g>
-  <g font-size="10">
-    <rect x="20" y="72" width="180" height="150" fill="#ffffff" stroke="#888"/>
-    <text x="110" y="88" text-anchor="middle">10 punteros directos</text>
-    <line x1="20" y1="96" x2="200" y2="96" stroke="#ccc"/>
-  </g>
-  <rect x="20" y="228" width="180" height="24" fill="#ffe9c9" stroke="#888"/><text x="26" y="244" font-size="10">indirecto individual</text>
-  <rect x="20" y="252" width="180" height="24" fill="#ffd7a0" stroke="#888"/><text x="26" y="268" font-size="10">indirecto doble</text>
-  <rect x="20" y="276" width="180" height="24" fill="#ffc078" stroke="#888"/><text x="26" y="292" font-size="10">indirecto triple</text>
-  <!-- bloques de datos directos -->
-  <g>
-    <rect x="300" y="90" width="90" height="60" fill="#cfe0f2" stroke="#3773a0"/>
-    <text x="345" y="80" text-anchor="middle" font-size="10">bloques de datos</text>
-    <line x1="120" y1="150" x2="300" y2="120" stroke="#333"/><path d="M300 120 l-11 -1 l3 -7 z" fill="#333"/>
-  </g>
-  <!-- indirecto individual -->
-  <g>
-    <rect x="300" y="200" width="60" height="70" fill="#e8eef5" stroke="#888"/>
-    <text x="330" y="192" text-anchor="middle" font-size="10">bloque de punteros</text>
-    <rect x="420" y="200" width="90" height="70" fill="#cfe0f2" stroke="#3773a0"/>
-    <text x="465" y="192" text-anchor="middle" font-size="10">bloques de datos</text>
-    <line x1="200" y1="240" x2="300" y2="235" stroke="#333"/><path d="M300 235 l-10 -3 l1 7 z" fill="#333"/>
-    <line x1="360" y1="235" x2="420" y2="235" stroke="#333"/><path d="M420 235 l-10 -3 l0 7 z" fill="#333"/>
-  </g>
-  <!-- indirecto doble -->
-  <g>
-    <rect x="300" y="290" width="45" height="60" fill="#e8eef5" stroke="#888"/>
-    <rect x="380" y="290" width="45" height="60" fill="#e8eef5" stroke="#888"/>
-    <rect x="470" y="290" width="90" height="60" fill="#cfe0f2" stroke="#3773a0"/>
-    <text x="360" y="284" text-anchor="middle" font-size="10">2 niveles de bloques de punteros</text>
-    <text x="515" y="284" text-anchor="middle" font-size="10">datos</text>
-    <line x1="200" y1="264" x2="300" y2="312" stroke="#333"/><path d="M300 312 l-10 -3 l0 7 z" fill="#333"/>
-    <line x1="345" y1="318" x2="380" y2="318" stroke="#333"/><path d="M380 318 l-9 -3 l0 6 z" fill="#333"/>
-    <line x1="425" y1="318" x2="470" y2="318" stroke="#333"/><path d="M470 318 l-9 -3 l0 6 z" fill="#333"/>
-    <line x1="200" y1="288" x2="298" y2="332" stroke="#333" stroke-dasharray="3 2"/><path d="M298 332 l-10 -3 l0 7 z" fill="#333"/>
-    <text x="230" y="352" font-size="9" fill="#777">indirecto triple: 3 niveles</text>
-  </g>
-</svg>
+<img src="img/nodo-i-indirecciones.svg" width="560" alt="Nodo-i con 10 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
 
 ### Superbloque y mapas de bits
 
@@ -419,73 +280,11 @@ Tratan los cambios para crear, modificar o borrar un fichero como una **base de 
 
 El **VFS** ofrece a las aplicaciones una **interfaz uniforme** de llamadas al sistema, aunque los datos estén almacenados con formatos diferentes. Bajo el **servidor de archivos** y el VFS, el **módulo organizador de archivos** integra los distintos sistemas (`ext2`, `vfat`, `reiserfs`, …, `proc`) y accede al **servidor de bloques**.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 640 380" font-family="sans-serif" font-size="12" role="img" aria-label="Arquitectura en capas del VFS: procesos, servidor de archivos, VFS, módulo organizador de archivos con ext2, vfat, reiserfs y proc, y servidor de bloques">
-  <rect width="640" height="380" fill="#ffffff"/>
-  <text x="320" y="16" text-anchor="middle" font-size="11" fill="#555">procesos (llamadas al sistema)</text>
-  <g fill="#333" stroke="#333">
-    <line x1="130" y1="22" x2="130" y2="46"/><path d="M130 46 l-5 -10 l10 0 z"/>
-    <line x1="260" y1="22" x2="260" y2="46"/><path d="M260 46 l-5 -10 l10 0 z"/>
-    <line x1="390" y1="22" x2="390" y2="46"/><path d="M390 46 l-5 -10 l10 0 z"/>
-    <line x1="510" y1="22" x2="510" y2="46"/><path d="M510 46 l-5 -10 l10 0 z"/>
-  </g>
-  <rect x="40" y="48" width="560" height="48" fill="#bfe0bf" stroke="#3a7a3a"/>
-  <text x="320" y="77" text-anchor="middle" font-weight="bold">Servidor de archivos</text>
-  <rect x="40" y="106" width="560" height="48" fill="#bcd6e6" stroke="#3773a0"/>
-  <text x="320" y="135" text-anchor="middle" font-weight="bold">Sistema de Archivos Virtual (VFS)</text>
-  <rect x="40" y="164" width="560" height="95" fill="#e9e0ae" stroke="#9a8a2a"/>
-  <text x="320" y="182" text-anchor="middle" font-weight="bold" font-size="11">Módulo organizador de archivos</text>
-  <rect x="60" y="196" width="100" height="45" fill="#cfe3c9" stroke="#5c8a52"/><text x="110" y="223" text-anchor="middle">ext2</text>
-  <rect x="180" y="196" width="100" height="45" fill="#cfe3c9" stroke="#5c8a52"/><text x="230" y="223" text-anchor="middle">vfat</text>
-  <rect x="300" y="196" width="110" height="45" fill="#cfe3c9" stroke="#5c8a52"/><text x="355" y="223" text-anchor="middle">reiserfs</text>
-  <rect x="470" y="196" width="100" height="45" fill="#d8d8d8" stroke="#777"/><text x="520" y="223" text-anchor="middle">proc</text>
-  <line x1="110" y1="241" x2="110" y2="270" stroke="#333"/>
-  <line x1="230" y1="241" x2="230" y2="270" stroke="#333"/>
-  <line x1="355" y1="241" x2="355" y2="270" stroke="#333"/>
-  <line x1="110" y1="270" x2="355" y2="270" stroke="#333"/>
-  <line x1="232" y1="270" x2="232" y2="284" stroke="#333"/>
-  <path d="M232 296 l-6 -12 l12 0 z" fill="#333"/>
-  <rect x="40" y="310" width="560" height="48" fill="#d9d9d9" stroke="#555"/>
-  <text x="320" y="339" text-anchor="middle" font-weight="bold">Al servidor de bloques</text>
-  <text x="520" y="270" text-anchor="middle" font-size="9" fill="#777">no pasa por</text>
-  <text x="520" y="282" text-anchor="middle" font-size="9" fill="#777">el servidor de bloques</text>
-</svg>
+<img src="img/vfs-capas.svg" width="560" alt="Arquitectura en capas del VFS: procesos, servidor de archivos, VFS, módulo organizador de archivos con ext2, vfat, reiserfs y proc, y servidor de bloques">
 
 Visto como un adaptador universal: las aplicaciones usan siempre las mismas llamadas (`open`, `read`, `write`, `close`) y el VFS las reparte hacia el sistema de ficheros concreto (ext4, NTFS, FAT, procfs…) y, de ahí, hacia el dispositivo real.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 640 320" font-family="sans-serif" font-size="12" role="img" aria-label="El VFS como adaptador: aplicaciones sobre una interfaz uniforme que reparte hacia ext4, NTFS, FAT y procfs, y de ahí a los dispositivos reales">
-  <rect width="640" height="320" fill="#ffffff"/>
-  <rect x="120" y="10" width="400" height="46" rx="6" fill="#eef2f7" stroke="#444"/>
-  <text x="320" y="30" text-anchor="middle" font-size="11">Aplicaciones</text>
-  <text x="320" y="46" text-anchor="middle" font-size="10" fill="#666">open · read · write · close</text>
-  <line x1="320" y1="56" x2="320" y2="76" stroke="#333"/><path d="M320 76 l-5 -10 l10 0 z" fill="#333"/>
-  <rect x="100" y="78" width="440" height="46" rx="20" fill="#cfe0f2" stroke="#3773a0"/>
-  <text x="320" y="98" text-anchor="middle" font-size="11">VFS de Linux</text>
-  <text x="320" y="114" text-anchor="middle" font-size="10" fill="#355">interfaz uniforme</text>
-  <g stroke="#333" fill="#333">
-    <line x1="160" y1="124" x2="80" y2="154"/><path d="M80 154 l10 2 l-4 9 z"/>
-    <line x1="260" y1="124" x2="240" y2="154"/><path d="M240 154 l11 -1 l-2 10 z"/>
-    <line x1="380" y1="124" x2="400" y2="154"/><path d="M400 154 l-11 -1 l2 10 z"/>
-    <line x1="480" y1="124" x2="560" y2="154"/><path d="M560 154 l-10 2 l4 9 z"/>
-  </g>
-  <rect x="30"  y="156" width="100" height="40" fill="#cfe3c9" stroke="#5c8a52"/><text x="80"  y="180" text-anchor="middle">ext4</text>
-  <rect x="190" y="156" width="100" height="40" fill="#cfe3c9" stroke="#5c8a52"/><text x="240" y="180" text-anchor="middle">NTFS</text>
-  <rect x="350" y="156" width="100" height="40" fill="#cfe3c9" stroke="#5c8a52"/><text x="400" y="180" text-anchor="middle">FAT</text>
-  <rect x="510" y="156" width="100" height="40" fill="#d8d8d8" stroke="#777"/><text x="560" y="180" text-anchor="middle">procfs</text>
-  <g stroke="#333">
-    <line x1="80"  y1="196" x2="80"  y2="230"/>
-    <line x1="240" y1="196" x2="180" y2="230"/>
-    <line x1="400" y1="196" x2="180" y2="230"/>
-    <line x1="560" y1="196" x2="560" y2="230"/>
-  </g>
-  <g fill="#333">
-    <path d="M80 230 l-5 -10 l10 0 z"/>
-    <path d="M180 230 l-5 -10 l10 0 z"/>
-    <path d="M560 230 l-5 -10 l10 0 z"/>
-  </g>
-  <rect x="20"  y="234" width="120" height="46" rx="6" fill="#eef2f7" stroke="#444"/><text x="80"  y="261" text-anchor="middle" font-size="10">Disco local</text>
-  <rect x="120" y="234" width="120" height="46" rx="6" fill="#eef2f7" stroke="#444"/><text x="180" y="261" text-anchor="middle" font-size="10">Unidad externa</text>
-  <rect x="500" y="234" width="120" height="46" rx="6" fill="#eef2f7" stroke="#444"/><text x="560" y="255" text-anchor="middle" font-size="10">Datos del</text><text x="560" y="269" text-anchor="middle" font-size="10">núcleo</text>
-</svg>
+<img src="img/vfs-adaptador.svg" width="520" alt="El VFS como adaptador: aplicaciones sobre una interfaz uniforme que reparte hacia ext4, NTFS, FAT y procfs, y de ahí a los dispositivos reales">
 
 *El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados con formatos diferentes.*
 
@@ -504,81 +303,15 @@ Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que a
 
 **RAID 0** (*striping*): divide los datos entre los discos.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220" font-family="sans-serif" font-size="12" role="img" aria-label="RAID 0: dos discos con los bloques repartidos, sin redundancia">
-  <rect width="300" height="220" fill="#ffffff"/>
-  <text x="150" y="18" text-anchor="middle" font-weight="bold">RAID 0</text>
-  <g stroke="#666">
-    <rect x="50" y="30" width="80" height="150" rx="8" fill="#f2f2f2"/>
-    <rect x="170" y="30" width="80" height="150" rx="8" fill="#f2f2f2"/>
-  </g>
-  <g text-anchor="middle">
-    <rect x="50" y="35" width="80" height="30" fill="#f6c85f"/><text x="90" y="55">A1</text>
-    <rect x="50" y="65" width="80" height="30" fill="#a7d489"/><text x="90" y="85">A3</text>
-    <rect x="50" y="95" width="80" height="30" fill="#7db8e0"/><text x="90" y="115">A5</text>
-    <rect x="170" y="35" width="80" height="30" fill="#f6c85f"/><text x="210" y="55">A2</text>
-    <rect x="170" y="65" width="80" height="30" fill="#a7d489"/><text x="210" y="85">A4</text>
-    <rect x="170" y="95" width="80" height="30" fill="#7db8e0"/><text x="210" y="115">A6</text>
-  </g>
-  <text x="90" y="200" text-anchor="middle" font-size="11">Disco 0</text>
-  <text x="210" y="200" text-anchor="middle" font-size="11">Disco 1</text>
-</svg>
+<img src="img/raid-0.svg" width="300" alt="RAID 0: dos discos con los bloques repartidos, sin redundancia">
 
 **RAID 1** (*mirroring*): duplica los datos en dos discos.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220" font-family="sans-serif" font-size="12" role="img" aria-label="RAID 1: dos discos con contenido idéntico (espejo)">
-  <rect width="300" height="220" fill="#ffffff"/>
-  <text x="150" y="18" text-anchor="middle" font-weight="bold">RAID 1</text>
-  <g stroke="#666">
-    <rect x="50" y="30" width="80" height="150" rx="8" fill="#f2f2f2"/>
-    <rect x="170" y="30" width="80" height="150" rx="8" fill="#f2f2f2"/>
-  </g>
-  <g text-anchor="middle">
-    <rect x="50" y="35" width="80" height="30" fill="#f6c85f"/><text x="90" y="55">A1</text>
-    <rect x="50" y="65" width="80" height="30" fill="#a7d489"/><text x="90" y="85">A2</text>
-    <rect x="50" y="95" width="80" height="30" fill="#7db8e0"/><text x="90" y="115">A3</text>
-    <rect x="170" y="35" width="80" height="30" fill="#f6c85f"/><text x="210" y="55">A1</text>
-    <rect x="170" y="65" width="80" height="30" fill="#a7d489"/><text x="210" y="85">A2</text>
-    <rect x="170" y="95" width="80" height="30" fill="#7db8e0"/><text x="210" y="115">A3</text>
-  </g>
-  <text x="90" y="200" text-anchor="middle" font-size="11">Disco 0</text>
-  <text x="210" y="200" text-anchor="middle" font-size="11">Disco 1 (espejo)</text>
-</svg>
+<img src="img/raid-1.svg" width="300" alt="RAID 1: dos discos con contenido idéntico (espejo)">
 
 **RAID 5**: división a nivel de bloques con **paridad distribuida** entre todos los discos (`Xp` = bloque de paridad).
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" font-family="sans-serif" font-size="12" role="img" aria-label="RAID 5: cuatro discos con bloques de datos y paridad distribuida">
-  <rect width="520" height="260" fill="#ffffff"/>
-  <text x="260" y="18" text-anchor="middle" font-weight="bold">RAID 5</text>
-  <g stroke="#666" fill="#f2f2f2">
-    <rect x="30"  y="30" width="90" height="180" rx="8"/>
-    <rect x="150" y="30" width="90" height="180" rx="8"/>
-    <rect x="270" y="30" width="90" height="180" rx="8"/>
-    <rect x="390" y="30" width="90" height="180" rx="8"/>
-  </g>
-  <g text-anchor="middle">
-    <rect x="30"  y="35"  width="90" height="35" fill="#f6c85f"/><text x="75"  y="58">A1</text>
-    <rect x="150" y="35"  width="90" height="35" fill="#f6c85f"/><text x="195" y="58">A2</text>
-    <rect x="270" y="35"  width="90" height="35" fill="#f6c85f"/><text x="315" y="58">A3</text>
-    <rect x="390" y="35"  width="90" height="35" fill="#e8a0a0"/><text x="435" y="58">Ap</text>
-    <rect x="30"  y="72"  width="90" height="35" fill="#a7d489"/><text x="75"  y="95">B1</text>
-    <rect x="150" y="72"  width="90" height="35" fill="#a7d489"/><text x="195" y="95">B2</text>
-    <rect x="270" y="72"  width="90" height="35" fill="#e8a0a0"/><text x="315" y="95">Bp</text>
-    <rect x="390" y="72"  width="90" height="35" fill="#a7d489"/><text x="435" y="95">B3</text>
-    <rect x="30"  y="109" width="90" height="35" fill="#7db8e0"/><text x="75"  y="132">C1</text>
-    <rect x="150" y="109" width="90" height="35" fill="#e8a0a0"/><text x="195" y="132">Cp</text>
-    <rect x="270" y="109" width="90" height="35" fill="#7db8e0"/><text x="315" y="132">C2</text>
-    <rect x="390" y="109" width="90" height="35" fill="#7db8e0"/><text x="435" y="132">C3</text>
-    <rect x="30"  y="146" width="90" height="35" fill="#e8a0a0"/><text x="75"  y="169">Dp</text>
-    <rect x="150" y="146" width="90" height="35" fill="#c7a3e0"/><text x="195" y="169">D1</text>
-    <rect x="270" y="146" width="90" height="35" fill="#c7a3e0"/><text x="315" y="169">D2</text>
-    <rect x="390" y="146" width="90" height="35" fill="#c7a3e0"/><text x="435" y="169">D3</text>
-  </g>
-  <g text-anchor="middle" font-size="11">
-    <text x="75"  y="200">Disco 0</text><text x="195" y="200">Disco 1</text>
-    <text x="315" y="200">Disco 2</text><text x="435" y="200">Disco 3</text>
-  </g>
-  <text x="260" y="235" text-anchor="middle" font-size="11" fill="#a05050">Xp = bloque de paridad (rota entre discos)</text>
-</svg>
+<img src="img/raid-5.svg" width="520" alt="RAID 5: cuatro discos con bloques de datos y paridad distribuida">
 
 **Niveles de RAID:**
 

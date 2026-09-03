@@ -120,42 +120,7 @@ Los procesos son como cocinas independientes, cada una con su despensa, su banco
 
 En un proceso **monohilo**, el código, los datos y los ficheros, junto con los registros y la pila, pertenecen al único hilo. En un proceso **multihilo**, el código, los datos y los ficheros se **comparten**, mientras que cada hilo tiene sus propios **registros** y su propia **pila**.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 780 440" font-family="sans-serif" font-size="14" role="img" aria-label="Disposición de memoria de un proceso monohilo frente a un proceso multihilo">
-  <rect width="780" height="440" fill="#ffffff"/>
-  <text x="185" y="30" text-anchor="middle" font-size="16" font-weight="bold">Proceso monohilo</text>
-  <rect x="30" y="45" width="310" height="370" fill="#eef6ee" stroke="#4a7a4a" stroke-width="1.5"/>
-  <rect x="45"  y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="90"  y="88" text-anchor="middle">código</text>
-  <rect x="140" y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="185" y="88" text-anchor="middle">datos</text>
-  <rect x="235" y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="280" y="88" text-anchor="middle">ficheros</text>
-  <rect x="45"  y="115" width="135" height="40" fill="#d9d9d9" stroke="#7f7f7f"/><text x="112" y="140" text-anchor="middle">registros</text>
-  <rect x="190" y="115" width="135" height="40" fill="#d9d9d9" stroke="#7f7f7f"/><text x="257" y="140" text-anchor="middle">pila</text>
-  <path d="M 185 200 q 16 15 0 30 q -16 15 0 30 q 16 15 0 30 q -16 15 0 30 q 16 15 0 30 q -16 15 0 30" fill="none" stroke="#333" stroke-width="2"/>
-  <text x="95" y="305" text-anchor="middle">hilo</text>
-  <line x1="118" y1="300" x2="170" y2="300" stroke="#333" stroke-width="1.5"/>
-  <path d="M 170 296 L 178 300 L 170 304 z" fill="#333"/>
-  <text x="595" y="30" text-anchor="middle" font-size="16" font-weight="bold">Proceso multihilo</text>
-  <rect x="440" y="45" width="310" height="370" fill="#eef6ee" stroke="#4a7a4a" stroke-width="1.5"/>
-  <rect x="455" y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="500" y="88" text-anchor="middle">código</text>
-  <rect x="550" y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="595" y="88" text-anchor="middle">datos</text>
-  <rect x="645" y="60" width="90" height="46" fill="#d9d9d9" stroke="#7f7f7f"/><text x="690" y="88" text-anchor="middle">ficheros</text>
-  <g>
-    <rect x="455" y="115" width="90" height="34" fill="#d9d9d9" stroke="#7f7f7f"/><text x="500" y="137" text-anchor="middle" font-size="12">registros</text>
-    <rect x="455" y="151" width="90" height="34" fill="#d9d9d9" stroke="#7f7f7f"/><text x="500" y="173" text-anchor="middle" font-size="12">pila</text>
-    <path d="M 500 205 q 12 13 0 26 q -12 13 0 26 q 12 13 0 26 q -12 13 0 26 q 12 13 0 26 q -12 13 0 26" fill="none" stroke="#333" stroke-width="2"/>
-  </g>
-  <g>
-    <rect x="550" y="115" width="90" height="34" fill="#d9d9d9" stroke="#7f7f7f"/><text x="595" y="137" text-anchor="middle" font-size="12">registros</text>
-    <rect x="550" y="151" width="90" height="34" fill="#d9d9d9" stroke="#7f7f7f"/><text x="595" y="173" text-anchor="middle" font-size="12">pila</text>
-    <path d="M 595 205 q 12 13 0 26 q -12 13 0 26 q 12 13 0 26 q -12 13 0 26 q 12 13 0 26 q -12 13 0 26" fill="none" stroke="#333" stroke-width="2"/>
-  </g>
-  <g>
-    <rect x="645" y="115" width="90" height="34" fill="#d9d9d9" stroke="#7f7f7f"/><text x="690" y="137" text-anchor="middle" font-size="12">registros</text>
-    <rect x="645" y="151" width="90" height="34" fill="#d9d9d9" stroke="#7f7f7f"/><text x="690" y="173" text-anchor="middle" font-size="12">pila</text>
-    <path d="M 690 205 q 12 13 0 26 q -12 13 0 26 q 12 13 0 26 q -12 13 0 26 q 12 13 0 26 q -12 13 0 26" fill="none" stroke="#333" stroke-width="2"/>
-  </g>
-  <text x="712" y="255" font-size="12">hilo</text>
-  <line x1="705" y1="250" x2="697" y2="245" stroke="#333" stroke-width="1.5"/>
-</svg>
+<img src="img/monohilo-vs-multihilo.svg" width="560" alt="Disposición de memoria de un proceso monohilo frente a un proceso multihilo">
 
 Las cuatro combinaciones posibles son:
 

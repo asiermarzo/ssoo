@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" font-family="sans-serif" font-size="13" role="img" aria-label="Traducción en segmentación: número de segmento más desplazamiento a dirección de comienzo del segmento más desplazamiento">
+  <rect width="640" height="200" fill="#ffffff"/>
+  <text x="20" y="40" font-weight="bold">Dirección lógica</text>
+  <rect x="170" y="22" width="240" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="290" y="44" text-anchor="middle" fill="#fff">Nº de segmento</text>
+  <rect x="410" y="22" width="180" height="34" fill="#1f3f66" stroke="#132840"/><text x="500" y="44" text-anchor="middle" fill="#fff" font-size="11">Desplazamiento</text>
+  <text x="20" y="130" font-weight="bold">Dirección física</text>
+  <rect x="120" y="112" width="290" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="265" y="134" text-anchor="middle" fill="#fff" font-size="11">Comienzo del segmento en MP</text>
+  <rect x="410" y="112" width="180" height="34" fill="#1f3f66" stroke="#132840"/><text x="500" y="134" text-anchor="middle" fill="#fff" font-size="11">Desplazamiento</text>
+  <line x1="290" y1="56" x2="265" y2="112" stroke="#333"/><path d="M265 112 l0 -10 l7 4 z" fill="#333"/>
+  <text x="300" y="88" font-size="11" fill="#777">tabla de segmentos</text>
+  <line x1="500" y1="56" x2="500" y2="112" stroke="#999" stroke-dasharray="4 3"/>
+</svg>

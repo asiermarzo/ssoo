@@ -6,41 +6,7 @@ En la comunicación por **colas de mensajes**, los procesos introducen mensajes 
 
 Esta práctica usa la interfaz **System V IPC**. Como la memoria compartida y los semáforos, la cola **persiste** aunque terminen los procesos: hay que liberarla.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" font-family="sans-serif" font-size="13" role="img" aria-label="Retirada selectiva de mensajes de una cola FIFO segun el tipo">
-  <defs>
-    <marker id="arrowP7" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-      <path d="M0,0 L8,4 L0,8 z" fill="#333"/>
-    </marker>
-  </defs>
-  <text x="10" y="20" font-weight="bold" fill="#222">1) msgrcv(tipo = 1): retira el primer mensaje de tipo 1, aunque no este en cabeza</text>
-  <text x="120" y="34" font-size="11" fill="#555">cabeza (mas antiguo)</text>
-  <text x="406" y="34" font-size="11" fill="#555" text-anchor="end">cola (mas reciente)</text>
-  <rect x="120" y="38" width="70" height="42" fill="#eef2ff" stroke="#333"/>
-  <text x="155" y="64" text-anchor="middle">t2</text>
-  <rect x="192" y="38" width="70" height="42" fill="#fde8d7" stroke="#333"/>
-  <text x="227" y="64" text-anchor="middle">t1</text>
-  <rect x="264" y="38" width="70" height="42" fill="#eef2ff" stroke="#333"/>
-  <text x="299" y="64" text-anchor="middle">t3</text>
-  <rect x="336" y="38" width="70" height="42" fill="#fde8d7" stroke="#333"/>
-  <text x="371" y="64" text-anchor="middle">t1</text>
-  <path d="M227,80 L227,112" stroke="#333" stroke-width="1.5" fill="none" marker-end="url(#arrowP7)"/>
-  <text x="240" y="100" font-size="11" fill="#555">salta t2, toma el t1</text>
-  <rect x="150" y="114" width="155" height="34" fill="#ffe9e9" stroke="#333"/>
-  <text x="227" y="135" text-anchor="middle">consumidor A recibe "t1"</text>
-  <line x1="10" y1="170" x2="810" y2="170" stroke="#ccc"/>
-  <text x="10" y="192" font-weight="bold" fill="#222">2) msgrcv(tipo = 0): retira el mensaje mas antiguo, sea cual sea su tipo</text>
-  <text x="120" y="206" font-size="11" fill="#555">cola resultante tras el paso 1</text>
-  <rect x="120" y="210" width="70" height="42" fill="#eef2ff" stroke="#333"/>
-  <text x="155" y="236" text-anchor="middle">t2</text>
-  <rect x="192" y="210" width="70" height="42" fill="#eef2ff" stroke="#333"/>
-  <text x="227" y="236" text-anchor="middle">t3</text>
-  <rect x="264" y="210" width="70" height="42" fill="#fde8d7" stroke="#333"/>
-  <text x="299" y="236" text-anchor="middle">t1</text>
-  <path d="M155,252 L155,284" stroke="#333" stroke-width="1.5" fill="none" marker-end="url(#arrowP7)"/>
-  <text x="168" y="272" font-size="11" fill="#555">toma la cabeza (t2)</text>
-  <rect x="77" y="286" width="155" height="34" fill="#e8f3ff" stroke="#333"/>
-  <text x="155" y="307" text-anchor="middle">consumidor B recibe "t2"</text>
-</svg>
+<img src="img/retirada-selectiva-cola.svg" width="560" alt="Retirada selectiva de mensajes de una cola FIFO segun el tipo">
 
 ## Comandos comunes
 

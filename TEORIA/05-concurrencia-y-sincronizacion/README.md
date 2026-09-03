@@ -47,20 +47,7 @@ En un sistema monoprocesador multiprogramado los procesos se **intercalan** en e
 - **Concurrencia**: varios procesos progresan intercalándose en el tiempo sobre (al menos) un procesador.
 - **Paralelización**: varios procesos se ejecutan literalmente a la vez, en distintos procesadores.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 760 260" font-family="sans-serif" font-size="13" role="img" aria-label="Concurrencia: un procesador alternando dos procesos. Paralelismo: dos procesadores ejecutando un proceso cada uno.">
-  <rect width="760" height="260" fill="#ffffff"/>
-  <text x="30" y="30" font-size="15" font-weight="bold">Concurrencia (1 CPU)</text>
-  <rect x="40"  y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="85"  y="72" text-anchor="middle">Proc 1</text>
-  <rect x="130" y="50" width="90" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="175" y="72" text-anchor="middle" fill="#fff">Proc 2</text>
-  <rect x="220" y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="265" y="72" text-anchor="middle">Proc 1</text>
-  <rect x="310" y="50" width="90" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="355" y="72" text-anchor="middle" fill="#fff">Proc 2</text>
-  <rect x="400" y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="445" y="72" text-anchor="middle">Proc 1</text>
-  <line x1="40" y1="100" x2="520" y2="100" stroke="#333"/><path d="M520 96 l8 4 l-8 4 z" fill="#333"/><text x="534" y="104">tiempo</text>
-  <text x="30" y="160" font-size="15" font-weight="bold">Paralelismo (2 CPU)</text>
-  <rect x="40" y="180" width="440" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="260" y="202" text-anchor="middle">Proc 1  (CPU A)</text>
-  <rect x="40" y="220" width="440" height="34" fill="#3f9dd6" stroke="#2b6f99"/><text x="260" y="242" text-anchor="middle" fill="#fff">Proc 2  (CPU B)</text>
-  <line x1="40" y1="264" x2="40" y2="264" stroke="#333"/>
-</svg>
+<img src="img/concurrencia-vs-paralelismo.svg" width="560" alt="Concurrencia: un procesador alternando dos procesos. Paralelismo: dos procesadores ejecutando un proceso cada uno.">
 
 ### Sincronización entre procesos
 
@@ -117,19 +104,7 @@ Porción de código de un programa en la que se accede a un recurso compartido (
 
 El mutex se comporta como una única llave: mientras un trabajador la tiene y está en la sección crítica, los demás esperan; cuando la libera, otro puede tomarla.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 620 200" font-family="sans-serif" font-size="13" role="img" aria-label="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
-  <rect width="620" height="200" fill="#ffffff"/>
-  <text x="20" y="30" font-weight="bold">Trabajador A</text>
-  <rect x="150" y="15" width="180" height="30" fill="#57c78a" stroke="#2e7d4f"/><text x="240" y="35" text-anchor="middle">tiene la llave · SC</text>
-  <rect x="330" y="15" width="120" height="30" fill="#eeeeee" stroke="#999"/><text x="390" y="35" text-anchor="middle" fill="#777">espera</text>
-  <text x="20" y="90" font-weight="bold">Trabajador B</text>
-  <rect x="150" y="75" width="180" height="30" fill="#eeeeee" stroke="#999"/><text x="240" y="95" text-anchor="middle" fill="#777">espera la llave</text>
-  <rect x="330" y="75" width="120" height="30" fill="#3f9dd6" stroke="#2b6f99"/><text x="390" y="95" text-anchor="middle" fill="#fff">tiene la llave · SC</text>
-  <line x1="150" y1="130" x2="600" y2="130" stroke="#333"/><path d="M600 126 l8 4 l-8 4 z" fill="#333"/><text x="610" y="134" font-size="12">t</text>
-  <line x1="330" y1="120" x2="330" y2="140" stroke="#333" stroke-dasharray="3 3"/>
-  <text x="330" y="155" text-anchor="middle" font-size="12">A libera la llave</text>
-  <text x="240" y="185" text-anchor="middle" font-size="12" fill="#555">la llave (mutex) solo puede estar en una mano: mientras A la tiene, B espera</text>
-</svg>
+<img src="img/exclusion-mutua-llave.svg" width="560" alt="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
 
 *El mutex garantiza que solo una ejecución entre en la sección crítica. Las demás esperan hasta que el propietario libere el recurso.*
 
@@ -224,27 +199,7 @@ Filósofos comensales · productor‑consumidor · lectores‑escritores.
 
 Cinco filósofos se sientan alrededor de una mesa. Cada filósofo alterna `Pensar()` y `Comer()`, y para comer necesita **dos cubiertos** (el de su izquierda y el de su derecha). Hay tantos cubiertos como filósofos y cada cubierto es un **recurso reutilizable**. Hay que modelar el comportamiento de cada filósofo evitando **inaniciones** e **interbloqueos**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 380" font-family="sans-serif" font-size="14" role="img" aria-label="Cinco filósofos alrededor de una mesa con un cubierto entre cada par de vecinos">
-  <rect width="420" height="380" fill="#ffffff"/>
-  <circle cx="210" cy="195" r="120" fill="#f4f4f4" stroke="#888"/>
-  <!-- filosofos: angulos -90, -18, 54, 126, 198 -->
-  <g>
-    <circle cx="210" cy="75"  r="26" fill="#ffe14d" stroke="#b59a00"/><text x="210" y="80" text-anchor="middle">φ0</text>
-    <circle cx="324" cy="158" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="324" y="163" text-anchor="middle">φ1</text>
-    <circle cx="280" cy="292" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="280" y="297" text-anchor="middle">φ2</text>
-    <circle cx="140" cy="292" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="140" y="297" text-anchor="middle">φ3</text>
-    <circle cx="96"  cy="158" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="96"  y="163" text-anchor="middle">φ4</text>
-  </g>
-  <!-- cubiertos entre vecinos: angulos -54, 18, 90, 162, 234 -->
-  <g stroke="#555" stroke-width="3">
-    <line x1="272" y1="98"  x2="288" y2="82"/>
-    <line x1="318" y1="222" x2="336" y2="230"/>
-    <line x1="210" y1="278" x2="210" y2="300"/>
-    <line x1="102" y1="230" x2="84"  y2="238"/>
-    <line x1="148" y1="98"  x2="132" y2="82"/>
-  </g>
-  <text x="210" y="360" text-anchor="middle" font-size="12" fill="#555">— : cubierto compartido por dos filósofos vecinos</text>
-</svg>
+<img src="img/filosofos-comensales.svg" width="420" alt="Cinco filósofos alrededor de una mesa con un cubierto entre cada par de vecinos">
 
 **Solución 1** (con un semáforo por cubierto):
 
@@ -260,23 +215,7 @@ Filósofo i:
 
 Si **todos** los filósofos toman a la vez su cubierto `i`, hay **interbloqueo**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
-  <rect width="340" height="340" fill="#ffffff"/>
-  <circle cx="170" cy="170" r="120" fill="none" stroke="#ccc" stroke-dasharray="2 4"/>
-  <circle cx="170" cy="50"  r="26" fill="#ffe14d" stroke="#b59a00"/><text x="170" y="55" text-anchor="middle">F1</text>
-  <circle cx="284" cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="284" y="138" text-anchor="middle">F2</text>
-  <circle cx="240" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="240" y="272" text-anchor="middle">F3</text>
-  <circle cx="100" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="100" y="272" text-anchor="middle">F4</text>
-  <circle cx="56"  cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="56"  y="138" text-anchor="middle">F5</text>
-  <g stroke="#555" stroke-width="3">
-    <line x1="232" y1="73"  x2="248" y2="57"/>
-    <line x1="278" y1="197" x2="296" y2="205"/>
-    <line x1="170" y1="253" x2="170" y2="275"/>
-    <line x1="62"  y1="205" x2="44"  y2="213"/>
-    <line x1="108" y1="73"  x2="92"  y2="57"/>
-  </g>
-  <text x="170" y="320" text-anchor="middle" font-size="12" fill="#555">cada tenedor (—) es un recurso compartido por dos filósofos vecinos</text>
-</svg>
+<img src="img/filosofos-comensales-recursos.svg" width="340" alt="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
 
 *El problema de los filósofos muestra cómo competir por varios recursos puede causar bloqueo o inanición incluso cuando cada participante sigue una regla aparentemente razonable.*
 
@@ -313,22 +252,7 @@ test(i):
 
 Productor y consumidor deben coordinarse sobre un búfer circular: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 560 220" font-family="sans-serif" font-size="13" role="img" aria-label="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
-  <rect width="560" height="220" fill="#ffffff"/>
-  <rect x="40" y="80" width="70" height="50" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="75" y="108" text-anchor="middle">Productor</text>
-  <rect x="180" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="224" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="268" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="312" y="85" width="42" height="42" fill="#ffffff" stroke="#999"/>
-  <text x="267" y="70" text-anchor="middle" font-size="12">búfer circular (3 llenas, 1 vacía)</text>
-  <rect x="450" y="80" width="70" height="50" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="485" y="108" text-anchor="middle">Consumidor</text>
-  <line x1="112" y1="106" x2="178" y2="106" stroke="#2e7d4f" stroke-width="2"/><path d="M178 106 l-10 -4 l0 8 z" fill="#2e7d4f"/><text x="145" y="96" text-anchor="middle" font-size="11">deposita</text>
-  <line x1="356" y1="106" x2="448" y2="106" stroke="#2b6f99" stroke-width="2"/><path d="M448 106 l-10 -4 l0 8 z" fill="#2b6f99"/><text x="400" y="96" text-anchor="middle" font-size="11">retira</text>
-  <path d="M180 130 Q 110 175 60 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M60 132 l4 12 l10 -6 z" fill="#b03030"/>
-  <text x="120" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está lleno, el productor espera</text>
-  <path d="M354 130 Q 430 175 480 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M480 132 l-13 -2 l3 -11 z" fill="#b03030"/>
-  <text x="420" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está vacío, el consumidor espera</text>
-</svg>
+<img src="img/productor-consumidor-bufer.svg" width="520" alt="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
 
 *Productor y consumidor deben coordinarse: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.*
 
@@ -573,25 +497,7 @@ Una asignación concreta de recursos a procesos se representa con un grafo en el
 - Cada cuadrado tiene tantos **puntos** en su interior como instancias haya de ese recurso.
 - Los **arcos son dirigidos**: de proceso a recurso indican **petición**; de recurso a proceso indican **asignación**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 320" font-family="sans-serif" font-size="14" role="img" aria-label="Grafo de asignación de recursos con un ciclo P1, R1, P2, R2, P1 que indica interbloqueo">
-  <rect width="560" height="320" fill="#ffffff"/>
-  <!-- procesos -->
-  <circle cx="70"  cy="70"  r="28" fill="#ffd0d0" stroke="#b03030"/><text x="70"  y="75"  text-anchor="middle">P1</text>
-  <circle cx="330" cy="250" r="28" fill="#ffd0d0" stroke="#b03030"/><text x="330" y="255" text-anchor="middle">P2</text>
-  <circle cx="500" cy="150" r="28" fill="#ffd0d0" stroke="#b03030"/><text x="500" y="155" text-anchor="middle">P3</text>
-  <!-- recursos -->
-  <rect x="300" y="45" width="60" height="50" fill="#bcd8f0" stroke="#3773a0"/><text x="330" y="35" text-anchor="middle" font-size="12">R1</text>
-  <circle cx="330" cy="70" r="5" fill="#333"/>
-  <rect x="40" y="225" width="60" height="50" fill="#bcd8f0" stroke="#3773a0"/><text x="70" y="215" text-anchor="middle" font-size="12">R2</text>
-  <circle cx="60" cy="250" r="5" fill="#333"/><circle cx="80" cy="250" r="5" fill="#333"/>
-  <!-- aristas -->
-  <line x1="98"  y1="62"  x2="300" y2="60"  stroke="#333" stroke-width="1.6"/><path d="M300 60 l-12 -4 l2 9 z" fill="#333"/>
-  <line x1="330" y1="95"  x2="330" y2="222" stroke="#333" stroke-width="1.6"/><path d="M330 222 l-4 -12 l9 3 z" fill="#333"/>
-  <line x1="302" y1="250" x2="102" y2="250" stroke="#333" stroke-width="1.6"/><path d="M102 250 l12 -4 l-2 9 z" fill="#333"/>
-  <line x1="72"  y1="222" x2="70"  y2="98"  stroke="#333" stroke-width="1.6"/><path d="M70 98 l-4 12 l9 -3 z" fill="#333"/>
-  <line x1="98"  y1="248" x2="475" y2="160" stroke="#333" stroke-width="1.6"/><path d="M475 160 l-12 0 l6 8 z" fill="#333"/>
-  <text x="200" y="300" text-anchor="middle" font-size="12" fill="#555">petición: proceso → recurso · asignación: recurso → proceso · ciclo P1→R1→P2→R2→P1 ⇒ interbloqueo</text>
-</svg>
+<img src="img/grafo-asignacion-recursos.svg" width="560" alt="Grafo de asignación de recursos con un ciclo P1, R1, P2, R2, P1 que indica interbloqueo">
 
 ---
 

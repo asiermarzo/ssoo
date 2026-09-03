@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de planificación de CPU</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --ink: #1c2128;
+    --muted: #5b6673;
+    --line: #d4d8de;
+    --accent: #2b4a8b;
+    --idle: #c8ccd2;
+    --grid: #e6e8ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c;
+      --panel: #1d2127;
+      --ink: #e7e9ec;
+      --muted: #9aa4b0;
+      --line: #333a44;
+      --accent: #6f9be8;
+      --idle: #3a414b;
+      --grid: #2a2f37;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    padding: 20px 24px 8px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 18px;
+    padding: 18px 24px 40px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--muted); }
+  select, input[type=number] {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+  }
+  .field { margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 5px 6px; text-align: center; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  td input {
+    width: 52px; padding: 4px; text-align: center;
+    border: 1px solid var(--line); border-radius: 5px;
+    background: var(--bg); color: var(--ink); font: inherit;
+  }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; vertical-align: middle; }
+  .rowbtn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 6px;
+  }
+  .rowbtn:hover { color: #c0392b; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  button.act {
+    padding: 8px 14px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--bg); color: var(--ink); font: inherit; cursor: pointer;
+  }
+  button.act.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.act:hover { filter: brightness(1.05); }
+  .addrow {
+    margin-top: 8px; font-size: 13px; background: none; border: 1px dashed var(--line);
+    border-radius: 6px; padding: 6px 10px; color: var(--muted); cursor: pointer; width: 100%;
+  }
+  .speed { display: flex; align-items: center; gap: 8px; }
+  .speed input { flex: 1; }
+  .gantt-wrap { overflow-x: auto; }
+  svg { display: block; }
+  .metrics { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 4px; }
+  .metric { }
+  .metric b { font-size: 22px; display: block; }
+  .metric span { font-size: 12px; color: var(--muted); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 0; font-size: 13px; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .rtable { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  .rtable th, .rtable td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+  .rtable td.done { color: var(--ink); }
+  .rtable td.pending { color: var(--muted); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Simulador de algoritmos de planificación de CPU</h1>
+  <p>Tema 4 · Introduce procesos, elige un algoritmo y observa cómo se construye el diagrama de Gantt con los tiempos medios de espera y de retorno.</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Procesos</h2>
+    <table id="proc-table">
+      <thead>
+        <tr><th></th><th>Proc.</th><th>Llegada</th><th>Ráfaga</th><th>Prior.</th><th></th></tr>
+      </thead>
+      <tbody id="proc-body"></tbody>
+    </table>
+    <button class="addrow" id="add-proc">+ añadir proceso</button>
+
+    <div class="field" style="margin-top:16px">
+      <label for="algo">Algoritmo</label>
+      <select id="algo">
+        <option value="FCFS">FCFS — primero en llegar</option>
+        <option value="SJF">SJF — trabajo más corto (no apropiativo)</option>
+        <option value="SRTF">SRTF — menor tiempo restante (apropiativo)</option>
+        <option value="RR">Round Robin</option>
+        <option value="PRIO">Prioridades (no apropiativo)</option>
+        <option value="PRIOP">Prioridades (apropiativo)</option>
+      </select>
+    </div>
+    <div class="field" id="quantum-field">
+      <label for="quantum">Cuanto (Round Robin)</label>
+      <input type="number" id="quantum" min="1" max="20" value="3">
+    </div>
+    <div class="field">
+      <label for="speed">Velocidad</label>
+      <div class="speed">
+        <span>🐢</span>
+        <input type="range" id="speed" min="1" max="20" value="7">
+        <span>🐇</span>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="act primary" id="play">▶ Reproducir</button>
+      <button class="act" id="step">⏭ Paso</button>
+      <button class="act" id="reset">↺ Reiniciar</button>
+    </div>
+    <p class="note">Prioridad: menor número = mayor prioridad. En caso de empate se usa el orden de llegada y luego el identificador.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Diagrama de Gantt</h2>
+    <div class="gantt-wrap">
+      <svg id="gantt" width="760" height="150" role="img" aria-label="Diagrama de Gantt de la planificación"></svg>
+    </div>
+    <div class="legend" id="legend"></div>
+
+    <h2 style="margin-top:22px">Resultados</h2>
+    <div class="metrics">
+      <div class="metric"><b id="m-wait">–</b><span>Tiempo de espera medio</span></div>
+      <div class="metric"><b id="m-turn">–</b><span>Tiempo de retorno medio</span></div>
+      <div class="metric"><b id="m-ctx">–</b><span>Cambios de contexto</span></div>
+      <div class="metric"><b id="m-cpu">–</b><span>Uso de CPU</span></div>
+    </div>
+    <table class="rtable">
+      <thead>
+        <tr><th>Proc.</th><th>Llegada</th><th>Ráfaga</th><th>Fin</th><th>Retorno</th><th>Espera</th></tr>
+      </thead>
+      <tbody id="result-body"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+const PALETTE = ["#2b8ba3","#c0653a","#7a5ea8","#3a8f4e","#c14b6f","#b7902f","#4a6fb0","#5a8f7b"];
+let procs = [
+  { id: 1, arrival: 0, burst: 7, priority: 2 },
+  { id: 2, arrival: 2, burst: 4, priority: 1 },
+  { id: 3, arrival: 4, burst: 1, priority: 3 },
+  { id: 4, arrival: 5, burst: 4, priority: 2 },
+];
+let nextId = 5;
+
+const $ = s => document.querySelector(s);
+const procBody = $("#proc-body");
+const resultBody = $("#result-body");
+
+function renderProcTable() {
+  procBody.innerHTML = "";
+  procs.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="swatch" style="background:${PALETTE[i % PALETTE.length]}"></span></td>
+      <td>P${p.id}</td>
+      <td><input type="number" min="0" value="${p.arrival}" data-k="arrival" data-i="${i}"></td>
+      <td><input type="number" min="1" value="${p.burst}" data-k="burst" data-i="${i}"></td>
+      <td><input type="number" min="0" value="${p.priority}" data-k="priority" data-i="${i}"></td>
+      <td><button class="rowbtn" data-del="${i}" title="eliminar">×</button></td>`;
+    procBody.appendChild(tr);
+  });
+}
+procBody.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.k) {
+    procs[+t.dataset.i][t.dataset.k] = Math.max(t.dataset.k === "burst" ? 1 : 0, +t.value || 0);
+    reset();
+  }
+});
+procBody.addEventListener("click", e => {
+  if (e.target.dataset.del != null) {
+    procs.splice(+e.target.dataset.del, 1);
+    renderProcTable(); reset();
+  }
+});
+$("#add-proc").addEventListener("click", () => {
+  procs.push({ id: nextId++, arrival: 0, burst: 3, priority: 1 });
+  renderProcTable(); reset();
+});
+
+// ---- Simulación: devuelve timeline por unidad de tiempo ----
+function simulate(algo, quantum) {
+  const list = procs.map(p => ({ ...p }));
+  const rem = {}; list.forEach(p => rem[p.id] = p.burst);
+  const completion = {};
+  const timeline = [];
+  let current = null, qused = 0, done = 0, t = 0;
+  const totalBurst = list.reduce((s, p) => s + p.burst, 0);
+  const rrQ = [];
+  let guard = 0;
+
+  while (done < list.length && guard++ < 20000) {
+    const ready = list.filter(p => p.arrival <= t && rem[p.id] > 0);
+    let pick = null;
+
+    if (algo === "RR") {
+      list.filter(p => p.arrival <= t && rem[p.id] > 0 && p.id !== current && !rrQ.includes(p.id))
+          .sort((a, b) => a.arrival - b.arrival || a.id - b.id)
+          .forEach(p => rrQ.push(p.id));
+      if (current != null && rem[current] > 0 && qused < quantum) {
+        pick = list.find(p => p.id === current);
+      } else {
+        if (current != null && rem[current] > 0) rrQ.push(current);
+        const nid = rrQ.shift();
+        pick = nid != null ? list.find(p => p.id === nid) : null;
+        qused = 0;
+      }
+    } else if (algo === "FCFS") {
+      pick = (current != null && rem[current] > 0)
+        ? list.find(p => p.id === current)
+        : ready.slice().sort((a, b) => a.arrival - b.arrival || a.id - b.id)[0];
+    } else if (algo === "SJF") {
+      pick = (current != null && rem[current] > 0)
+        ? list.find(p => p.id === current)
+        : ready.slice().sort((a, b) => a.burst - b.burst || a.arrival - b.arrival || a.id - b.id)[0];
+    } else if (algo === "SRTF") {
+      pick = ready.slice().sort((a, b) => rem[a.id] - rem[b.id] || a.arrival - b.arrival || a.id - b.id)[0];
+    } else if (algo === "PRIO") {
+      pick = (current != null && rem[current] > 0)
+        ? list.find(p => p.id === current)
+        : ready.slice().sort((a, b) => a.priority - b.priority || a.arrival - b.arrival || a.id - b.id)[0];
+    } else if (algo === "PRIOP") {
+      pick = ready.slice().sort((a, b) => a.priority - b.priority || a.arrival - b.arrival || a.id - b.id)[0];
+    }
+
+    if (!pick) { timeline.push(null); t++; continue; }
+    if (pick.id !== current) qused = 0;
+    current = pick.id;
+    timeline.push(current);
+    rem[current]--;
+    qused++;
+    t++;
+    if (rem[current] === 0) { completion[current] = t; done++; current = null; qused = 0; }
+  }
+
+  // segmentos (fusión de unidades consecutivas)
+  const segs = [];
+  timeline.forEach((pid, i) => {
+    const last = segs[segs.length - 1];
+    if (last && last.pid === pid) last.end = i + 1;
+    else segs.push({ pid, start: i, end: i + 1 });
+  });
+
+  const perProc = list.map(p => {
+    const fin = completion[p.id];
+    const turn = fin != null ? fin - p.arrival : null;
+    return { id: p.id, arrival: p.arrival, burst: p.burst, fin, turn,
+             wait: turn != null ? turn - p.burst : null };
+  });
+  const ctx = Math.max(0, segs.filter(s => s.pid != null).length - 1);
+  const busy = timeline.filter(x => x != null).length;
+  return { segs, perProc, totalTime: timeline.length, ctx,
+           cpuUse: timeline.length ? busy / timeline.length : 0, totalBurst };
+}
+
+// ---- Render Gantt (revelado progresivo hasta `shownTime`) ----
+const gantt = $("#gantt");
+const NS = "http://www.w3.org/2000/svg";
+let sim = null, shownTime = 0, timer = null;
+
+function colorFor(pid) {
+  const idx = procs.findIndex(p => p.id === pid);
+  return idx >= 0 ? PALETTE[idx % PALETTE.length] : "var(--idle)";
+}
+
+function draw() {
+  gantt.innerHTML = "";
+  if (!sim) return;
+  const total = Math.max(sim.totalTime, 1);
+  const padL = 12, padR = 12, padT = 14;
+  const width = Math.max(760, total * 34 + padL + padR);
+  const unit = (width - padL - padR) / total;
+  const barY = padT, barH = 54;
+  gantt.setAttribute("width", width);
+
+  // rejilla + ejes de tiempo
+  for (let i = 0; i <= total; i++) {
+    const x = padL + i * unit;
+    line(x, barY, x, barY + barH + 6, "var(--grid)");
+    if (i % 1 === 0) text(x, barY + barH + 20, String(i), "var(--muted)", 11, "middle");
+  }
+
+  sim.segs.forEach(s => {
+    const vEnd = Math.min(s.end, shownTime);
+    if (vEnd <= s.start) return;
+    const x = padL + s.start * unit;
+    const w = (vEnd - s.start) * unit;
+    const rect = document.createElementNS(NS, "rect");
+    rect.setAttribute("x", x); rect.setAttribute("y", barY);
+    rect.setAttribute("width", w); rect.setAttribute("height", barH);
+    rect.setAttribute("rx", 3);
+    rect.setAttribute("fill", s.pid == null ? "var(--idle)" : colorFor(s.pid));
+    rect.setAttribute("opacity", s.pid == null ? .6 : 1);
+    gantt.appendChild(rect);
+    if (s.pid != null && w > 16)
+      text(x + w / 2, barY + barH / 2 + 4, "P" + s.pid, "#fff", 13, "middle");
+  });
+
+  // cabezal de reproducción
+  const hx = padL + Math.min(shownTime, total) * unit;
+  line(hx, barY - 6, hx, barY + barH + 6, "var(--accent)", 2);
+  text(hx, barY - 9, "t=" + Math.min(shownTime, total), "var(--accent)", 11, "middle");
+}
+function line(x1, y1, x2, y2, stroke, w = 1) {
+  const l = document.createElementNS(NS, "line");
+  l.setAttribute("x1", x1); l.setAttribute("y1", y1);
+  l.setAttribute("x2", x2); l.setAttribute("y2", y2);
+  l.setAttribute("stroke", stroke); l.setAttribute("stroke-width", w);
+  gantt.appendChild(l);
+}
+function text(x, y, str, fill, size, anchor = "start") {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y);
+  t.setAttribute("fill", fill); t.setAttribute("font-size", size);
+  t.setAttribute("text-anchor", anchor);
+  t.setAttribute("font-family", "system-ui, sans-serif");
+  t.textContent = str;
+  gantt.appendChild(t);
+}
+
+function renderLegend() {
+  const el = $("#legend");
+  el.innerHTML = "";
+  procs.forEach((p, i) => {
+    const s = document.createElement("span");
+    s.innerHTML = `<span class="swatch" style="background:${PALETTE[i % PALETTE.length]}"></span>P${p.id}`;
+    el.appendChild(s);
+  });
+  const idle = document.createElement("span");
+  idle.innerHTML = `<span class="swatch" style="background:var(--idle)"></span>CPU ociosa`;
+  el.appendChild(idle);
+}
+
+function updateMetrics() {
+  if (!sim) return;
+  const finished = sim.perProc.filter(p => p.fin != null && p.fin <= shownTime);
+  resultBody.innerHTML = "";
+  sim.perProc.forEach(p => {
+    const show = p.fin != null && p.fin <= shownTime;
+    const tr = document.createElement("tr");
+    const c = show ? "done" : "pending";
+    tr.innerHTML = `<td>P${p.id}</td><td>${p.arrival}</td><td>${p.burst}</td>
+      <td class="${c}">${show ? p.fin : "–"}</td>
+      <td class="${c}">${show ? p.turn : "–"}</td>
+      <td class="${c}">${show ? p.wait : "–"}</td>`;
+    resultBody.appendChild(tr);
+  });
+  if (finished.length) {
+    const w = finished.reduce((s, p) => s + p.wait, 0) / finished.length;
+    const r = finished.reduce((s, p) => s + p.turn, 0) / finished.length;
+    $("#m-wait").textContent = w.toFixed(2);
+    $("#m-turn").textContent = r.toFixed(2);
+  } else {
+    $("#m-wait").textContent = "–";
+    $("#m-turn").textContent = "–";
+  }
+  const segsShown = sim.segs.filter(s => s.start < shownTime && s.pid != null);
+  $("#m-ctx").textContent = Math.max(0, segsShown.length - 1);
+  const shown = Math.min(shownTime, sim.totalTime);
+  const busy = sim.segs.reduce((acc, s) =>
+    acc + (s.pid != null ? Math.max(0, Math.min(s.end, shownTime) - s.start) : 0), 0);
+  $("#m-cpu").textContent = shown ? Math.round(busy / shown * 100) + " %" : "–";
+}
+
+function frame() {
+  sim = simulate($("#algo").value, +$("#quantum").value || 1);
+  draw();
+  updateMetrics();
+}
+
+function reset() {
+  stop();
+  shownTime = 0;
+  renderLegend();
+  frame();
+}
+function stepOnce() {
+  if (!sim) frame();
+  if (shownTime < sim.totalTime) { shownTime++; draw(); updateMetrics(); }
+  if (shownTime >= sim.totalTime) stop();
+}
+function stop() {
+  if (timer) { clearInterval(timer); timer = null; }
+  $("#play").textContent = "▶ Reproducir";
+}
+function play() {
+  if (timer) { stop(); return; }
+  if (!sim || shownTime >= sim.totalTime) { shownTime = 0; frame(); }
+  $("#play").textContent = "⏸ Pausa";
+  const tick = () => {
+    stepOnce();
+    if (!timer) return;
+  };
+  const period = () => 620 - (+$("#speed").value) * 28;
+  timer = setInterval(tick, period());
+  $("#speed").oninput = () => {
+    if (timer) { clearInterval(timer); timer = setInterval(tick, period()); }
+  };
+}
+
+$("#play").addEventListener("click", play);
+$("#step").addEventListener("click", () => { stop(); stepOnce(); });
+$("#reset").addEventListener("click", reset);
+$("#algo").addEventListener("change", () => {
+  $("#quantum-field").style.display = $("#algo").value === "RR" ? "" : "none";
+  reset();
+});
+$("#quantum").addEventListener("input", reset);
+
+renderProcTable();
+$("#quantum-field").style.display = "none";
+reset();
+</script>
+</body>
+</html>

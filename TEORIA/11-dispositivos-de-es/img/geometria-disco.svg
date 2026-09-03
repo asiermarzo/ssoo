@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" font-family="sans-serif" font-size="13" role="img" aria-label="Superficie de un disco dividida en pistas concéntricas y sectores angulares">
+  <rect width="420" height="300" fill="#ffffff"/>
+  <g transform="translate(150,160)">
+    <circle r="120" fill="#2f8f8f" stroke="#1f6060"/>
+    <circle r="90" fill="none" stroke="#bfe3e3"/>
+    <circle r="60" fill="none" stroke="#bfe3e3"/>
+    <circle r="30" fill="none" stroke="#bfe3e3"/>
+    <circle r="16" fill="#1f6fd0" stroke="#144a90"/>
+    <!-- radios (sectores) -->
+    <g stroke="#bfe3e3">
+      <line x1="0" y1="0" x2="0" y2="-120"/>
+      <line x1="0" y1="0" x2="104" y2="-60"/>
+      <line x1="0" y1="0" x2="104" y2="60"/>
+      <line x1="0" y1="0" x2="0" y2="120"/>
+      <line x1="0" y1="0" x2="-104" y2="60"/>
+      <line x1="0" y1="0" x2="-104" y2="-60"/>
+    </g>
+    <!-- un sector resaltado -->
+    <path d="M0 0 L0 -120 A120 120 0 0 1 104 -60 Z" fill="#ffe14d" fill-opacity="0.7" stroke="#b59a00"/>
+  </g>
+  <text x="300" y="70" font-size="12">sector (porción angular)</text>
+  <line x1="300" y1="75" x2="235" y2="95" stroke="#333"/>
+  <text x="300" y="175" font-size="12">pista (anillo concéntrico)</text>
+  <line x1="300" y1="170" x2="238" y2="150" stroke="#333"/>
+  <text x="300" y="255" font-size="12">eje / centro del disco</text>
+  <line x1="300" y1="250" x2="160" y2="165" stroke="#333"/>
+</svg>

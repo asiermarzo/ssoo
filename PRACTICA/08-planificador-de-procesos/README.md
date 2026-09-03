@@ -21,46 +21,7 @@ Los procesos de nivel 1 se atienden con la mayor celeridad; los de nivel 3, los 
 3. Crea un segundo proceso encargado de la planificación.
 4. Libera todos los recursos (procesos y colas) cuando el usuario indica la finalización (`Ctrl-C`).
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" font-family="sans-serif" font-size="12" role="img" aria-label="Planificador de colas multinivel no apropiativas">
-  <defs>
-    <marker id="arrowP8" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-      <path d="M0,0 L8,4 L0,8 z" fill="#333"/>
-    </marker>
-  </defs>
-  <rect x="20" y="150" width="140" height="60" fill="#f2f2f2" stroke="#333"/>
-  <text x="90" y="176" text-anchor="middle">solicitudes</text>
-  <text x="90" y="192" text-anchor="middle" font-size="10">(teclado / configfile)</text>
-  <path d="M160,180 L210,180" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <rect x="210" y="150" width="130" height="60" fill="#f2f2f2" stroke="#333"/>
-  <text x="275" y="176" text-anchor="middle">procsched</text>
-  <text x="275" y="192" text-anchor="middle" font-size="10">lee y encola por nivel</text>
-  <path d="M340,165 L390,55" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <path d="M340,180 L390,180" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <path d="M340,195 L390,305" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <rect x="390" y="20" width="220" height="60" fill="#e3f5e1" stroke="#333"/>
-  <text x="500" y="45" text-anchor="middle">Nivel 1 · Round Robin</text>
-  <text x="500" y="61" text-anchor="middle" font-size="10">turnos de 4 s</text>
-  <rect x="390" y="150" width="220" height="60" fill="#fdf3d0" stroke="#333"/>
-  <text x="500" y="175" text-anchor="middle">Nivel 2 · Prioridades</text>
-  <text x="500" y="191" text-anchor="middle" font-size="10">no apropiativas</text>
-  <rect x="390" y="280" width="220" height="60" fill="#e0eefc" stroke="#333"/>
-  <text x="500" y="305" text-anchor="middle">Nivel 3 · FCFS</text>
-  <text x="500" y="321" text-anchor="middle" font-size="10">orden de llegada</text>
-  <path d="M610,50 L650,175" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <path d="M610,180 L650,185" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <path d="M610,310 L650,195" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <text x="615" y="110" font-size="10" fill="#555">maxima prioridad</text>
-  <text x="612" y="255" font-size="10" fill="#555">minima prioridad</text>
-  <rect x="650" y="140" width="170" height="70" fill="#f6e3ee" stroke="#333"/>
-  <text x="735" y="165" text-anchor="middle">planificador</text>
-  <text x="735" y="181" text-anchor="middle" font-size="9">SIGSTOP / SIGCONT</text>
-  <text x="735" y="195" text-anchor="middle" font-size="9">SIGALRM</text>
-  <path d="M735,210 L735,260" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <rect x="655" y="262" width="160" height="45" fill="#eee" stroke="#333"/>
-  <text x="735" y="288" text-anchor="middle">proceso en ejecucion</text>
-  <path d="M825,290 C860,290 860,150 825,150" stroke="#333" fill="none" marker-end="url(#arrowP8)"/>
-  <text x="828" y="222" font-size="9" fill="#555">fin de turno / bloqueo / fin</text>
-</svg>
+<img src="img/colas-multinivel.svg" width="560" alt="Planificador de colas multinivel no apropiativas">
 
 ## Manual
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" font-family="sans-serif" font-size="11" role="img" aria-label="Comparación de estrategias de asignación de bloques como plazas de aparcamiento: contigua, enlazada e indexada">
+  <rect width="900" height="220" fill="#ffffff"/>
+  <text x="140" y="20" text-anchor="middle" font-weight="bold">Contigua</text>
+  <g stroke="#666" fill="#f2f2f2">
+    <rect x="30" y="40" width="55" height="50"/>
+    <rect x="90" y="40" width="55" height="50"/>
+    <rect x="150" y="40" width="55" height="50"/>
+    <rect x="210" y="40" width="55" height="50"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="57" y="70">12</text><text x="117" y="70">13</text><text x="177" y="70">14</text><text x="237" y="70">15</text>
+  </g>
+  <line x1="30" y1="100" x2="265" y2="100" stroke="#333"/>
+  <text x="147" y="118" text-anchor="middle" font-size="10" fill="#666">plazas consecutivas</text>
+  <text x="147" y="134" text-anchor="middle" font-size="10" fill="#666">(inicio + nº de plazas)</text>
+  <text x="450" y="20" text-anchor="middle" font-weight="bold">Enlazada</text>
+  <g stroke="#666" fill="#f2f2f2">
+    <rect x="335" y="40" width="55" height="50"/>
+    <rect x="420" y="40" width="55" height="50"/>
+    <rect x="505" y="40" width="55" height="50"/>
+    <rect x="590" y="40" width="55" height="50"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="362" y="70">4</text><text x="447" y="70">19</text><text x="532" y="70">7</text><text x="617" y="70">31</text>
+  </g>
+  <g stroke="#333" fill="#333">
+    <line x1="390" y1="65" x2="418" y2="65"/><path d="M418 65 l-10 -4 l0 8 z"/>
+    <line x1="475" y1="65" x2="503" y2="65"/><path d="M503 65 l-10 -4 l0 8 z"/>
+    <line x1="560" y1="65" x2="588" y2="65"/><path d="M588 65 l-10 -4 l0 8 z"/>
+  </g>
+  <text x="462" y="118" text-anchor="middle" font-size="10" fill="#666">cada plaza señala la siguiente</text>
+  <text x="462" y="134" text-anchor="middle" font-size="10" fill="#666">(no necesitan estar juntas)</text>
+  <text x="770" y="20" text-anchor="middle" font-weight="bold">Indexada</text>
+  <rect x="735" y="40" width="80" height="50" fill="#ffe9c9" stroke="#a06a1a"/>
+  <text x="775" y="60" text-anchor="middle" font-size="9">índice</text>
+  <text x="775" y="74" text-anchor="middle" font-size="9">4·19·7·31</text>
+  <g stroke="#666" fill="#f2f2f2">
+    <rect x="640" y="150" width="45" height="45"/>
+    <rect x="700" y="150" width="45" height="45"/>
+    <rect x="760" y="150" width="45" height="45"/>
+    <rect x="820" y="150" width="45" height="45"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="662" y="177">4</text><text x="722" y="177">19</text><text x="782" y="177">7</text><text x="842" y="177">31</text>
+  </g>
+  <g stroke="#333">
+    <line x1="755" y1="90" x2="662" y2="148"/>
+    <line x1="765" y1="90" x2="722" y2="148"/>
+    <line x1="785" y1="90" x2="782" y2="148"/>
+    <line x1="795" y1="90" x2="842" y2="148"/>
+  </g>
+</svg>

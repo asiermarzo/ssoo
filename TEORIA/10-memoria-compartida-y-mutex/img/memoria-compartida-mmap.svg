@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 280" font-family="sans-serif" font-size="12" role="img" aria-label="Los procesos A y B mapean, en direcciones virtuales distintas, el mismo segmento físico de memoria compartida">
+  <rect width="680" height="280" fill="#ffffff"/>
+  <text x="150" y="24" text-anchor="middle" font-weight="bold">Espacio virtual — proceso A</text>
+  <rect x="30" y="40" width="240" height="50" fill="#cfe0f2" stroke="#3773a0"/><text x="150" y="70" text-anchor="middle">memoria privada A</text>
+  <rect x="30" y="100" width="240" height="50" fill="#6ba3d6" stroke="#2b6f99"/><text x="150" y="122" text-anchor="middle" fill="#fff">0x7000</text><text x="150" y="138" text-anchor="middle" fill="#fff" font-size="10">segmento compartido</text>
+  <text x="530" y="24" text-anchor="middle" font-weight="bold">Espacio virtual — proceso B</text>
+  <rect x="410" y="40" width="240" height="50" fill="#cfe0f2" stroke="#3773a0"/><text x="530" y="70" text-anchor="middle">memoria privada B</text>
+  <rect x="410" y="100" width="240" height="50" fill="#6ba3d6" stroke="#2b6f99"/><text x="530" y="122" text-anchor="middle" fill="#fff">0x9000</text><text x="530" y="138" text-anchor="middle" fill="#fff" font-size="10">segmento compartido</text>
+  <rect x="220" y="210" width="240" height="50" fill="#1f3f66" stroke="#132840"/><text x="340" y="232" text-anchor="middle" fill="#fff">mismos marcos físicos</text><text x="340" y="248" text-anchor="middle" fill="#fff" font-size="10">en RAM</text>
+  <line x1="150" y1="150" x2="280" y2="210" stroke="#333"/><path d="M280 210 l-10 -2 l2 -8 z" fill="#333"/>
+  <line x1="530" y1="150" x2="400" y2="210" stroke="#333"/><path d="M400 210 l10 -2 l-2 -8 z" fill="#333"/>
+</svg>
