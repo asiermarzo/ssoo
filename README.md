@@ -10,25 +10,9 @@ git clone https://github.com/asiermarzo/ssoo.git
 
 O descargar como ZIP desde la página del repositorio en GitHub (botón *Code → Download ZIP*) y descomprimirlo con el gestor de archivos o con el comando `unzip ssoo-main.zip`.
 
-Las prácticas se realizan sobre un PC virtualizado con Linux, disponible 24×7 a través de la infraestructura VDI del Aulario o del [Laboratorio Virtual](https://eim-laboratoriovirtual.unavarra.es/laboratorio/).
+## Entornos de ejecución y compilación
 
-## Cómo compilar las prácticas
-
-Cada práctica se compila con `gcc` y trae su propio script de compilación en bash. El uso de `make` o `cmake` es opcional (cada proceso o grupo de procesos es un único `.c` que compila a un binario).
-
-```bash
-gcc -Wall -Wextra -o programa programa.c
-```
-
-Para compilar de una vez todos los ejemplos del repositorio hay un `Makefile` en la raíz que delega en el `Makefile` de cada carpeta (las de práctica y, más adelante, las de teoría):
-
-```bash
-make          # compila todo
-make clean    # borra los binarios
-make list     # lista las carpetas que se recorren
-```
-
-Cada carpeta de práctica incluye además `ejercicios_extra.md`, con cinco ejercicios adicionales por tema y su solución en C (`extra_01.c` … `extra_05.c`), compilables con el `Makefile` de esa carpeta.
+Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (ordenadores de la UPNA, VDI, máquinas virtuales, GitHub Codespaces, o el ordenador propio con Linux, WSL2 o Docker) y cómo compilar el material están en [`entornos_ejecucion.md`](entornos_ejecucion.md).
 
 ## Teoría
 
