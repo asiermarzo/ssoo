@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrega de una señal</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --main:#2b6fb0;--handler:#7a5ea8;--pending:#b7902f;--bad:#c0392b;--ok:#3a8f4e}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --main:#6f9be8;--handler:#a992d0;--pending:#d0a94a;--bad:#e06b5a;--ok:#5aa86b}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px;display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+  svg{display:block;width:100%;height:auto}
+  .side{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px}
+  .sig{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px}
+  .sig h3{margin:0 0 8px;font-size:14px;font-family:ui-monospace,monospace}
+  .row{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+  select{padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px}
+  .flag{margin-left:auto;font-size:11px;padding:2px 7px;border-radius:5px;font-weight:600}
+  .flag.on{background:var(--pending);color:#fff}
+  .flag.off{color:var(--muted);border:1px solid var(--line)}
+  button{padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer;width:100%;margin-bottom:8px}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .log{font-size:12px;color:var(--muted);margin-top:10px;min-height:3em;font-variant-numeric:tabular-nums}
+  .note{font-size:12px;color:var(--muted);margin-top:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Entrega de una señal: máscara, pendiente y manejador</h1>
+  <p>Tema 8 · Una señal enviada a un proceso puede entregarse de inmediato, quedar <em>pendiente</em> si está
+     bloqueada por la máscara, o descartarse. Si su disposición es un manejador, el flujo de <code>main()</code> se
+     interrumpe, ejecuta el manejador y vuelve exactamente donde estaba.</p>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <svg id="diagram" viewBox="0 0 560 380" role="img" aria-label="Flujo de ejecución y entrega de señal"></svg>
+    <div class="log" id="log">El proceso ejecuta su bucle principal. Envía una señal.</div>
+  </div>
+
+  <div class="side">
+    <h2>Control</h2>
+    <button class="primary" id="run">⏸ Pausar ejecución</button>
+
+    <div class="sig" id="s-usr1">
+      <h3>SIGUSR1</h3>
+      <div class="row">
+        <label>disposición</label>
+        <select data-sig="SIGUSR1" class="disp">
+          <option value="handler">manejador</option>
+          <option value="default">predeterminada (terminar)</option>
+          <option value="ignore">ignorar</option>
+        </select>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" class="mask" data-sig="SIGUSR1"> bloqueada (máscara)</label>
+        <span class="flag off" data-pend="SIGUSR1">sin pendientes</span>
+      </div>
+      <button data-send="SIGUSR1">kill -USR1</button>
+    </div>
+
+    <div class="sig" id="s-term">
+      <h3>SIGTERM</h3>
+      <div class="row">
+        <label>disposición</label>
+        <select data-sig="SIGTERM" class="disp">
+          <option value="default">predeterminada (terminar)</option>
+          <option value="handler">manejador (limpieza)</option>
+          <option value="ignore">ignorar</option>
+        </select>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" class="mask" data-sig="SIGTERM"> bloqueada (máscara)</label>
+        <span class="flag off" data-pend="SIGTERM">sin pendientes</span>
+      </div>
+      <button data-send="SIGTERM">kill -TERM</button>
+    </div>
+
+    <div class="sig">
+      <h3>SIGKILL</h3>
+      <p class="note" style="margin:0 0 8px">No se puede capturar, bloquear ni ignorar.</p>
+      <button data-send="SIGKILL">kill -KILL</button>
+    </div>
+
+    <button id="reset">↺ reiniciar proceso</button>
+  </div>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("diagram");
+const $ = s => document.querySelector(s);
+
+const MAIN = ["config = leer()", "conectar()", "bucle: procesar(msg)", "registrar(msg)", "esperar_evento()", "volver a bucle"];
+const HANDLERS = {
+  SIGUSR1: ["recargar = 1", 'log("SIGUSR1 recibida")', "return → vuelve a main"],
+  SIGTERM: ["guardar_estado()", "cerrar_ficheros()", "exit(0)"],
+};
+
+let pc = 0, mode = "main", hsig = null, hpc = 0, savedPc = 0, alive = true, running = true;
+const disp = { SIGUSR1: "handler", SIGTERM: "default" };
+const masked = { SIGUSR1: false, SIGTERM: false };
+const pending = { SIGUSR1: false, SIGTERM: false };
+let tickTimer = null, animTimer = null;
+
+function draw() {
+  svg.innerHTML = "";
+  txt(30, 24, "proceso — modo usuario", "var(--muted)", 12);
+  // columna main
+  MAIN.forEach((s, i) => {
+    const y = 44 + i * 44;
+    box(30, y, 250, 34, "var(--main)", mode === "main" && pc === i && alive);
+    txt(44, y + 22, s, "var(--ink)", 12.5);
+  });
+  txt(30, 44 + MAIN.length * 44 + 18, alive ? "" : "· proceso terminado ·", "var(--bad)", 13, 700);
+
+  // manejador
+  if (hsig) {
+    const hx = 330;
+    txt(hx, 24, "manejador de " + hsig, "var(--handler)", 12);
+    HANDLERS[hsig].forEach((s, i) => {
+      const y = 44 + i * 44;
+      box(hx, y, 210, 34, "var(--handler)", mode === "handler" && hpc === i);
+      txt(hx + 14, y + 22, s, "var(--ink)", 12);
+    });
+    // flecha salto/retorno
+    const fromY = 44 + savedPc * 44 + 17;
+    const toY = 44 + 17;
+    arrow(280, fromY, hx - 4, toY, "var(--handler)", mode === "handler");
+    if (mode === "main" && wasInHandler) arrow(hx - 4, 44 + (HANDLERS[hsig].length - 1) * 44 + 17, 282, fromY, "var(--muted)", true);
+  }
+
+  // PC
+  let py, px;
+  if (mode === "handler") { px = 330 - 16; py = 44 + hpc * 44 + 17; }
+  else { px = 30 - 16; py = 44 + pc * 44 + 17; }
+  if (alive) {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", px); c.setAttribute("cy", py); c.setAttribute("r", 7);
+    c.setAttribute("fill", mode === "handler" ? "var(--handler)" : "var(--main)");
+    svg.appendChild(c);
+    txt(px - 4, py - 12, "PC", "var(--muted)", 9, 400, "middle");
+  }
+}
+let wasInHandler = false;
+
+function box(x, y, w, h, color, active) {
+  const bg = document.createElementNS(NS, "rect");
+  bg.setAttribute("x", x); bg.setAttribute("y", y); bg.setAttribute("width", w); bg.setAttribute("height", h);
+  bg.setAttribute("rx", 6); bg.setAttribute("fill", color); bg.setAttribute("opacity", active ? .28 : .1);
+  svg.appendChild(bg);
+  const br = document.createElementNS(NS, "rect");
+  br.setAttribute("x", x); br.setAttribute("y", y); br.setAttribute("width", w); br.setAttribute("height", h);
+  br.setAttribute("rx", 6); br.setAttribute("fill", "none"); br.setAttribute("stroke", color);
+  br.setAttribute("stroke-width", active ? 2.4 : 1.3);
+  svg.appendChild(br);
+}
+function arrow(x1, y1, x2, y2, color, strong) {
+  if (!svg.querySelector("#ah")) {
+    const defs = document.createElementNS(NS, "defs");
+    defs.innerHTML = `<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="${color}"/></marker>`;
+    svg.appendChild(defs);
+  }
+  const mx = (x1 + x2) / 2;
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
+  p.setAttribute("fill", "none"); p.setAttribute("stroke", color);
+  p.setAttribute("stroke-width", strong ? 2 : 1.2);
+  p.setAttribute("stroke-dasharray", strong ? "none" : "4 3");
+  p.setAttribute("marker-end", "url(#ah)");
+  svg.appendChild(p);
+}
+function txt(x, y, s, fill, size, weight = 400, anchor = "start") {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("fill", fill);
+  t.setAttribute("font-size", size); t.setAttribute("font-weight", weight); t.setAttribute("text-anchor", anchor);
+  t.setAttribute("font-family", "ui-monospace, system-ui, monospace");
+  t.textContent = s; svg.appendChild(t);
+}
+
+function log(m) { $("#log").textContent = m; }
+function refreshFlags() {
+  ["SIGUSR1", "SIGTERM"].forEach(s => {
+    const el = document.querySelector(`[data-pend="${s}"]`);
+    el.className = "flag " + (pending[s] ? "on" : "off");
+    el.textContent = pending[s] ? "PENDIENTE" : "sin pendientes";
+  });
+}
+
+function tick() {
+  if (!alive || mode !== "main" || animTimer) return;
+  pc = (pc + 1) % MAIN.length;
+  draw();
+}
+
+function terminate(reason) {
+  alive = false; running = false;
+  stopTick();
+  log(reason);
+  draw();
+  $("#run").textContent = "▶ (proceso terminado)";
+}
+
+function deliver(sig) {
+  if (!alive) return;
+  if (sig === "SIGKILL") { terminate("SIGKILL: el núcleo elimina el proceso de inmediato. No hay manejador ni limpieza."); return; }
+  const d = disp[sig];
+  if (d === "ignore") { log(`${sig} entregada, pero su disposición es SIG_IGN: se descarta.`); pending[sig] = false; refreshFlags(); return; }
+  if (d === "default") { terminate(`${sig}: disposición predeterminada → el proceso termina.`); return; }
+  // handler: animar salto
+  pending[sig] = false; refreshFlags();
+  savedPc = pc; hsig = sig; hpc = 0; mode = "handler"; wasInHandler = false;
+  log(`${sig} entregada: se guarda el contexto, el flujo salta al manejador (main queda en «${MAIN[savedPc]}»).`);
+  draw();
+  clearInterval(animTimer);
+  animTimer = setInterval(() => {
+    hpc++;
+    if (hpc >= HANDLERS[sig].length) {
+      clearInterval(animTimer); animTimer = null;
+      if (sig === "SIGTERM") { terminate("El manejador de SIGTERM ha hecho la limpieza y llama a exit(0)."); return; }
+      mode = "main"; wasInHandler = true;
+      log(`El manejador retorna. Se restaura el contexto y main continúa en «${MAIN[savedPc]}».`);
+      draw();
+    } else draw();
+  }, 850);
+}
+
+function send(sig) {
+  if (!alive) { log("El proceso ya ha terminado. Pulsa «reiniciar»."); return; }
+  if (sig !== "SIGKILL" && masked[sig]) {
+    pending[sig] = true; refreshFlags();
+    log(`${sig} enviada, pero está bloqueada por la máscara: queda PENDIENTE. main() sigue ejecutándose sin enterarse.`);
+    return;
+  }
+  log(`${sig} enviada.`);
+  deliver(sig);
+}
+
+function stopTick() { if (tickTimer) { clearInterval(tickTimer); tickTimer = null; } }
+function startTick() { stopTick(); tickTimer = setInterval(tick, 950); }
+
+document.querySelectorAll("[data-send]").forEach(b => b.addEventListener("click", () => send(b.dataset.send)));
+document.querySelectorAll(".disp").forEach(sel => sel.addEventListener("change", () => { disp[sel.dataset.sig] = sel.value; }));
+document.querySelectorAll(".mask").forEach(cb => cb.addEventListener("change", () => {
+  const sig = cb.dataset.sig;
+  masked[sig] = cb.checked;
+  if (!cb.checked && pending[sig]) {
+    log(`Se desbloquea ${sig} y había una pendiente: se entrega ahora.`);
+    deliver(sig);
+  } else {
+    log(cb.checked ? `${sig} añadida a la máscara: las próximas quedarán pendientes.` : `${sig} quitada de la máscara.`);
+  }
+}));
+$("#run").addEventListener("click", () => {
+  if (!alive) return;
+  running = !running;
+  $("#run").textContent = running ? "⏸ Pausar ejecución" : "▶ Reanudar ejecución";
+  if (running) startTick(); else stopTick();
+});
+$("#reset").addEventListener("click", () => {
+  pc = 0; mode = "main"; hsig = null; hpc = 0; alive = true; running = true; wasInHandler = false;
+  clearInterval(animTimer); animTimer = null;
+  Object.keys(pending).forEach(k => pending[k] = false);
+  refreshFlags();
+  $("#run").textContent = "⏸ Pausar ejecución";
+  log("Proceso reiniciado. Ejecutando el bucle principal.");
+  draw(); startTick();
+});
+
+refreshFlags();
+draw();
+startTick();
+</script>
+</body>
+</html>

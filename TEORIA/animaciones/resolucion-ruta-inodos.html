@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resolución de una ruta con inodos</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --inode:#2b6fb0;--block:#b7902f;--file:#3a8f4e;--bad:#c0392b}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --inode:#6f9be8;--block:#d0a94a;--file:#5aa86b;--bad:#e06b5a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  select,button{padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .pathbar{font-family:ui-monospace,monospace;font-size:20px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .pathbar .comp{padding:2px 4px;border-radius:5px}
+  .pathbar .comp.active{background:color-mix(in srgb,var(--accent) 30%,transparent);font-weight:700}
+  .pathbar .comp.done{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:780px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 10px}
+  table{width:100%;border-collapse:collapse;font-size:13px;font-family:ui-monospace,monospace}
+  th,td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+  th{color:var(--muted)}
+  tr.hl td{background:color-mix(in srgb,var(--inode) 24%,transparent)}
+  tr.hlb td{background:color-mix(in srgb,var(--block) 26%,transparent)}
+  .steptext{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:14px;min-height:3.2em}
+  .stepbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .badge{display:inline-block;padding:2px 8px;border-radius:5px;color:#fff;font-size:12px;font-weight:600}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;max-width:82ch}
+</style>
+</head>
+<body>
+<header>
+  <h1>Resolución de una ruta con inodos</h1>
+  <p>Tema 12 · El núcleo traduce una ruta como <code>/usr/ast/mbox</code> componente a componente: lee el inodo
+     del directorio actual, lee su bloque de datos, busca el nombre, obtiene el siguiente inodo y repite. La raíz
+     tiene un número de inodo fijo.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <label>Ruta:
+      <select id="path">
+        <option value="/usr/ast/mbox">/usr/ast/mbox</option>
+        <option value="/usr/bin/ls">/usr/bin/ls</option>
+        <option value="/etc/passwd">/etc/passwd</option>
+        <option value="/usr/ast">/usr/ast  (directorio)</option>
+      </select>
+    </label>
+    <button class="primary" id="go">Resolver</button>
+    <button id="prev" disabled>◀</button>
+    <button id="next" disabled>▶ paso</button>
+    <button id="auto" disabled>▶ auto</button>
+    <span id="counter" class="note" style="margin:0"></span>
+  </div>
+
+  <div class="pathbar" id="pathbar">—</div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Tabla de inodos (extracto)</h2>
+      <table id="inodes">
+        <thead><tr><th>inodo</th><th>tipo</th><th>tamaño</th><th>bloque(s) de datos</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2 id="blk-title">Bloque de directorio</h2>
+      <table id="dirblk">
+        <thead><tr><th>nombre</th><th>nº de inodo</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="steptext" id="steptext">Elige una ruta y pulsa «Resolver».</div>
+  <div class="stepbtns"><span id="result"></span></div>
+
+  <p class="note">Cada componente cuesta al menos dos accesos: uno al inodo del directorio y otro a su bloque de
+     datos. Por eso los sistemas de ficheros mantienen una caché de nombres (<em>dentry cache</em>) que evita
+     repetir esta búsqueda para rutas usadas a menudo.</p>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+const INODES = {
+  2:  { type: "dir",  block: 10 },
+  6:  { type: "dir",  block: 26 },
+  29: { type: "dir",  block: 41 },
+  30: { type: "dir",  block: 52 },
+  60: { type: "file", blocks: [112, 113, 114], size: 3920 },
+  4:  { type: "dir",  block: 12 },
+  7:  { type: "file", blocks: [90], size: 2450 },
+  33: { type: "file", blocks: [140, 141], size: 1776 },
+};
+const DIRS = {
+  10: [[".", 2], ["..", 2], ["usr", 6], ["etc", 4], ["home", 8]],
+  26: [[".", 6], ["..", 2], ["ast", 29], ["bin", 30]],
+  41: [[".", 29], ["..", 6], ["mbox", 60], ["notas.txt", 61]],
+  52: [[".", 30], ["..", 6], ["ls", 33], ["cat", 34]],
+  12: [[".", 4], ["..", 2], ["passwd", 7], ["group", 9]],
+};
+const SHOWN_INODES = [2, 4, 6, 7, 29, 30, 33, 60];
+
+let steps = [], sidx = 0, comps = [], autoTimer = null;
+
+function renderInodeTable(hlInode) {
+  const tb = $("#inodes tbody"); tb.innerHTML = "";
+  SHOWN_INODES.forEach(n => {
+    const e = INODES[n];
+    const tr = document.createElement("tr");
+    if (n === hlInode) tr.className = "hl";
+    const data = e.type === "dir" ? "bloque " + e.block : "[" + e.blocks.join(", ") + "]";
+    const size = e.type === "dir" ? "—" : e.size + " B";
+    tr.innerHTML = `<td>${n}${n === 2 ? " (raíz)" : ""}</td><td>${e.type === "dir" ? "directorio" : "fichero"}</td><td>${size}</td><td>${data}</td>`;
+    tb.appendChild(tr);
+  });
+}
+function renderDirBlock(block, matchName) {
+  $("#blk-title").textContent = block == null ? "Bloque de directorio" : "Bloque de directorio nº " + block;
+  const tb = $("#dirblk tbody"); tb.innerHTML = "";
+  if (block == null || !DIRS[block]) return;
+  DIRS[block].forEach(([name, ino]) => {
+    const tr = document.createElement("tr");
+    if (name === matchName) tr.className = "hlb";
+    tr.innerHTML = `<td>${name}</td><td>${ino}</td>`;
+    tb.appendChild(tr);
+  });
+}
+function renderPath(activeIdx, doneUpto) {
+  const bar = $("#pathbar");
+  bar.innerHTML = '<span class="comp' + (activeIdx === -1 ? " active" : "") + '">/</span>';
+  comps.forEach((c, i) => {
+    const cls = i === activeIdx ? "active" : (i < doneUpto ? "done" : "");
+    bar.insertAdjacentHTML("beforeend", `<span class="comp ${cls}">${c}</span>`);
+    if (i < comps.length - 1) bar.insertAdjacentHTML("beforeend", '<span style="color:var(--muted)">/</span>');
+  });
+}
+
+function build(path) {
+  comps = path.split("/").filter(Boolean);
+  const S = [];
+  let cur = 2;
+  S.push({ inode: 2, block: null, match: null, active: -1, done: 0,
+    text: "La resolución arranca en el inodo 2, el de la raíz «/». Es un número fijo que el núcleo conoce de antemano." });
+
+  for (let i = 0; i < comps.length; i++) {
+    const e = INODES[cur];
+    S.push({ inode: cur, block: e.block, match: null, active: i, done: i,
+      text: `Se lee el inodo ${cur}${cur === 2 ? " (raíz)" : ""}: es un directorio y sus entradas están en el bloque de datos nº ${e.block}.` });
+    const entries = DIRS[e.block];
+    const found = entries.find(([n]) => n === comps[i]);
+    if (!found) {
+      S.push({ inode: cur, block: e.block, match: null, active: i, done: i,
+        text: `Se recorre el bloque ${e.block} buscando «${comps[i]}»… no aparece. La llamada devuelve ENOENT.`, error: true });
+      return S;
+    }
+    S.push({ inode: cur, block: e.block, match: comps[i], active: i, done: i,
+      text: `Se recorre el bloque ${e.block} y se encuentra la entrada «${comps[i]}» → nº de inodo ${found[1]}.` });
+    cur = found[1];
+  }
+
+  const fe = INODES[cur];
+  if (fe.type === "file") {
+    S.push({ inode: cur, block: null, match: null, active: comps.length - 1, done: comps.length,
+      text: `Se lee el inodo ${cur}: es un fichero de ${fe.size} bytes, con datos en los bloques [${fe.blocks.join(", ")}]. Ruta resuelta.`,
+      result: `el inodo de ${path} es el ${cur}` });
+  } else {
+    S.push({ inode: cur, block: fe.block, match: null, active: comps.length - 1, done: comps.length,
+      text: `Se lee el inodo ${cur}: es un directorio (sus entradas están en el bloque ${fe.block}). Ruta resuelta a un directorio.`,
+      result: `el inodo de ${path} es el ${cur} (directorio)` });
+  }
+  return S;
+}
+
+function apply() {
+  const st = steps[sidx];
+  renderInodeTable(st.inode);
+  renderDirBlock(st.block, st.match);
+  renderPath(st.active, st.done);
+  $("#steptext").textContent = st.text;
+  $("#counter").textContent = `paso ${sidx + 1} / ${steps.length}`;
+  $("#prev").disabled = sidx === 0;
+  $("#next").disabled = sidx === steps.length - 1;
+  const r = $("#result");
+  if (st.result) r.innerHTML = `<span class="badge" style="background:var(--file)">${st.result}</span>`;
+  else if (st.error) r.innerHTML = `<span class="badge" style="background:var(--bad)">ENOENT</span>`;
+  else r.textContent = "";
+}
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; $("#auto").textContent = "▶ auto"; } }
+
+function go() {
+  steps = build($("#path").value);
+  sidx = 0;
+  stopAuto();
+  ["prev", "next", "auto"].forEach(id => $("#" + id).disabled = false);
+  apply();
+}
+
+$("#go").addEventListener("click", go);
+$("#path").addEventListener("change", go);
+$("#next").addEventListener("click", () => { if (sidx < steps.length - 1) { sidx++; apply(); } });
+$("#prev").addEventListener("click", () => { if (sidx > 0) { sidx--; apply(); } });
+$("#auto").addEventListener("click", () => {
+  if (autoTimer) { stopAuto(); return; }
+  if (sidx >= steps.length - 1) { sidx = 0; apply(); }
+  $("#auto").textContent = "⏸ pausa";
+  autoTimer = setInterval(() => { if (sidx < steps.length - 1) { sidx++; apply(); } else stopAuto(); }, 2400);
+});
+
+go();
+</script>
+</body>
+</html>

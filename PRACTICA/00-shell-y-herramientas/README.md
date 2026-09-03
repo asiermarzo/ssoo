@@ -1,8 +1,8 @@
 # P0 — Shell y herramientas
 
-## Descripción general
+## Objetivo
 
-El objetivo es familiarizarse con el entorno de trabajo del curso: el sistema operativo Linux, el intérprete de comandos (shell) y el lenguaje C, incluyendo el ciclo de compilación y las herramientas de depuración y análisis que se usarán durante el semestre. Las prácticas se realizan sobre un PC virtualizado con Linux.
+Familiarizarse con el entorno de trabajo del curso: el sistema operativo Linux, el intérprete de comandos (shell) y el lenguaje C, incluyendo el ciclo de compilación y las herramientas de depuración y análisis que se usarán durante el semestre. 
 
 ## Comandos comunes
 

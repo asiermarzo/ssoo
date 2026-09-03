@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El viaje de un clic</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --hw:#c0392b;--drv:#b7902f;--comp:#2b6fb0;--app:#3a8f4e;--scr:#7a5ea8}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --hw:#e06b5a;--drv:#d0a94a;--comp:#6f9be8;--app:#5aa86b;--scr:#a992d0}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){.wrap{grid-template-columns:1fr}}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+  svg{display:block;width:100%;height:auto}
+  .steptext{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px;margin-top:14px;font-size:14px;min-height:4em}
+  .stepbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  button{padding:8px 13px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .coords{font-family:ui-monospace,monospace;font-size:13px;color:var(--muted);margin-top:6px}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;max-width:82ch}
+  .full{grid-column:1/-1}
+</style>
+</head>
+<body>
+<header>
+  <h1>El viaje de un clic</h1>
+  <p>Tema 13 · Desde que el ratón detecta el clic hasta que se ve la respuesta en pantalla, el evento atraviesa el
+     controlador, el compositor y la aplicación; luego el dibujo de la aplicación vuelve al compositor, que forma
+     el fotograma final.</p>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <svg id="layers" viewBox="0 0 360 420" role="img" aria-label="Capas que atraviesa el evento de clic"></svg>
+  </div>
+  <div class="stage">
+    <svg id="screen" viewBox="0 0 360 300" role="img" aria-label="Estado de la pantalla"></svg>
+    <div class="coords" id="coords"></div>
+  </div>
+
+  <div class="steptext full" id="steptext">Pulsa «Reproducir» para seguir el evento capa a capa.</div>
+  <div class="stepbtns full">
+    <button class="primary" id="play">▶ Reproducir</button>
+    <button id="prev" disabled>◀</button>
+    <button id="next" disabled>▶ paso</button>
+    <span id="counter" class="note" style="margin:0"></span>
+  </div>
+
+  <p class="note full">El compositor solo vuelve a componer la región «dañada» (la que ha cambiado). En X11 el evento
+     pasa además por un servidor X y un gestor de ventanas separados; en Wayland el cliente habla directamente con
+     el compositor, lo que reduce la latencia.</p>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const $ = s => document.querySelector(s);
+const layersSvg = $("#layers"), screenSvg = $("#screen");
+
+const LAYERS = [
+  ["Ratón (hardware)", "var(--hw)"],
+  ["Controlador de entrada (evdev)", "var(--drv)"],
+  ["Compositor / servidor gráfico", "var(--comp)"],
+  ["Aplicación (bucle de eventos)", "var(--app)"],
+  ["Búfer de la aplicación", "var(--app)"],
+  ["Compositor (composición)", "var(--comp)"],
+  ["Pantalla (framebuffer)", "var(--scr)"],
+];
+
+const CLICK = { sx: 250, sy: 150 };      // en coordenadas de pantalla (viewBox 360x300)
+const WIN = { x: 150, y: 90, w: 170, h: 150 };
+
+const STEPS = [
+  { l: 0, screen: "idle", coords: "botón izquierdo ↓ en (720, 300) físicos",
+    text: "El ratón detecta la pulsación y envía por USB un paquete: desplazamiento relativo y estado de los botones. Genera una interrupción." },
+  { l: 1, screen: "idle", coords: "evento: EV_KEY BTN_LEFT=1, posición absoluta (720, 300)",
+    text: "El controlador de entrada del núcleo (evdev) recibe la interrupción, interpreta el paquete y publica un evento de entrada normalizado con la posición absoluta del cursor." },
+  { l: 2, screen: "idle", coords: "pantalla (720, 300) → ventana en origen (200, 120)",
+    text: "El compositor lee el evento. Sabe qué ventana ocupa ese píxel (la de arriba en el orden Z) y a qué aplicación pertenece." },
+  { l: 3, screen: "idle", coords: "clic en coordenadas de ventana (520, 180)",
+    text: "El evento se entrega a la aplicación con las coordenadas relativas a su ventana: (720−200, 300−120) = (520, 180). El bucle de eventos de la app lo recoge." },
+  { l: 4, screen: "draw", coords: "la app dibuja en su propio búfer",
+    text: "La aplicación decide su respuesta (por ejemplo, un efecto en el punto pulsado) y la dibuja en su búfer privado. Marca la región modificada como «dañada»." },
+  { l: 5, screen: "composite", coords: "el compositor recibe el búfer actualizado",
+    text: "La aplicación entrega («commit») su nuevo búfer al compositor. El compositor combina los búferes de todas las ventanas visibles respetando el orden Z y la opacidad." },
+  { l: 6, screen: "final", coords: "fotograma completo → escaneo a la pantalla",
+    text: "El compositor escribe el fotograma final en el framebuffer, sincronizado con el refresco (vsync). El monitor lo muestra: el usuario ve la respuesta a su clic." },
+];
+
+let idx = 0, playTimer = null;
+
+function drawLayers(active) {
+  layersSvg.innerHTML = "";
+  const defs = document.createElementNS(NS, "defs");
+  defs.innerHTML = `<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>`;
+  layersSvg.appendChild(defs);
+  LAYERS.forEach(([name, color], i) => {
+    const y = 16 + i * 56;
+    const on = i === active;
+    r(20, y, 320, 42, color, on);
+    t(36, y + 26, name, on ? "var(--ink)" : "var(--muted)", 12.5, on ? 700 : 400);
+    if (i < LAYERS.length - 1) {
+      const a = document.createElementNS(NS, "path");
+      a.setAttribute("d", `M180 ${y + 42} L180 ${y + 56}`);
+      a.setAttribute("stroke", "var(--muted)"); a.setAttribute("stroke-width", 1.4);
+      a.setAttribute("marker-end", "url(#ar)");
+      layersSvg.appendChild(a);
+    }
+  });
+  // token
+  const y = 16 + active * 56 + 21;
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("cx", 20); c.setAttribute("cy", y); c.setAttribute("r", 7);
+  c.setAttribute("fill", "var(--accent)");
+  layersSvg.appendChild(c);
+}
+function r(x, y, w, h, color, on) {
+  const bg = document.createElementNS(NS, "rect");
+  bg.setAttribute("x", x); bg.setAttribute("y", y); bg.setAttribute("width", w); bg.setAttribute("height", h);
+  bg.setAttribute("rx", 8); bg.setAttribute("fill", color); bg.setAttribute("opacity", on ? .28 : .1);
+  layersSvg.appendChild(bg);
+  const br = document.createElementNS(NS, "rect");
+  br.setAttribute("x", x); br.setAttribute("y", y); br.setAttribute("width", w); br.setAttribute("height", h);
+  br.setAttribute("rx", 8); br.setAttribute("fill", "none"); br.setAttribute("stroke", color);
+  br.setAttribute("stroke-width", on ? 2.4 : 1.2);
+  layersSvg.appendChild(br);
+}
+function t(x, y, s, fill, size, weight = 400) {
+  const el = document.createElementNS(NS, "text");
+  el.setAttribute("x", x); el.setAttribute("y", y); el.setAttribute("fill", fill);
+  el.setAttribute("font-size", size); el.setAttribute("font-weight", weight);
+  el.setAttribute("font-family", "system-ui, sans-serif");
+  el.textContent = s; layersSvg.appendChild(el);
+}
+
+function srect(x, y, w, h, fill, stroke, op = 1, dash = null) {
+  const el = document.createElementNS(NS, "rect");
+  el.setAttribute("x", x); el.setAttribute("y", y); el.setAttribute("width", w); el.setAttribute("height", h);
+  el.setAttribute("rx", 6); el.setAttribute("fill", fill); el.setAttribute("opacity", op);
+  if (stroke) { el.setAttribute("stroke", stroke); el.setAttribute("stroke-width", 1.5); }
+  if (dash) el.setAttribute("stroke-dasharray", dash);
+  screenSvg.appendChild(el);
+}
+function stext(x, y, s, fill, size = 11, anchor = "start") {
+  const el = document.createElementNS(NS, "text");
+  el.setAttribute("x", x); el.setAttribute("y", y); el.setAttribute("fill", fill);
+  el.setAttribute("font-size", size); el.setAttribute("text-anchor", anchor);
+  el.setAttribute("font-family", "system-ui, sans-serif");
+  el.textContent = s; screenSvg.appendChild(el);
+}
+function cursor(x, y) {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", `M${x} ${y} l0 16 l4 -4 l3 7 l3 -1 l-3 -7 l6 0 z`);
+  p.setAttribute("fill", "var(--ink)"); p.setAttribute("stroke", "#fff"); p.setAttribute("stroke-width", .8);
+  screenSvg.appendChild(p);
+}
+
+function drawScreen(mode) {
+  screenSvg.innerHTML = "";
+  srect(8, 8, 344, 284, "var(--line)", null, .5);      // escritorio
+  stext(16, 24, "pantalla", "var(--muted)");
+  // ventana de fondo (otra app)
+  if (mode === "composite" || mode === "final") {
+    srect(60, 50, 150, 120, "var(--comp)", "var(--comp)", .14);
+    stext(70, 68, "ventana B (fondo)", "var(--muted)", 10);
+  }
+  // ventana de la app
+  const wStroke = "var(--app)";
+  srect(WIN.x, WIN.y, WIN.w, WIN.h, "var(--app)", wStroke, mode === "final" ? .2 : .14);
+  stext(WIN.x + 10, WIN.y + 18, "ventana de la app", "var(--app)", 10);
+  // efecto del clic
+  if (mode === "draw" || mode === "composite" || mode === "final") {
+    for (let k = 0; k < 3; k++) {
+      const cc = document.createElementNS(NS, "circle");
+      cc.setAttribute("cx", CLICK.sx); cc.setAttribute("cy", CLICK.sy);
+      cc.setAttribute("r", 8 + k * 9); cc.setAttribute("fill", "none");
+      cc.setAttribute("stroke", "var(--app)"); cc.setAttribute("stroke-width", 2 - k * 0.5);
+      cc.setAttribute("opacity", 0.7 - k * 0.2);
+      screenSvg.appendChild(cc);
+    }
+  }
+  // región dañada
+  if (mode === "draw" || mode === "composite") {
+    srect(CLICK.sx - 30, CLICK.sy - 30, 60, 60, "none", "var(--drv)", 1, "4 3");
+    stext(CLICK.sx - 30, CLICK.sy - 36, "región dañada", "var(--drv)", 9);
+  }
+  // cursor
+  if (mode !== "final") cursor(CLICK.sx, CLICK.sy);
+  else stext(180, 285, "fotograma mostrado ✓", "var(--app)", 11, "middle");
+  // coordenadas de ventana
+  if (mode === "idle") {
+    srect(WIN.x, WIN.y, WIN.w, WIN.h, "none", "var(--muted)", 1, "2 2");
+    stext(WIN.x, WIN.y - 4, "origen (200,120)", "var(--muted)", 9);
+  }
+}
+
+function apply() {
+  const st = STEPS[idx];
+  drawLayers(st.l);
+  drawScreen(st.screen);
+  $("#steptext").textContent = st.text;
+  $("#coords").textContent = st.coords;
+  $("#counter").textContent = `paso ${idx + 1} / ${STEPS.length}`;
+  $("#prev").disabled = idx === 0;
+  $("#next").disabled = idx === STEPS.length - 1;
+}
+function stopPlay() { if (playTimer) { clearInterval(playTimer); playTimer = null; $("#play").textContent = "▶ Reproducir"; } }
+
+$("#play").addEventListener("click", () => {
+  if (playTimer) { stopPlay(); return; }
+  if (idx >= STEPS.length - 1) { idx = 0; apply(); }
+  $("#play").textContent = "⏸ Pausa";
+  playTimer = setInterval(() => { if (idx < STEPS.length - 1) { idx++; apply(); } else stopPlay(); }, 2600);
+});
+$("#next").addEventListener("click", () => { if (idx < STEPS.length - 1) { idx++; apply(); } });
+$("#prev").addEventListener("click", () => { if (idx > 0) { idx--; apply(); } });
+["prev", "next"].forEach(id => $("#" + id).disabled = false);
+$("#prev").disabled = true;
+
+apply();
+</script>
+</body>
+</html>

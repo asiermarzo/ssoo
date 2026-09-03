@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monoprogramación vs multiprogramación</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;--ok:#3a8f4e;--warn:#b7902f;--bad:#c0392b;--io:#b7902f;--idle:#c8ccd2}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;--ok:#5aa86b;--warn:#d0a94a;--bad:#e06b5a;--io:#d0a94a;--idle:#3a414b}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:78ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  label{font-size:12px;color:var(--muted)}
+  select,input[type=range]{accent-color:var(--accent)}
+  select{padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+  .rangeval{font-variant-numeric:tabular-nums}
+  button{padding:8px 14px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto}
+  svg{display:block}
+  .readout{display:flex;gap:30px;flex-wrap:wrap;margin:14px 2px 0;align-items:flex-end}
+  .readout b{font-size:30px;display:block;line-height:1}
+  .readout span{font-size:12px;color:var(--muted)}
+  .readout .alt b{font-size:18px;color:var(--muted)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:13px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .sw{width:14px;height:14px;border-radius:3px;display:inline-block}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;max-width:80ch}
+</style>
+</head>
+<body>
+<header>
+  <h1>Monoprogramación frente a multiprogramación</h1>
+  <p>Tema 1 · Cada tarea alterna ráfagas de CPU y de E/S. Con un solo trabajo en memoria, la CPU queda ociosa
+     mientras espera a la E/S. Al mantener varios trabajos, el planificador rellena esos huecos con otro que sí
+     puede calcular.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field">
+      <label for="mode">Modo</label>
+      <select id="mode">
+        <option value="mono">Monoprogramación (1 trabajo en memoria)</option>
+        <option value="multi" selected>Multiprogramación (varios trabajos)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ntask">Nº de tareas: <span class="rangeval" id="ntask-v">3</span></label>
+      <input type="range" id="ntask" min="1" max="5" value="3">
+    </div>
+    <div class="field">
+      <label for="io">Duración de E/S por ráfaga: <span class="rangeval" id="io-v">5</span></label>
+      <input type="range" id="io" min="1" max="10" value="5">
+    </div>
+    <div class="field">
+      <label for="speed">Velocidad</label>
+      <input type="range" id="speed" min="1" max="20" value="9">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="primary" id="play">▶ Reproducir</button>
+      <button id="reset">↺ Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="stage"><svg id="chart" width="900" height="260" role="img" aria-label="Cronograma de uso de CPU y E/S"></svg></div>
+
+  <div class="legend">
+    <span><span class="sw" style="background:var(--accent)"></span>en CPU</span>
+    <span><span class="sw" style="background:var(--io)"></span>en E/S</span>
+    <span><span class="sw" style="background:var(--idle)"></span>esperando / CPU ociosa</span>
+  </div>
+
+  <div class="readout">
+    <div><b id="util">–</b><span>utilización de CPU (hasta el cursor)</span></div>
+    <div class="alt"><b id="util-alt">–</b><span id="util-alt-lbl">el otro modo</span></div>
+    <div><b id="makespan">–</b><span>tiempo total para terminar todo</span></div>
+  </div>
+
+  <p class="note">Ráfaga de CPU fija de 4 unidades; cada tarea hace 3 ráfagas de CPU y 2 de E/S. En multiprogramación
+     el reparto de CPU es por orden de tarea y no apropiativo dentro de cada ráfaga.</p>
+</div>
+
+<script>
+const CPU_BURST = 4;
+const PHASES = ["cpu", "io", "cpu", "io", "cpu"];
+const $ = s => document.querySelector(s);
+const svg = $("#chart"), NS = "http://www.w3.org/2000/svg";
+let simMulti = null, simMono = null, shown = 0, timer = null;
+
+function buildTasks() {
+  const n = +$("#ntask").value;
+  return Array.from({ length: n }, (_, i) => ({ id: i, pi: 0, rem: CPU_BURST, status: "ready" }));
+}
+function phaseLen(name, io) { return name === "cpu" ? CPU_BURST : io; }
+
+function simulate(mode) {
+  const io = +$("#io").value;
+  const tasks = buildTasks();
+  const owner = [];                 // dueño de la CPU por unidad de tiempo
+  const rows = tasks.map(() => []); // estado de cada tarea por unidad
+  let guard = 0;
+
+  if (mode === "mono") {
+    // trabajos estrictamente en serie; la CPU espera durante la E/S
+    tasks.forEach(t => {
+      PHASES.forEach(name => {
+        const len = phaseLen(name, io);
+        for (let k = 0; k < len; k++) {
+          owner.push(name === "cpu" ? t.id : null);
+          rows.forEach((r, ri) => {
+            if (ri === t.id) r.push(name);
+            else r.push(r.length && r[r.length - 1] === "done" ? "done" : "wait");
+          });
+        }
+      });
+      rows[t.id].push("done"); // marca lógica; se recorta abajo
+      rows[t.id].pop();
+    });
+    tasks.forEach(t => { for (let i = rows[t.id].length; i < owner.length; i++) rows[t.id][i] = "done"; });
+  } else {
+    let clk = 0;
+    tasks.forEach(t => t.readySince = 0);   // todas llegan en t=0
+    while (tasks.some(t => t.status !== "done") && guard++ < 5000) {
+      // avanzar E/S
+      tasks.forEach(t => {
+        if (t.status === "io") {
+          t.rem--;
+          if (t.rem === 0) {
+            t.pi++;
+            t.status = t.pi >= PHASES.length ? "done" : "ready";
+            if (t.status === "ready") { t.rem = CPU_BURST; t.readySince = clk; }
+          }
+        }
+      });
+      // elegir proceso en CPU: cola de listos FIFO (el que lleva más esperando)
+      let run = tasks.find(t => t.status === "running");
+      if (!run) {
+        run = tasks.filter(t => t.status === "ready")
+          .sort((a, b) => a.readySince - b.readySince || a.id - b.id)[0];
+        if (run) run.status = "running";
+      }
+      if (run) {
+        run.rem--;
+        owner.push(run.id);
+        if (run.rem === 0) {
+          run.pi++;
+          if (run.pi >= PHASES.length) run.status = "done";
+          else { run.status = "io"; run.rem = io; }
+        }
+      } else {
+        owner.push(null);
+      }
+      tasks.forEach(t => {
+        const st = t.status === "running" ? "cpu" : t.status === "io" ? "io" : t.status === "done" ? "done" : "wait";
+        rows[t.id].push(st);
+      });
+      clk++;
+    }
+  }
+  const busy = owner.filter(x => x != null).length;
+  return { owner, rows, total: owner.length, util: owner.length ? busy / owner.length : 0, n: tasks.length };
+}
+
+function draw() {
+  svg.innerHTML = "";
+  const sim = $("#mode").value === "mono" ? simMono : simMulti;
+  if (!sim) return;
+  const total = Math.max(sim.total, 1);
+  const padL = 74, padR = 16, padT = 12;
+  const unit = Math.max(10, Math.min(26, 820 / total));
+  const width = padL + padR + total * unit;
+  const rowH = 30, gap = 8;
+  const rows = sim.n + 1;
+  const height = padT + rows * (rowH + gap) + 24;
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
+
+  const label = (y, txt) => text(8, y + rowH / 2 + 4, txt, "var(--muted)", 12);
+  const color = st => st === "cpu" ? "var(--accent)" : st === "io" ? "var(--io)" : "var(--idle)";
+
+  // fila CPU
+  let y = padT;
+  label(y, "CPU");
+  for (let i = 0; i < Math.min(shown, total); i++) {
+    const o = sim.owner[i];
+    block(padL + i * unit, y, unit, rowH, o == null ? "var(--idle)" : "var(--accent)", o == null ? .6 : 1);
+    if (o != null && unit > 14) text(padL + i * unit + unit / 2, y + rowH / 2 + 4, "T" + (o + 1), "#fff", 10, "middle");
+  }
+  // filas de tareas
+  for (let t = 0; t < sim.n; t++) {
+    y = padT + (t + 1) * (rowH + gap);
+    label(y, "Tarea " + (t + 1));
+    for (let i = 0; i < Math.min(shown, total); i++) {
+      const st = sim.rows[t][i];
+      if (st === "done" || st === "wait") { block(padL + i * unit, y, unit, rowH, "var(--idle)", st === "done" ? .18 : .5); continue; }
+      block(padL + i * unit, y, unit, rowH, color(st), 1);
+    }
+  }
+  // eje de tiempo
+  y = padT + rows * (rowH + gap);
+  for (let i = 0; i <= total; i += (total > 40 ? 5 : total > 20 ? 2 : 1)) {
+    text(padL + i * unit, y + 4, String(i), "var(--muted)", 10, "middle");
+  }
+  // cursor
+  const cx = padL + Math.min(shown, total) * unit;
+  line(cx, padT - 4, cx, padT + rows * (rowH + gap) - gap, "var(--ink)", 1.5);
+}
+
+function block(x, y, w, h, fill, op = 1) {
+  const r = document.createElementNS(NS, "rect");
+  r.setAttribute("x", x); r.setAttribute("y", y);
+  r.setAttribute("width", Math.max(0, w - 1)); r.setAttribute("height", h);
+  r.setAttribute("rx", 2); r.setAttribute("fill", fill); r.setAttribute("opacity", op);
+  svg.appendChild(r);
+}
+function line(x1, y1, x2, y2, s, w) {
+  const l = document.createElementNS(NS, "line");
+  l.setAttribute("x1", x1); l.setAttribute("y1", y1); l.setAttribute("x2", x2); l.setAttribute("y2", y2);
+  l.setAttribute("stroke", s); l.setAttribute("stroke-width", w);
+  svg.appendChild(l);
+}
+function text(x, y, str, fill, size, anchor = "start") {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("fill", fill);
+  t.setAttribute("font-size", size); t.setAttribute("text-anchor", anchor);
+  t.setAttribute("font-family", "system-ui, sans-serif");
+  t.textContent = str; svg.appendChild(t);
+}
+
+function updateReadout() {
+  const mode = $("#mode").value;
+  const sim = mode === "mono" ? simMono : simMulti;
+  const alt = mode === "mono" ? simMulti : simMono;
+  if (!sim) return;
+  const sh = Math.min(shown, sim.total);
+  const busy = sim.owner.slice(0, sh).filter(x => x != null).length;
+  $("#util").textContent = sh ? Math.round(busy / sh * 100) + " %" : "–";
+  $("#util-alt").textContent = Math.round(alt.util * 100) + " %";
+  $("#util-alt-lbl").textContent = (mode === "mono" ? "multiprogramación" : "monoprogramación") + " (total)";
+  $("#makespan").textContent = sim.total + " u";
+}
+
+function frame() {
+  simMulti = simulate("multi");
+  simMono = simulate("mono");
+  draw(); updateReadout();
+}
+function stop() { if (timer) { clearInterval(timer); timer = null; } $("#play").textContent = "▶ Reproducir"; }
+function reset() {
+  stop();
+  simMulti = simulate("multi");
+  simMono = simulate("mono");
+  const sim = $("#mode").value === "mono" ? simMono : simMulti;
+  shown = sim.total;                 // muestra el cronograma completo
+  draw(); updateReadout();
+}
+function step() {
+  const sim = $("#mode").value === "mono" ? simMono : simMulti;
+  if (shown < sim.total) { shown++; draw(); updateReadout(); }
+  if (shown >= sim.total) stop();
+}
+function play() {
+  if (timer) { stop(); return; }
+  const sim = $("#mode").value === "mono" ? simMono : simMulti;
+  if (shown >= sim.total) { shown = 0; }
+  $("#play").textContent = "⏸ Pausa";
+  const period = () => 460 - +$("#speed").value * 20;
+  timer = setInterval(step, period());
+  $("#speed").oninput = () => { if (timer) { clearInterval(timer); timer = setInterval(step, period()); } sync(); };
+}
+function sync() {
+  $("#ntask-v").textContent = $("#ntask").value;
+  $("#io-v").textContent = $("#io").value;
+}
+
+$("#play").addEventListener("click", play);
+$("#reset").addEventListener("click", reset);
+$("#mode").addEventListener("change", reset);
+["ntask", "io"].forEach(id => $("#" + id).addEventListener("input", () => { sync(); reset(); }));
+sync(); reset();
+</script>
+</body>
+</html>

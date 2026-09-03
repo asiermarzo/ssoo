@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cruce de la frontera usuario / núcleo</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;--user:#3a8f4e;--kernel:#2b4a8b;--bad:#c0392b}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;--user:#5aa86b;--kernel:#6f9be8;--bad:#e06b5a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:78ch}
+  .wrap{padding:16px 24px 40px;display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+  svg{display:block;width:100%;height:auto}
+  .side{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .modebit{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:14px}
+  .pill{padding:3px 10px;border-radius:999px;font-weight:600;font-size:13px;color:#fff}
+  .steptext{font-size:14px;min-height:5.5em;border-left:3px solid var(--accent);padding-left:12px;margin:10px 0 16px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px}
+  button{padding:8px 13px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .counter{font-size:12px;color:var(--muted);margin-top:10px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Cruce de la frontera en una llamada al sistema</h1>
+  <p>Tema 2 · Un programa en modo usuario no puede tocar el hardware directamente. Para pedir un servicio ejecuta
+     una instrucción <em>trap</em> que salta al núcleo con privilegios; el núcleo comprueba los argumentos, hace el
+     trabajo y devuelve el control. Un acceso directo a memoria del núcleo se castiga con un fallo de protección.</p>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <svg id="diagram" viewBox="0 0 560 420" role="img" aria-label="Diagrama del cruce de modo usuario a modo núcleo"></svg>
+  </div>
+
+  <div class="side">
+    <div class="modebit">
+      <span>Bit de modo:</span>
+      <span class="pill" id="mode-pill">usuario</span>
+    </div>
+    <h2>Escenario</h2>
+    <div class="btns" style="margin-bottom:14px">
+      <button class="primary" id="sc-read">Ejecutar <code>read(fd,buf,n)</code></button>
+      <button id="sc-fault">Acceso directo a memoria del núcleo</button>
+    </div>
+    <div class="steptext" id="steptext">Elige un escenario para empezar.</div>
+    <div class="btns">
+      <button id="prev" disabled>◀ Anterior</button>
+      <button id="next" disabled>Siguiente ▶</button>
+      <button id="auto" disabled>▶ Auto</button>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("diagram");
+const $ = s => document.querySelector(s);
+
+// posiciones y (banda usuario arriba, núcleo abajo)
+const Y_USER = 120, Y_KERNEL = 300, X = 280;
+
+const SCENARIOS = {
+  read: [
+    { mode: "u", pos: [140, Y_USER], txt: "Modo usuario. El programa coloca los argumentos de read() en registros: descriptor fd, dirección de buf y número de bytes n. También el número de llamada al sistema." },
+    { mode: "u", pos: [280, Y_USER], txt: "Ejecuta la instrucción de trap (p. ej. syscall / int 0x80). Es la única puerta de entrada al núcleo." },
+    { mode: "k", pos: [280, Y_KERNEL], txt: "El hardware cambia el bit de modo a núcleo, salta a una dirección fija (el manejador de traps) y guarda el contexto del proceso (PC, registros, pila de usuario)." },
+    { mode: "k", pos: [200, Y_KERNEL], txt: "El despachador usa el número de llamada como índice en la tabla de llamadas al sistema y salta a sys_read()." },
+    { mode: "k", pos: [340, Y_KERNEL], txt: "Validación: ¿fd es un descriptor abierto de este proceso? ¿[buf, buf+n) está en el espacio del proceso y con permiso de escritura? Si algo falla, devuelve -EFAULT/-EBADF sin tocar nada." },
+    { mode: "k", pos: [420, Y_KERNEL], txt: "El núcleo ejecuta el servicio: copia los datos desde la caché de bloques (o pide la E/S y bloquea el proceso hasta que lleguen) al búfer del usuario." },
+    { mode: "k", pos: [280, Y_KERNEL], txt: "Coloca el valor de retorno (nº de bytes leídos), restaura el contexto guardado y ejecuta la instrucción de retorno de trap." },
+    { mode: "u", pos: [400, Y_USER], txt: "El bit de modo vuelve a usuario. read() ha devuelto; el programa continúa justo después de la llamada con el resultado en la mano." }
+  ],
+  fault: [
+    { mode: "u", pos: [140, Y_USER], txt: "Modo usuario. El programa intenta escribir directamente en una dirección del núcleo: *(int*)0xC0001000 = 42;" },
+    { mode: "u", pos: [280, Y_USER], txt: "La CPU traduce la dirección con la MMU. La página pertenece al núcleo y está marcada como accesible solo en modo supervisor." },
+    { mode: "k", pos: [280, Y_KERNEL], txt: "La MMU genera un fallo de protección. El hardware cambia a modo núcleo y salta al manejador de fallos de página." },
+    { mode: "k", pos: [360, Y_KERNEL], txt: "El núcleo comprueba que el acceso es ilegal (modo usuario contra página de supervisor). No hay nada que reparar." },
+    { mode: "fault", pos: [140, Y_USER], txt: "El núcleo envía SIGSEGV al proceso. Con la disposición por defecto, el proceso termina (violación de segmento). La memoria del núcleo nunca llegó a modificarse." }
+  ]
+};
+
+let steps = [], idx = 0, autoTimer = null, current = "";
+
+function setup() {
+  svg.innerHTML = "";
+  // bandas
+  band(0, 20, 560, 170, "var(--user)", "MODO USUARIO", "aplicaciones · sin privilegios");
+  band(0, 210, 560, 190, "var(--kernel)", "MODO NÚCLEO", "acceso al hardware · privilegiado");
+  // frontera
+  const l = document.createElementNS(NS, "line");
+  l.setAttribute("x1", 0); l.setAttribute("y1", 200); l.setAttribute("x2", 560); l.setAttribute("y2", 200);
+  l.setAttribute("stroke", "var(--line)"); l.setAttribute("stroke-width", 2); l.setAttribute("stroke-dasharray", "6 4");
+  svg.appendChild(l);
+  txt(280, 195, "instrucción trap  ·  retorno de trap", "var(--muted)", 11, "middle");
+  // token
+  const g = document.createElementNS(NS, "g"); g.setAttribute("id", "token");
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("r", 13); c.setAttribute("fill", "var(--accent)"); c.setAttribute("stroke", "#fff"); c.setAttribute("stroke-width", 2);
+  g.appendChild(c);
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("text-anchor", "middle"); t.setAttribute("y", 4); t.setAttribute("font-size", 11);
+  t.setAttribute("fill", "#fff"); t.setAttribute("font-family", "system-ui, sans-serif"); t.textContent = "PC";
+  g.appendChild(t);
+  g.setAttribute("transform", "translate(140,120)");
+  svg.appendChild(g);
+}
+function band(x, y, w, h, color, title, sub) {
+  const r = document.createElementNS(NS, "rect");
+  r.setAttribute("x", x + 6); r.setAttribute("y", y); r.setAttribute("width", w - 12); r.setAttribute("height", h);
+  r.setAttribute("rx", 10); r.setAttribute("fill", color); r.setAttribute("opacity", .12);
+  svg.appendChild(r);
+  const b = document.createElementNS(NS, "rect");
+  b.setAttribute("x", x + 6); b.setAttribute("y", y); b.setAttribute("width", w - 12); b.setAttribute("height", h);
+  b.setAttribute("rx", 10); b.setAttribute("fill", "none"); b.setAttribute("stroke", color); b.setAttribute("stroke-width", 1.5);
+  svg.appendChild(b);
+  txt(x + 22, y + 26, title, color, 14, "start", 700);
+  txt(x + 22, y + 44, sub, "var(--muted)", 11);
+}
+function txt(x, y, str, fill, size, anchor = "start", weight = 400) {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("fill", fill);
+  t.setAttribute("font-size", size); t.setAttribute("text-anchor", anchor);
+  t.setAttribute("font-weight", weight);
+  t.setAttribute("font-family", "system-ui, sans-serif");
+  t.textContent = str; svg.appendChild(t);
+}
+
+function render() {
+  const s = steps[idx];
+  const token = document.getElementById("token");
+  token.setAttribute("transform", `translate(${s.pos[0]},${s.pos[1]})`);
+  const circ = token.querySelector("circle");
+  circ.setAttribute("fill", s.mode === "fault" ? "var(--bad)" : s.mode === "k" ? "var(--kernel)" : "var(--user)");
+  const pill = $("#mode-pill");
+  if (s.mode === "fault") { pill.textContent = "SIGSEGV"; pill.style.background = "var(--bad)"; }
+  else if (s.mode === "k") { pill.textContent = "núcleo"; pill.style.background = "var(--kernel)"; }
+  else { pill.textContent = "usuario"; pill.style.background = "var(--user)"; }
+  $("#steptext").textContent = s.txt;
+  $("#counter").textContent = `Paso ${idx + 1} de ${steps.length}`;
+  $("#prev").disabled = idx === 0;
+  $("#next").disabled = idx === steps.length - 1;
+}
+
+function load(name) {
+  current = name;
+  steps = SCENARIOS[name];
+  idx = 0;
+  stopAuto();
+  setup();
+  render();
+  $("#auto").disabled = false;
+  $("#sc-read").classList.toggle("primary", name === "read");
+  $("#sc-fault").classList.toggle("primary", name === "fault");
+}
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; $("#auto").textContent = "▶ Auto"; } }
+
+$("#sc-read").addEventListener("click", () => load("read"));
+$("#sc-fault").addEventListener("click", () => load("fault"));
+$("#next").addEventListener("click", () => { if (idx < steps.length - 1) { idx++; render(); } });
+$("#prev").addEventListener("click", () => { if (idx > 0) { idx--; render(); } });
+$("#auto").addEventListener("click", () => {
+  if (autoTimer) { stopAuto(); return; }
+  if (idx >= steps.length - 1) { idx = 0; render(); }
+  $("#auto").textContent = "⏸ Pausa";
+  autoTimer = setInterval(() => {
+    if (idx < steps.length - 1) { idx++; render(); } else stopAuto();
+  }, 2200);
+});
+
+setup();
+load("read");
+</script>
+</body>
+</html>

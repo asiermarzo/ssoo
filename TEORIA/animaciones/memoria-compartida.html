@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memoria compartida frente a tubería</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --a:#2b6fb0;--b:#7a5ea8;--phys:#3a8f4e;--copy:#b7902f}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --a:#6f9be8;--b:#a992d0;--phys:#5aa86b;--copy:#d0a94a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:18px}
+  button{padding:8px 13px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  select{padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+  .scene{position:relative;display:grid;grid-template-columns:1fr 150px 1fr;gap:18px;align-items:center}
+  @media (max-width:820px){.scene{grid-template-columns:1fr}}
+  .proc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .proc h2{margin:0 0 4px;font-size:14px}
+  .proc .sub{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace;margin-bottom:10px}
+  .cells{display:flex;gap:6px}
+  .cell{flex:1;aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-family:ui-monospace,monospace;font-size:16px;border:1.5px solid var(--line);cursor:pointer;user-select:none;
+    transition:background .25s,border-color .25s,transform .15s}
+  .cell.flash{transform:scale(1.12)}
+  .proc.A .cell{border-color:var(--a)} .proc.B .cell{border-color:var(--b)}
+  .proc.A .cell.flash{background:color-mix(in srgb,var(--a) 35%,transparent)}
+  .proc.B .cell.flash{background:color-mix(in srgb,var(--b) 35%,transparent)}
+  .channel{text-align:center;font-size:12px;color:var(--muted)}
+  .physbox{background:var(--panel);border:1px solid var(--phys);border-radius:10px;padding:10px;margin-top:8px}
+  .physbox.hidden{opacity:.3}
+  .physbox .cells .cell{border-color:var(--phys);cursor:default}
+  .physbox .cell.flash{background:color-mix(in srgb,var(--phys) 40%,transparent)}
+  .fly{position:absolute;width:26px;height:26px;border-radius:6px;background:var(--copy);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:13px;pointer-events:none;
+    transition:transform .5s ease, opacity .5s ease;z-index:5}
+  .readout{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px}
+  .readout b{font-size:22px;display:block}
+  .readout span{font-size:12px;color:var(--muted)}
+  .log{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.5em}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;max-width:82ch}
+</style>
+</head>
+<body>
+<header>
+  <h1>Un mismo segmento en dos espacios de direcciones</h1>
+  <p>Tema 10 · Con <code>mmap</code> sobre memoria compartida, los rangos virtuales de A y de B apuntan al mismo
+     marco físico: una escritura de A es visible al instante en B, sin copiar nada. Una tubería, en cambio, copia
+     los datos del proceso A al núcleo y del núcleo al proceso B.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <label>Mecanismo:
+      <select id="mode">
+        <option value="shm">memoria compartida (mmap)</option>
+        <option value="pipe">tubería (pipe)</option>
+      </select>
+    </label>
+    <button id="send" disabled>write() al pipe →</button>
+    <button id="reset">↺ reiniciar</button>
+    <span class="note" style="margin:0">Haz clic en una celda del proceso A para escribir en ella (incrementa su valor).</span>
+  </div>
+
+  <div class="scene" id="scene">
+    <div class="proc A">
+      <h2 style="color:var(--a)">Proceso A</h2>
+      <div class="sub" id="a-addr">char *p = mmap(...);  // 0x7f..a000</div>
+      <div class="cells" id="a-cells"></div>
+      <div class="physbox" id="a-phys-note" style="border-style:dashed;display:none">
+        <div class="sub" style="margin:0">búfer propio de A</div>
+      </div>
+    </div>
+
+    <div class="channel" id="channel">
+      <div id="chan-label">mismo marco físico</div>
+      <div style="font-size:22px;margin:6px 0">⇄</div>
+      <div class="physbox" id="physbox">
+        <div class="sub" style="margin:0 0 6px">marco físico compartido</div>
+        <div class="cells" id="p-cells"></div>
+      </div>
+    </div>
+
+    <div class="proc B">
+      <h2 style="color:var(--b)">Proceso B</h2>
+      <div class="sub" id="b-addr">char *q = mmap(...);  // 0x55..0000</div>
+      <div class="cells" id="b-cells"></div>
+    </div>
+  </div>
+
+  <div class="readout">
+    <div><b id="writes">0</b><span>escrituras de A</span></div>
+    <div><b id="copies">0</b><span>bytes copiados</span></div>
+    <div><b id="visible">inmediata</b><span>visibilidad en B</span></div>
+  </div>
+  <div class="log" id="log">Mecanismo: memoria compartida. La vista de B refleja lo que escribe A sin coste.</div>
+
+  <p class="note">Contador de copias: la memoria compartida se mantiene en 0 por más que A escriba; la tubería suma
+     tantos bytes como se transfieren. Ese ahorro es la razón de usar memoria compartida para grandes volúmenes,
+     a cambio de tener que sincronizar el acceso (mutex/semáforo).</p>
+</div>
+
+<script>
+const N = 6;
+const $ = s => document.querySelector(s);
+let phys = Array(N).fill(0);   // marco compartido
+let bufA = Array(N).fill(0);   // búfer propio de A (modo pipe)
+let bufB = Array(N).fill(0);   // vista de B (modo pipe)
+let writes = 0, copies = 0, mode = "shm";
+
+function cells(host, arr, cls, onClick) {
+  host.innerHTML = "";
+  arr.forEach((v, i) => {
+    const d = document.createElement("div");
+    d.className = "cell";
+    d.textContent = v;
+    d.dataset.i = i;
+    if (onClick) d.addEventListener("click", () => onClick(i));
+    host.appendChild(d);
+  });
+}
+function flash(host, i) {
+  const el = host.querySelector(`[data-i="${i}"]`);
+  if (!el) return;
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 260);
+}
+function log(m) { $("#log").textContent = m; }
+
+function render() {
+  const aView = mode === "shm" ? phys : bufA;
+  const bView = mode === "shm" ? phys : bufB;
+  cells($("#a-cells"), aView, "A", writeA);
+  cells($("#p-cells"), phys, "P", null);
+  cells($("#b-cells"), bView, "B", null);
+  $("#writes").textContent = writes;
+  $("#copies").textContent = copies;
+  $("#visible").textContent = mode === "shm" ? "inmediata" : "solo tras write()";
+  $("#physbox").classList.toggle("hidden", mode === "pipe");
+  $("#chan-label").textContent = mode === "shm" ? "mismo marco físico" : "tubería (búfer del núcleo)";
+  $("#channel").querySelector("div").textContent = mode === "shm" ? "mismo marco físico" : "tubería (búfer del núcleo)";
+  $("#send").disabled = mode !== "pipe";
+  $("#a-phys-note").style.display = mode === "pipe" ? "block" : "none";
+  $("#a-addr").textContent = mode === "shm"
+    ? "char *p = mmap(fd, ...);  // 0x7f..a000" : "char bufA[6];  // pila de A";
+  $("#b-addr").textContent = mode === "shm"
+    ? "char *q = mmap(fd, ...);  // 0x55..0000" : "char bufB[6];  // pila de B";
+}
+
+function writeA(i) {
+  writes++;
+  if (mode === "shm") {
+    phys[i] = (phys[i] + 1) % 10;
+    render();
+    flash($("#a-cells"), i); flash($("#p-cells"), i); flash($("#b-cells"), i);
+    log(`A escribe en p[${i}]. La escritura va directa al marco físico y B ve el nuevo valor (${phys[i]}) al instante. Copias: 0.`);
+  } else {
+    bufA[i] = (bufA[i] + 1) % 10;
+    render();
+    flash($("#a-cells"), i);
+    log(`A escribe en bufA[${i}] = ${bufA[i]}. B todavía no ve nada: hay que enviarlo por la tubería.`);
+  }
+}
+
+function sendPipe() {
+  const diff = [];
+  for (let i = 0; i < N; i++) if (bufA[i] !== bufB[i]) diff.push(i);
+  if (!diff.length) { log("bufA y bufB ya coinciden: nada que transferir."); return; }
+  $("#send").disabled = true;
+  const scene = $("#scene");
+  const aRect = $("#a-cells").getBoundingClientRect();
+  const bRect = $("#b-cells").getBoundingClientRect();
+  const sRect = scene.getBoundingClientRect();
+  diff.forEach((i, k) => {
+    const aCell = $("#a-cells").children[i].getBoundingClientRect();
+    const bCell = $("#b-cells").children[i].getBoundingClientRect();
+    const fly = document.createElement("div");
+    fly.className = "fly";
+    fly.textContent = bufA[i];
+    fly.style.left = (aCell.left - sRect.left + aCell.width / 2 - 13) + "px";
+    fly.style.top = (aCell.top - sRect.top + aCell.height / 2 - 13) + "px";
+    scene.appendChild(fly);
+    requestAnimationFrame(() => {
+      fly.style.transform = `translate(${bCell.left - aCell.left}px, ${bCell.top - aCell.top}px)`;
+    });
+    setTimeout(() => {
+      bufB[i] = bufA[i];
+      copies++;
+      render();
+      flash($("#b-cells"), i);
+      fly.style.opacity = "0";
+      setTimeout(() => fly.remove(), 300);
+      if (k === diff.length - 1) {
+        $("#send").disabled = false;
+        log(`write()/read() por la tubería: ${diff.length} byte(s) copiados de A al núcleo y del núcleo a B. Total copiado: ${copies}.`);
+      }
+    }, 520 + k * 120);
+  });
+}
+
+$("#mode").addEventListener("change", () => {
+  mode = $("#mode").value;
+  render();
+  log(mode === "shm"
+    ? "Memoria compartida: A y B mapean el mismo marco. Sin copias, pero hace falta sincronizar."
+    : "Tubería: A y B tienen búferes separados. Cada envío copia los bytes a través del núcleo.");
+});
+$("#send").addEventListener("click", sendPipe);
+$("#reset").addEventListener("click", () => {
+  phys = Array(N).fill(0); bufA = Array(N).fill(0); bufB = Array(N).fill(0);
+  writes = 0; copies = 0;
+  render(); log("Reiniciado.");
+});
+
+render();
+</script>
+</body>
+</html>

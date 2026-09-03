@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cola de mensajes con prioridad</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --p1:#c0392b;--p2:#b7902f;--p3:#2b6fb0;--ok:#3a8f4e}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --p1:#e06b5a;--p2:#d0a94a;--p3:#6f9be8;--ok:#5aa86b}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:18px}
+  .group{display:flex;flex-direction:column;gap:6px}
+  .group h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  button{padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.p1{border-color:var(--p1);color:var(--p1)}
+  button.p2{border-color:var(--p2);color:var(--p2)}
+  button.p3{border-color:var(--p3);color:var(--p3)}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  label{font-size:13px;display:flex;align-items:center;gap:6px}
+  .queue-box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-height:120px}
+  .qhead{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px}
+  .queue{display:flex;gap:8px;align-items:stretch;min-height:76px;overflow-x:auto;padding-bottom:6px}
+  .slot{border:1px dashed var(--line);border-radius:8px;min-width:88px;flex:0 0 88px}
+  .card{min-width:88px;flex:0 0 88px;border-radius:8px;padding:8px;color:#fff;display:flex;flex-direction:column;gap:2px;
+    transition:transform .35s ease, opacity .35s ease}
+  .card.p1{background:var(--p1)} .card.p2{background:var(--p2)} .card.p3{background:var(--p3)}
+  .card small{opacity:.85;font-size:11px}
+  .card.enter{opacity:0;transform:translateY(-16px)}
+  .card.leave{opacity:0;transform:translateY(20px)}
+  .arrowlbl{font-size:11px;color:var(--muted);margin:0 6px;align-self:center}
+  .readout{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px}
+  .readout b{font-size:22px;display:block}
+  .readout span{font-size:12px;color:var(--muted)}
+  .log{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.5em}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;max-width:82ch}
+</style>
+</head>
+<body>
+<header>
+  <h1>Cola de mensajes con prioridad y persistencia</h1>
+  <p>Tema 9 · Varios remitentes encolan mensajes con distinta prioridad. La cola los mantiene ordenados; el
+     receptor extrae siempre el más prioritario (y, a igualdad, el más antiguo). Los mensajes permanecen en la cola
+     aunque el receptor no esté en ejecución: a diferencia de una señal, no se pierden.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="group">
+      <h2>Remitentes — mq_send</h2>
+      <div class="btns">
+        <button class="p1" data-prio="1">alta (1)</button>
+        <button class="p2" data-prio="2">media (2)</button>
+        <button class="p3" data-prio="3">baja (3)</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>Opciones</h2>
+      <label><input type="checkbox" id="nonblock"> <code>O_NONBLOCK</code> (fallar en vez de bloquear)</label>
+    </div>
+    <div class="group">
+      <h2>Receptor</h2>
+      <div class="btns">
+        <label><input type="checkbox" id="active" checked> receptor en ejecución</label>
+        <button class="primary" id="recv">mq_receive</button>
+      </div>
+    </div>
+    <button id="reset">↺ reiniciar</button>
+  </div>
+
+  <div class="queue-box">
+    <div class="qhead">
+      <span>cabeza (se extrae por aquí) →</span>
+      <span id="cap">0 / 8 mensajes · mq_maxmsg = 8</span>
+    </div>
+    <div class="queue" id="queue"></div>
+  </div>
+
+  <div class="readout">
+    <div><b id="n-queue">0</b><span>en la cola</span></div>
+    <div><b id="n-recv">0</b><span>entregados</span></div>
+    <div><b id="n-lost">0</b><span>mq_send fallidos (EAGAIN)</span></div>
+    <div><b id="n-block">no</b><span>remitente bloqueado</span></div>
+  </div>
+  <div class="log" id="log">Encola mensajes y observa cómo se ordenan por prioridad.</div>
+
+  <p class="note">Con el receptor detenido, sigue pudiendo encolarse hasta llenar la cola; al reanudarlo, los
+     mensajes acumulados siguen ahí. Si la cola se llena, <code>mq_send</code> se bloquea (o falla con
+     <code>EAGAIN</code> si se abrió con <code>O_NONBLOCK</code>).</p>
+</div>
+
+<script>
+const MAX = 8;
+const $ = s => document.querySelector(s);
+let queue = [], nextId = 1, delivered = 0, lost = 0, blockedSender = null;
+
+function sortQueue() {
+  queue.sort((a, b) => a.prio - b.prio || a.seq - b.seq);
+}
+function render(opts = {}) {
+  const q = $("#queue");
+  q.innerHTML = "";
+  queue.forEach((m, i) => {
+    const c = document.createElement("div");
+    c.className = "card p" + m.prio + (opts.enterId === m.id ? " enter" : "");
+    c.dataset.id = m.id;
+    c.innerHTML = `<b>#${m.id}</b><small>prio ${m.prio}</small><small>${m.payload}</small>`;
+    q.appendChild(c);
+    if (i < queue.length - 1) {
+      const a = document.createElement("span");
+      a.className = "arrowlbl"; a.textContent = "›";
+      q.appendChild(a);
+    }
+  });
+  for (let i = queue.length; i < MAX; i++) {
+    const s = document.createElement("div");
+    s.className = "slot"; q.appendChild(s);
+  }
+  if (opts.enterId != null) requestAnimationFrame(() => {
+    const el = q.querySelector(`[data-id="${opts.enterId}"]`);
+    if (el) el.classList.remove("enter");
+  });
+  $("#cap").textContent = `${queue.length} / ${MAX} mensajes · mq_maxmsg = ${MAX}`;
+  $("#n-queue").textContent = queue.length;
+  $("#n-recv").textContent = delivered;
+  $("#n-lost").textContent = lost;
+  $("#n-block").textContent = blockedSender ? "sí (prio " + blockedSender.prio + ")" : "no";
+}
+function log(m) { $("#log").textContent = m; }
+
+function trySend(prio) {
+  if (queue.length >= MAX) {
+    if ($("#nonblock").checked) {
+      lost++;
+      log(`Cola llena y O_NONBLOCK activo: mq_send devuelve -1 con errno = EAGAIN. El mensaje (prio ${prio}) se pierde.`);
+      render();
+      return;
+    }
+    blockedSender = { prio };
+    log(`Cola llena: el remitente que hace mq_send (prio ${prio}) se BLOQUEA hasta que haya hueco.`);
+    render();
+    return;
+  }
+  const m = { id: nextId++, prio, seq: performance.now(), payload: "datos " + (nextId - 1) };
+  queue.push(m);
+  sortQueue();
+  render({ enterId: m.id });
+  const pos = queue.findIndex(x => x.id === m.id);
+  log(`mq_send con prioridad ${prio}: el mensaje #${m.id} se coloca en la posición ${pos + 1} de ${queue.length} (ordenado por prioridad).`);
+}
+
+function receive() {
+  if (!$("#active").checked) {
+    log("El receptor no está en ejecución: mq_receive no se llama. Los mensajes permanecen en la cola (persistencia).");
+    return;
+  }
+  if (!queue.length) { log("mq_receive con la cola vacía: el receptor se bloquea a la espera de un mensaje."); return; }
+  const head = queue[0];
+  const el = $("#queue").querySelector(`[data-id="${head.id}"]`);
+  queue.shift();
+  delivered++;
+  log(`mq_receive entrega el mensaje #${head.id} (prioridad ${head.prio}, el más prioritario y antiguo).`);
+  if (el) {
+    el.classList.add("leave");
+    setTimeout(() => { afterReceive(); }, 300);
+  } else afterReceive();
+}
+function afterReceive() {
+  if (blockedSender && queue.length < MAX) {
+    const s = blockedSender; blockedSender = null;
+    const m = { id: nextId++, prio: s.prio, seq: performance.now(), payload: "datos " + (nextId - 1) };
+    queue.push(m); sortQueue();
+    log(`Hay hueco: el remitente bloqueado se despierta y su mq_send (prio ${s.prio}) completa con el mensaje #${m.id}.`);
+    render({ enterId: m.id });
+  } else {
+    render();
+  }
+}
+
+document.querySelectorAll("[data-prio]").forEach(b =>
+  b.addEventListener("click", () => trySend(+b.dataset.prio)));
+$("#recv").addEventListener("click", receive);
+$("#active").addEventListener("change", () => {
+  log($("#active").checked
+    ? "Receptor reanudado. Los mensajes acumulados siguen en la cola, listos para mq_receive."
+    : "Receptor detenido. Se puede seguir encolando hasta llenar la cola.");
+});
+$("#reset").addEventListener("click", () => {
+  queue = []; nextId = 1; delivered = 0; lost = 0; blockedSender = null;
+  render(); log("Reiniciado.");
+});
+
+render();
+</script>
+</body>
+</html>

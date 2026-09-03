@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estados de un proceso</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --listo:#2b6fb0;--ejec:#3a8f4e;--espera:#b7902f;--parado:#7a5ea8;--zombie:#c0392b}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --listo:#6f9be8;--ejec:#5aa86b;--espera:#d0a94a;--parado:#a992d0;--zombie:#e06b5a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:78ch}
+  .wrap{padding:16px 24px 40px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+  svg{display:block;width:100%;height:auto}
+  .g-token{transition:transform .55s cubic-bezier(.4,0,.2,1)}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  button{padding:8px 13px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;max-width:80ch}
+  .log{font-size:12px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums;min-height:1.4em}
+</style>
+</head>
+<body>
+<header>
+  <h1>Estados de un proceso</h1>
+  <p>Tema 3 · Un proceso circula entre Listo, En ejecución, Bloqueado, Parado y Zombie. Solo uno ocupa la CPU a la vez.
+     El planificador despacha automáticamente el primer proceso listo; tú provocas el resto de los sucesos.</p>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <svg id="diagram" viewBox="0 0 760 480" role="img" aria-label="Diagrama de estados de un proceso"></svg>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="spawn">+ nuevo proceso</button>
+    <button id="quantum">vence el cuanto</button>
+    <button id="io">petición de E/S</button>
+    <button id="ioend">fin de E/S</button>
+    <button id="stop">SIGSTOP</button>
+    <button id="cont">SIGCONT</button>
+    <button id="exit">exit()</button>
+    <button id="reap">wait() del padre</button>
+    <button id="auto">▶ modo automático</button>
+    <button id="reset">↺ reiniciar</button>
+  </div>
+  <div class="log" id="log">Pulsa «+ nuevo proceso» para empezar.</div>
+  <p class="note">«Vence el cuanto», «petición de E/S», «SIGSTOP» y «exit()» actúan sobre el proceso en ejecución;
+     «fin de E/S» despierta al primer bloqueado; «SIGCONT» reanuda al primer parado; «wait() del padre» recoge al
+     primer zombie y lo elimina de la tabla de procesos.</p>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("diagram");
+const $ = s => document.querySelector(s);
+
+const BOXES = {
+  listo:  { x: 60,  y: 190, w: 170, h: 120, label: "Listo",         color: "var(--listo)"  },
+  ejec:   { x: 300, y: 60,  w: 170, h: 110, label: "En ejecución",   color: "var(--ejec)"   },
+  espera: { x: 540, y: 190, w: 170, h: 120, label: "Bloqueado (E/S)",color: "var(--espera)" },
+  parado: { x: 60,  y: 350, w: 170, h: 110, label: "Parado",         color: "var(--parado)" },
+  zombie: { x: 540, y: 350, w: 170, h: 110, label: "Zombie",         color: "var(--zombie)" },
+};
+const ARROWS = [
+  ["listo", "ejec", "despacho"],
+  ["ejec", "listo", "fin de cuanto"],
+  ["ejec", "espera", "petición de E/S"],
+  ["espera", "listo", "fin de E/S"],
+  ["ejec", "zombie", "exit()"],
+  ["ejec", "parado", "SIGSTOP"],
+  ["parado", "listo", "SIGCONT"],
+];
+
+let procs = [], nextPid = 1, autoTimer = null;
+
+function edge(a, b) {
+  const A = BOXES[a], B = BOXES[b];
+  const ac = [A.x + A.w / 2, A.y + A.h / 2], bc = [B.x + B.w / 2, B.y + B.h / 2];
+  const ang = Math.atan2(bc[1] - ac[1], bc[0] - ac[0]);
+  const clip = (box, cx, cy, dir) => {
+    const hw = box.w / 2 + 6, hh = box.h / 2 + 6;
+    const tx = Math.abs(Math.cos(dir)) < 1e-6 ? Infinity : hw / Math.abs(Math.cos(dir));
+    const ty = Math.abs(Math.sin(dir)) < 1e-6 ? Infinity : hh / Math.abs(Math.sin(dir));
+    const t = Math.min(tx, ty);
+    return [cx + Math.cos(dir) * t, cy + Math.sin(dir) * t];
+  };
+  return [clip(A, ac[0], ac[1], ang), clip(B, bc[0], bc[1], ang + Math.PI + Math.PI)];
+}
+
+function drawStatic() {
+  svg.innerHTML = "";
+  const defs = document.createElementNS(NS, "defs");
+  defs.innerHTML = `<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>`;
+  svg.appendChild(defs);
+
+  ARROWS.forEach(([a, b, lbl]) => {
+    const A = BOXES[a], B = BOXES[b];
+    const ac = [A.x + A.w / 2, A.y + A.h / 2], bc = [B.x + B.w / 2, B.y + B.h / 2];
+    const ang = Math.atan2(bc[1] - ac[1], bc[0] - ac[0]);
+    const p1 = pointOnBox(A, ang), p2 = pointOnBox(B, ang + Math.PI);
+    // ligera curva para separar ida y vuelta
+    const mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
+    const nx = -Math.sin(ang), ny = Math.cos(ang);
+    const off = 26;
+    const cx = mx + nx * off, cy = my + ny * off;
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("d", `M${p1[0]} ${p1[1]} Q${cx} ${cy} ${p2[0]} ${p2[1]}`);
+    path.setAttribute("fill", "none"); path.setAttribute("stroke", "var(--muted)");
+    path.setAttribute("stroke-width", 1.4); path.setAttribute("marker-end", "url(#ah)");
+    svg.appendChild(path);
+    // punto medio real de la curva cuadrática, desplazado un poco hacia afuera
+    const lx = 0.25 * p1[0] + 0.5 * cx + 0.25 * p2[0] + nx * 8;
+    const ly = 0.25 * p1[1] + 0.5 * cy + 0.25 * p2[1] + ny * 8 - 2;
+    const tb = document.createElementNS(NS, "rect");
+    const tw = lbl.length * 5.6 + 6;
+    tb.setAttribute("x", lx - tw / 2); tb.setAttribute("y", ly - 10); tb.setAttribute("width", tw); tb.setAttribute("height", 13);
+    tb.setAttribute("fill", "var(--bg)"); tb.setAttribute("opacity", .85); tb.setAttribute("rx", 3);
+    svg.appendChild(tb);
+    txt(lx, ly, lbl, "var(--muted)", 10.5, "middle");
+  });
+
+  Object.values(BOXES).forEach(B => {
+    rect(B.x, B.y, B.w, B.h, B.color);
+    txt(B.x + 12, B.y + 22, B.label, B.color, 13, "start", 700);
+  });
+  txt(BOXES.ejec.x + BOXES.ejec.w - 12, BOXES.ejec.y + 22, "CPU · máx. 1", "var(--muted)", 10, "end");
+
+  const layer = document.createElementNS(NS, "g");
+  layer.setAttribute("id", "tokens");
+  svg.appendChild(layer);
+}
+function pointOnBox(box, dir) {
+  const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+  const hw = box.w / 2 + 4, hh = box.h / 2 + 4;
+  const tx = Math.abs(Math.cos(dir)) < 1e-6 ? 1e9 : hw / Math.abs(Math.cos(dir));
+  const ty = Math.abs(Math.sin(dir)) < 1e-6 ? 1e9 : hh / Math.abs(Math.sin(dir));
+  const t = Math.min(tx, ty);
+  return [cx + Math.cos(dir) * t, cy + Math.sin(dir) * t];
+}
+function rect(x, y, w, h, color) {
+  const bg = document.createElementNS(NS, "rect");
+  bg.setAttribute("x", x); bg.setAttribute("y", y); bg.setAttribute("width", w); bg.setAttribute("height", h);
+  bg.setAttribute("rx", 10); bg.setAttribute("fill", color); bg.setAttribute("opacity", .1);
+  svg.appendChild(bg);
+  const br = document.createElementNS(NS, "rect");
+  br.setAttribute("x", x); br.setAttribute("y", y); br.setAttribute("width", w); br.setAttribute("height", h);
+  br.setAttribute("rx", 10); br.setAttribute("fill", "none"); br.setAttribute("stroke", color); br.setAttribute("stroke-width", 1.6);
+  svg.appendChild(br);
+}
+function txt(x, y, str, fill, size, anchor = "start", weight = 400) {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("fill", fill);
+  t.setAttribute("font-size", size); t.setAttribute("text-anchor", anchor); t.setAttribute("font-weight", weight);
+  t.setAttribute("font-family", "system-ui, sans-serif");
+  t.textContent = str; svg.appendChild(t);
+}
+
+function slotPos(state, i) {
+  const B = BOXES[state];
+  const perRow = 3, sp = 42;
+  const col = i % perRow, row = Math.floor(i / perRow);
+  const startX = B.x + B.w / 2 - sp;
+  return [startX + col * sp, B.y + 52 + row * 40];
+}
+
+function render() {
+  const layer = document.getElementById("tokens");
+  const byState = {};
+  procs.forEach(p => { (byState[p.state] ||= []).push(p); });
+
+  const seen = new Set();
+  Object.entries(byState).forEach(([state, list]) => {
+    list.forEach((p, i) => {
+      seen.add(p.pid);
+      let g = layer.querySelector(`[data-pid="${p.pid}"]`);
+      if (!g) {
+        g = document.createElementNS(NS, "g");
+        g.setAttribute("class", "g-token");
+        g.setAttribute("data-pid", p.pid);
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("r", 15); c.setAttribute("stroke", "#fff"); c.setAttribute("stroke-width", 2);
+        g.appendChild(c);
+        const t = document.createElementNS(NS, "text");
+        t.setAttribute("text-anchor", "middle"); t.setAttribute("y", 4); t.setAttribute("font-size", 10.5);
+        t.setAttribute("fill", "#fff"); t.setAttribute("font-family", "system-ui, sans-serif");
+        t.textContent = "P" + p.pid;
+        g.appendChild(t);
+        const [x0, y0] = slotPos(p.state, i);
+        g.setAttribute("transform", `translate(${x0},${y0})`);
+        layer.appendChild(g);
+      }
+      g.querySelector("circle").setAttribute("fill", BOXES[p.state].color);
+      const [x, y] = slotPos(state, i);
+      requestAnimationFrame(() => g.setAttribute("transform", `translate(${x},${y})`));
+    });
+  });
+  layer.querySelectorAll("[data-pid]").forEach(g => {
+    if (!seen.has(+g.dataset.pid)) g.remove();
+  });
+  updateButtons();
+}
+
+const running = () => procs.find(p => p.state === "ejec");
+const firstOf = st => procs.find(p => p.state === st);
+
+function updateButtons() {
+  $("#quantum").disabled = !running();
+  $("#io").disabled = !running();
+  $("#stop").disabled = !running() && !firstOf("listo");
+  $("#exit").disabled = !running();
+  $("#ioend").disabled = !firstOf("espera");
+  $("#cont").disabled = !firstOf("parado");
+  $("#reap").disabled = !firstOf("zombie");
+}
+
+function dispatch() {
+  if (!running()) {
+    const r = firstOf("listo");
+    if (r) { r.state = "ejec"; log(`El planificador despacha P${r.pid} → En ejecución`); render(); }
+  }
+}
+function log(m) { $("#log").textContent = m; }
+
+function act(fn) { fn(); render(); setTimeout(dispatch, 450); }
+
+$("#spawn").addEventListener("click", () => act(() => {
+  const pid = nextPid++;
+  procs.push({ pid, state: "listo" });
+  log(`Se crea P${pid} y entra en la cola de listos`);
+}));
+$("#quantum").addEventListener("click", () => act(() => {
+  const p = running(); p.state = "listo"; log(`P${p.pid} agota su cuanto → Listo`);
+}));
+$("#io").addEventListener("click", () => act(() => {
+  const p = running(); p.state = "espera"; log(`P${p.pid} pide E/S y se bloquea`);
+}));
+$("#ioend").addEventListener("click", () => act(() => {
+  const p = firstOf("espera"); p.state = "listo"; log(`Termina la E/S de P${p.pid} → Listo`);
+}));
+$("#stop").addEventListener("click", () => act(() => {
+  const p = running() || firstOf("listo"); p.state = "parado"; log(`SIGSTOP detiene a P${p.pid} → Parado`);
+}));
+$("#cont").addEventListener("click", () => act(() => {
+  const p = firstOf("parado"); p.state = "listo"; log(`SIGCONT reanuda a P${p.pid} → Listo`);
+}));
+$("#exit").addEventListener("click", () => act(() => {
+  const p = running(); p.state = "zombie"; log(`P${p.pid} llama a exit() → Zombie (espera a que el padre lo recoja)`);
+}));
+$("#reap").addEventListener("click", () => act(() => {
+  const p = firstOf("zombie"); procs = procs.filter(x => x !== p); log(`El padre hace wait(): P${p.pid} desaparece de la tabla`);
+}));
+$("#reset").addEventListener("click", () => { stopAuto(); procs = []; nextPid = 1; drawStatic(); render(); log("Reiniciado."); });
+
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; $("#auto").textContent = "▶ modo automático"; } }
+$("#auto").addEventListener("click", () => {
+  if (autoTimer) { stopAuto(); return; }
+  $("#auto").textContent = "⏸ modo automático";
+  autoTimer = setInterval(() => {
+    const opts = [];
+    if (procs.length < 6) opts.push("spawn", "spawn");
+    if (running()) opts.push("quantum", "io", "exit", "stop");
+    if (firstOf("espera")) opts.push("ioend", "ioend");
+    if (firstOf("parado")) opts.push("cont");
+    if (firstOf("zombie")) opts.push("reap", "reap");
+    if (!opts.length) opts.push("spawn");
+    document.getElementById(opts[Math.floor(Math.random() * opts.length)]).click();
+  }, 1300);
+});
+
+drawStatic();
+render();
+</script>
+</body>
+</html>

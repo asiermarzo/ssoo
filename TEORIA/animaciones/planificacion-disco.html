@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planificación de disco</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f4f5f7; --panel: #fff; --ink: #1c2128; --muted: #5b6673;
+    --line: #d4d8de; --accent: #2b4a8b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --panel: #1d2127; --ink: #e7e9ec; --muted: #9aa4b0;
+      --line: #333a44; --accent: #6f9be8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header { padding: 20px 24px 8px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+  .wrap { padding: 14px 24px 40px; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 12px; color: var(--muted); }
+  select, input[type=text], input[type=number] {
+    padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--ink); font: inherit;
+  }
+  input[type=text] { width: 260px; }
+  input[type=number] { width: 80px; }
+  .btns { display: flex; gap: 8px; }
+  button {
+    padding: 8px 14px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--bg); color: var(--ink); font: inherit; cursor: pointer;
+  }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .speed { display: flex; align-items: center; gap: 8px; }
+  .stage {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px; overflow-x: auto;
+  }
+  .readout { display: flex; gap: 26px; flex-wrap: wrap; margin: 12px 2px 0; }
+  .readout b { font-size: 22px; display: block; }
+  .readout span { font-size: 12px; color: var(--muted); }
+  .order { font-variant-numeric: tabular-nums; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Planificación de disco — movimiento de la cabeza</h1>
+  <p>Tema 11 · La cabeza atiende una cola de peticiones de pista. Cada algoritmo decide el orden de servicio; el
+     recorrido total (en número de pistas) mide su coste. Cola y posición inicial tomadas del tema.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field">
+      <label for="algo">Algoritmo</label>
+      <select id="algo">
+        <option value="FCFS">FCFS — orden de llegada</option>
+        <option value="SSTF">SSTF — más cercana primero</option>
+        <option value="SCAN">SCAN — barrido hasta el extremo</option>
+        <option value="LOOK">LOOK — barrido hasta la última petición</option>
+        <option value="C-SCAN">C-SCAN — barrido circular al extremo</option>
+        <option value="C-LOOK">C-LOOK — barrido circular a la última petición</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dir">Sentido inicial</label>
+      <select id="dir">
+        <option value="up">ascendente ↑</option>
+        <option value="down">descendente ↓</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="start">Pista inicial</label>
+      <input type="number" id="start" value="76" min="0" max="299">
+    </div>
+    <div class="field">
+      <label for="reqs">Cola de peticiones</label>
+      <input type="text" id="reqs" value="76, 124, 17, 269, 201, 29, 137, 12">
+    </div>
+    <div class="field">
+      <label for="speed">Velocidad</label>
+      <div class="speed"><span>🐢</span><input type="range" id="speed" min="1" max="20" value="8"><span>🐇</span></div>
+    </div>
+    <div class="btns">
+      <button class="primary" id="play">▶ Reproducir</button>
+      <button id="reset">↺ Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="stage"><div id="canvas-host"></div></div>
+
+  <div class="readout">
+    <div><b id="r-dist">0</b><span>pistas recorridas</span></div>
+    <div><b id="r-served">0 / 0</b><span>peticiones atendidas</span></div>
+    <div><b id="r-order" class="order">–</b><span>orden de servicio</span></div>
+  </div>
+  <p class="note">Rango del disco: 0–299. Los tramos discontinuos en rojo (C-SCAN / C-LOOK) son el retorno rápido sin
+     atender peticiones; aquí se contabilizan en el recorrido total.</p>
+</div>
+
+<script>
+const MAXT = 299;
+let path = [];        // [{t, served, jump}]
+let servedIdx = [];   // índices de path que son peticiones
+let cum = [];         // distancia acumulada por punto
+let prog = 0;         // posición continua dentro de path [0 .. path.length-1]
+let playing = false;
+let plannedDist = 0;
+
+function parseReqs() {
+  return document.getElementById("reqs").value
+    .split(/[,\s]+/).map(s => parseInt(s, 10))
+    .filter(n => Number.isFinite(n) && n >= 0 && n <= MAXT);
+}
+
+function computePath() {
+  const algo = document.getElementById("algo").value;
+  const dir = document.getElementById("dir").value;
+  const start = Math.max(0, Math.min(MAXT, parseInt(document.getElementById("start").value, 10) || 0));
+  const requests = parseReqs();
+  const uniq = [...new Set(requests)];
+
+  const p = [{ t: start, served: false, jump: false }];
+  const go = (t, served = true, jump = false) => p.push({ t, served, jump });
+
+  if (algo === "FCFS") {
+    requests.forEach(r => go(r));
+  } else if (algo === "SSTF") {
+    const pool = [...requests];
+    let cur = start;
+    while (pool.length) {
+      let bi = 0;
+      for (let i = 1; i < pool.length; i++)
+        if (Math.abs(pool[i] - cur) < Math.abs(pool[bi] - cur)) bi = i;
+      cur = pool[bi]; go(cur); pool.splice(bi, 1);
+    }
+  } else {
+    const up = uniq.filter(r => r >= start).sort((a, b) => a - b);
+    const down = uniq.filter(r => r < start).sort((a, b) => b - a);
+    const first = dir === "up" ? up : down;
+    const second = dir === "up" ? down : up;
+    const farEnd = dir === "up" ? MAXT : 0;
+    const nearEnd = dir === "up" ? 0 : MAXT;
+
+    if (algo === "SCAN") {
+      first.forEach(r => go(r));
+      if (p[p.length - 1].t !== farEnd) go(farEnd, false);
+      second.forEach(r => go(r));
+    } else if (algo === "LOOK") {
+      first.forEach(r => go(r));
+      second.forEach(r => go(r));
+    } else if (algo === "C-SCAN") {
+      first.forEach(r => go(r));
+      if (p[p.length - 1].t !== farEnd) go(farEnd, false);
+      go(nearEnd, false, true);
+      [...second].reverse().forEach(r => go(r));
+    } else if (algo === "C-LOOK") {
+      first.forEach(r => go(r));
+      const rest = [...second].reverse();
+      if (rest.length) {
+        go(rest[0], true, true);
+        rest.slice(1).forEach(r => go(r));
+      }
+    }
+  }
+
+  path = p;
+  servedIdx = [];
+  path.forEach((pt, i) => { if (pt.served) servedIdx.push(i); });
+  cum = [0];
+  plannedDist = 0;
+  for (let i = 1; i < path.length; i++) {
+    plannedDist += Math.abs(path[i].t - path[i - 1].t);
+    cum.push(plannedDist);
+  }
+  prog = 0;
+  updateReadout();
+}
+
+// ---- geometría ----
+let W = 860, H = 460;
+const padL = 58, padR = 46, padT = 26, padB = 40;
+
+function yFor(t) { return padT + (1 - t / MAXT) * (H - padT - padB); }
+function xForIndex(i) {
+  const n = Math.max(1, path.length - 1);
+  return padL + (i / n) * (W - padL - padR);
+}
+
+function currentTrack() {
+  const seg = Math.min(Math.floor(prog), path.length - 2);
+  const f = prog - seg;
+  if (path.length < 2) return path[0].t;
+  return path[seg].t + (path[seg + 1].t - path[seg].t) * f;
+}
+function currentX() {
+  const seg = Math.min(Math.floor(prog), path.length - 2);
+  const f = prog - seg;
+  if (path.length < 2) return xForIndex(0);
+  return xForIndex(seg) + (xForIndex(seg + 1) - xForIndex(seg)) * f;
+}
+function distanceSoFar() {
+  let d = 0;
+  const segFull = Math.floor(prog);
+  for (let i = 1; i <= segFull && i < path.length; i++) d += Math.abs(path[i].t - path[i - 1].t);
+  if (segFull < path.length - 1) {
+    const f = prog - segFull;
+    d += Math.abs(path[segFull + 1].t - path[segFull].t) * f;
+  }
+  return d;
+}
+
+function cssVar(name) {
+  return getComputedStyle(document.body).getPropertyValue(name).trim() || "#888";
+}
+
+function setup() {
+  const host = document.getElementById("canvas-host");
+  W = Math.max(560, Math.min(900, host.clientWidth || 860));
+  const c = createCanvas(W, H);
+  c.parent(host);
+  computePath();
+  noLoop();
+}
+
+function windowResized() {
+  const host = document.getElementById("canvas-host");
+  W = Math.max(560, Math.min(900, host.clientWidth || 860));
+  resizeCanvas(W, H);
+  redraw();
+}
+
+function advance() {
+  if (!playing || path.length < 2) return;
+  const seg = Math.min(Math.floor(prog), path.length - 2);
+  const segDist = Math.max(1, Math.abs(path[seg + 1].t - path[seg].t));
+  const speed = +document.getElementById("speed").value;
+  const dt = Math.min(deltaTime, 50) / 1000;
+  prog = Math.min(path.length - 1, prog + (speed * 12 / segDist) * dt);
+  if (prog >= path.length - 1) {
+    prog = path.length - 1;
+    playing = false;
+    document.getElementById("play").textContent = "▶ Reproducir";
+    noLoop();
+  }
+  updateReadout();
+}
+
+function draw() {
+  advance();
+
+  const cInk = cssVar("--ink"), cMuted = cssVar("--muted"),
+        cLine = cssVar("--line"), cAccent = cssVar("--accent"),
+        cPanel = cssVar("--panel"), cRed = "#c0392b";
+  clear();
+
+  const reqSet = new Set(parseReqs());
+  textFont("system-ui, sans-serif");
+
+  // rejilla horizontal cada 50 pistas
+  strokeWeight(1);
+  for (let t = 0; t <= MAXT; t += 50) {
+    const y = yFor(t);
+    stroke(cLine); line(padL, y, W - padR, y);
+    noStroke(); fill(cMuted); textAlign(RIGHT, CENTER); textSize(11);
+    text(t, padL - 8, y);
+  }
+
+  // líneas guía de cada petición
+  drawingContext.setLineDash([3, 3]);
+  reqSet.forEach(r => {
+    const y = yFor(r);
+    stroke(cAccent); strokeWeight(1); line(padL, y, W - padR, y);
+    noStroke(); fill(cAccent); textAlign(LEFT, CENTER); textSize(10);
+    text(r, W - padR + 6, y);
+  });
+  drawingContext.setLineDash([]);
+
+  // ejes
+  stroke(cMuted); strokeWeight(1.2);
+  line(padL, padT, padL, H - padB);
+  noStroke(); fill(cMuted); textSize(11);
+  textAlign(LEFT, BOTTOM); text("pista", 6, padT + 2);
+  textAlign(CENTER, TOP); text("orden de atención  →", (padL + W - padR) / 2, H - padB + 18);
+
+  if (path.length) {
+    // trayecto planificado (tenue)
+    stroke(cMuted); strokeWeight(1);
+    drawingContext.globalAlpha = 0.3;
+    for (let i = 1; i < path.length; i++)
+      line(xForIndex(i - 1), yFor(path[i - 1].t), xForIndex(i), yFor(path[i].t));
+    drawingContext.globalAlpha = 1;
+
+    // trayecto ya recorrido
+    for (let i = 1; i < path.length; i++) {
+      if (prog <= i - 1) break;
+      const f = Math.min(1, prog - (i - 1));
+      const x1 = xForIndex(i - 1), y1 = yFor(path[i - 1].t);
+      const x2 = xForIndex(i), y2 = yFor(path[i].t);
+      const xm = x1 + (x2 - x1) * f, ym = y1 + (y2 - y1) * f;
+      if (path[i].jump) {
+        stroke(cRed); strokeWeight(2); drawingContext.setLineDash([6, 5]);
+      } else {
+        stroke(cAccent); strokeWeight(2.6);
+      }
+      line(x1, y1, xm, ym);
+      drawingContext.setLineDash([]);
+    }
+
+    // puntos de petición
+    for (const idx of servedIdx) {
+      const x = xForIndex(idx), y = yFor(path[idx].t);
+      const reached = prog >= idx - 1e-6;
+      strokeWeight(1.5);
+      if (reached) { fill(cRed); stroke(cRed); } else { noFill(); stroke(cMuted); }
+      circle(x, y, 8);
+    }
+
+    // inicio
+    noStroke(); fill(cInk); textAlign(CENTER, BOTTOM); textSize(11);
+    text("inicio " + path[0].t, xForIndex(0), yFor(path[0].t) - 9);
+
+    // cabeza
+    const hx = currentX(), hy = yFor(currentTrack());
+    stroke(cAccent); strokeWeight(2); fill(cPanel);
+    circle(hx, hy, 15);
+    noStroke(); fill(cAccent); circle(hx, hy, 6);
+  }
+}
+
+function updateReadout() {
+  const reached = servedIdx.filter(i => prog >= i - 1e-6);
+  document.getElementById("r-dist").textContent =
+    Math.round(prog >= path.length - 1 ? plannedDist : distanceSoFar());
+  document.getElementById("r-served").textContent = reached.length + " / " + servedIdx.length;
+  const order = reached.map(i => path[i].t);
+  document.getElementById("r-order").textContent = order.length ? order.join(" → ") : "–";
+}
+
+function playPause() {
+  if (prog >= path.length - 1) { prog = 0; }
+  playing = !playing;
+  document.getElementById("play").textContent = playing ? "⏸ Pausa" : "▶ Reproducir";
+  if (playing) loop(); else { noLoop(); redraw(); }
+}
+
+function rebuild() {
+  playing = false;
+  document.getElementById("play").textContent = "▶ Reproducir";
+  computePath();
+  noLoop();
+  redraw();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("play").addEventListener("click", playPause);
+  document.getElementById("reset").addEventListener("click", rebuild);
+  ["algo", "dir", "start", "reqs"].forEach(id =>
+    document.getElementById(id).addEventListener("change", rebuild));
+  document.getElementById("reqs").addEventListener("input", () => { /* espera a change */ });
+  const dirSel = document.getElementById("dir");
+  const algoSel = document.getElementById("algo");
+  const syncDir = () => { dirSel.disabled = (algoSel.value === "FCFS" || algoSel.value === "SSTF"); };
+  algoSel.addEventListener("change", syncDir);
+  syncDir();
+});
+</script>
+</body>
+</html>

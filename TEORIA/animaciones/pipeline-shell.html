@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline de shell</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --proc:#2b6fb0;--pipe:#b7902f;--data:#3a8f4e}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --proc:#6f9be8;--pipe:#d0a94a;--data:#5aa86b}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .cmdline{font-family:ui-monospace,monospace;font-size:15px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:12px;overflow-x:auto;white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .chips small{color:var(--muted)}
+  button{padding:7px 12px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto}
+  svg{display:block}
+  .steptext{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px;margin-top:14px;font-size:14px;min-height:3.2em}
+  .stepbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;max-width:82ch}
+  code{font-family:ui-monospace,monospace}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pipeline de shell: <code>cmd1 | cmd2 | cmd3</code></h1>
+  <p>Tema 7 · El shell crea una tubería por cada <code>|</code>, hace <code>fork()</code> de cada comando y usa
+     <code>dup2()</code> para redirigir la salida estándar de uno a la entrada estándar del siguiente. Los datos
+     fluyen por el búfer del núcleo de cada tubería.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="cmdline" id="cmdline">—</div>
+    <div class="chips">
+      <small>Añadir etapa:</small>
+      <button data-cmd="grep sol">grep sol</button>
+      <button data-cmd="grep -v luna">grep -v luna</button>
+      <button data-cmd="sort">sort</button>
+      <button data-cmd="uniq">uniq</button>
+      <button data-cmd="tr a-z A-Z">tr a-z A-Z</button>
+      <button data-cmd="head -3">head -3</button>
+      <button data-cmd="wc -l">wc -l</button>
+      <span style="flex:1"></span>
+      <button id="pop">− quitar última</button>
+      <button id="default">pipeline de ejemplo</button>
+    </div>
+  </div>
+
+  <div class="stage"><svg id="diagram" width="960" height="430" role="img" aria-label="Diagrama de la pipeline"></svg></div>
+
+  <div class="steptext" id="steptext">Pulsa «Reproducir» para ver cómo se monta y se ejecuta la pipeline.</div>
+  <div class="stepbtns">
+    <button class="primary" id="play">▶ Reproducir</button>
+    <button id="prev" disabled>◀</button>
+    <button id="next" disabled>▶ paso</button>
+    <span id="counter" class="note" style="margin:0;align-self:center"></span>
+  </div>
+
+  <p class="note">Cada comando es un proceso independiente con su tabla de descriptores. Tras <code>dup2()</code>, el
+     descriptor 1 del comando N apunta al extremo de escritura de una tubería y el descriptor 0 del comando N+1 al
+     de lectura de esa misma tubería; el 2 (errores) sigue apuntando al terminal.</p>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("diagram");
+const $ = s => document.querySelector(s);
+
+const INPUT = ["sol brilla", "la luna", "sol se pone", "mar en calma", "sol naciente", "la luna", "sol brilla"];
+
+function runCmd(cmd, lines) {
+  const p = cmd.split(/\s+/);
+  if (p[0] === "cat") return [...INPUT];
+  if (p[0] === "grep" && p[1] === "-v") return lines.filter(l => !l.includes(p[2]));
+  if (p[0] === "grep") return lines.filter(l => l.includes(p[1]));
+  if (p[0] === "sort") return [...lines].sort();
+  if (p[0] === "uniq") return lines.filter((l, i) => i === 0 || l !== lines[i - 1]);
+  if (p[0] === "tr") return lines.map(l => l.toUpperCase());
+  if (p[0] === "head") return lines.slice(0, +p[1].replace("-", ""));
+  if (p[0] === "wc") return [String(lines.length)];
+  return lines;
+}
+
+let stages = ["cat frases.txt", "grep sol", "sort", "uniq"];
+let steps = [], sidx = 0, playTimer = null;
+
+function outputs() {
+  const outs = [];
+  let cur = [];
+  stages.forEach((c, i) => { cur = runCmd(c, i === 0 ? [] : cur); outs.push([...cur]); });
+  return outs;
+}
+
+function renderCmdline() {
+  $("#cmdline").textContent = "$ " + stages.join(" | ");
+}
+
+// ---- diagrama ----
+const BX = 30, BW = 190, BH = 96, GAP = 44;
+function boxX(i) { return BX + i * (BW + GAP); }
+
+function drawDiagram(activeStep) {
+  svg.innerHTML = "";
+  const n = stages.length;
+  const width = BX * 2 + n * BW + (n - 1) * GAP;
+  svg.setAttribute("width", Math.max(width, 640));
+  const defs = document.createElementNS(NS, "defs");
+  defs.innerHTML = `<marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>`;
+  svg.appendChild(defs);
+
+  const yBox = 60;
+  const st = steps[activeStep] || { phase: "idle", k: -1 };
+
+  // terminal / shell
+  txt(BX, 30, "shell  →  fork() + dup2() + exec() por etapa", "var(--muted)", 12);
+
+  for (let i = 0; i < n; i++) {
+    const x = boxX(i);
+    const wired = st.phase === "run" || (st.phase === "dup2" && i <= st.k) || st.phase === "exec" || st.phase === "data";
+    rectb(x, yBox, BW, BH, "var(--proc)", st.phase === "fork" && i <= st.k);
+    txt(x + 12, yBox + 20, stages[i].split(/\s+/)[0] === "cat" ? "cat" : stages[i], "var(--proc)", 12.5, 700);
+    // tabla de fd
+    const fdLabels = [
+      "0  " + (i === 0 ? "← frases.txt" : (wired ? "← tubería " + i : "terminal")),
+      "1  " + (i === n - 1 ? "→ terminal" : (wired ? "→ tubería " + (i + 1) : "terminal")),
+      "2  → terminal (errores)",
+    ];
+    fdLabels.forEach((t, k) => txt(x + 14, yBox + 42 + k * 17, t, "var(--ink)", 11));
+  }
+
+  // tuberías
+  for (let i = 0; i < n - 1; i++) {
+    const x0 = boxX(i) + BW, x1 = boxX(i + 1);
+    const yc = yBox + BH + 46;
+    const active = st.phase === "pipe" && i <= st.k;
+    const built = st.phase === "run" || st.phase === "dup2" || st.phase === "exec" || st.phase === "data" || active;
+    rectb(x0 + 6, yc - 15, x1 - x0 - 12, 30, "var(--pipe)", active, built ? 1 : .35);
+    txt((x0 + x1) / 2, yc + 4, "tubería " + (i + 1), "var(--pipe)", 10.5, 400, "middle");
+    if (built) {
+      path(`M${boxX(i) + BW - 26} ${yBox + BH} L${boxX(i) + BW - 26} ${yc - 15}`, "var(--muted)");
+      path(`M${x0 + (x1 - x0) / 2} ${yc + 15} L${boxX(i + 1) + 26} ${yc + 15} L${boxX(i + 1) + 26} ${yBox + BH}`, "var(--muted)");
+    }
+  }
+
+  // salidas de datos
+  if (st.phase === "data") {
+    const outs = outputs();
+    for (let i = 0; i < n; i++) {
+      const x = boxX(i), y = yBox + BH + 92;
+      const show = i <= st.k;
+      rectb(x, y, BW, 150, "var(--data)", false, show ? 1 : .25);
+      txt(x + 10, y + 18, "salida:", "var(--data)", 10.5, 700);
+      if (show) outs[i].slice(0, 7).forEach((l, k) => txt(x + 10, y + 36 + k * 16, l.length > 24 ? l.slice(0, 23) + "…" : l, "var(--ink)", 10.5));
+    }
+    // token de datos moviéndose hacia la etapa activa
+    if (st.k > 0 && st.k < n) {
+      const tx = boxX(st.k) - GAP / 2;
+      const g = document.createElementNS(NS, "circle");
+      g.setAttribute("cx", tx); g.setAttribute("cy", yBox + BH + 46 + 15);
+      g.setAttribute("r", 6); g.setAttribute("fill", "var(--data)");
+      svg.appendChild(g);
+    }
+  }
+}
+function rectb(x, y, w, h, color, glow, op = 1) {
+  const bg = document.createElementNS(NS, "rect");
+  bg.setAttribute("x", x); bg.setAttribute("y", y); bg.setAttribute("width", w); bg.setAttribute("height", h);
+  bg.setAttribute("rx", 8); bg.setAttribute("fill", color);
+  bg.setAttribute("opacity", (glow ? 0.3 : 0.12) * op);
+  svg.appendChild(bg);
+  const br = document.createElementNS(NS, "rect");
+  br.setAttribute("x", x); br.setAttribute("y", y); br.setAttribute("width", w); br.setAttribute("height", h);
+  br.setAttribute("rx", 8); br.setAttribute("fill", "none"); br.setAttribute("stroke", color);
+  br.setAttribute("stroke-width", glow ? 2.4 : 1.5); br.setAttribute("opacity", op);
+  svg.appendChild(br);
+}
+function path(d, stroke) {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", stroke);
+  p.setAttribute("stroke-width", 1.4); p.setAttribute("marker-end", "url(#a)");
+  svg.appendChild(p);
+}
+function txt(x, y, s, fill, size, weight = 400, anchor = "start") {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("fill", fill);
+  t.setAttribute("font-size", size); t.setAttribute("font-weight", weight); t.setAttribute("text-anchor", anchor);
+  t.setAttribute("font-family", "ui-monospace, system-ui, monospace");
+  t.textContent = s; svg.appendChild(t);
+}
+
+function buildSteps() {
+  const n = stages.length;
+  const S = [];
+  S.push({ phase: "idle", k: -1, text: `El shell analiza la línea: ${n} comandos separados por ${n - 1} «|», luego ${n - 1} tuberías.` });
+  for (let i = 0; i < n - 1; i++)
+    S.push({ phase: "pipe", k: i, text: `pipe() crea la tubería ${i + 1}: un búfer en el núcleo con un extremo de lectura y otro de escritura.` });
+  for (let i = 0; i < n; i++)
+    S.push({ phase: "fork", k: i, text: `fork(): el shell crea el proceso hijo para «${stages[i]}». Hereda todos los descriptores y los extremos de las tuberías.` });
+  for (let i = 0; i < n; i++) {
+    const parts = [];
+    if (i > 0) parts.push(`dup2(lectura de la tubería ${i}, 0)`);
+    if (i < n - 1) parts.push(`dup2(escritura de la tubería ${i + 1}, 1)`);
+    S.push({ phase: "dup2", k: i, text: `Hijo ${i + 1}: ${parts.join(" y ") || "sin redirecciones"}. Después cierra todos los extremos de tubería que le sobran (si no, un lector nunca vería EOF).` });
+  }
+  S.push({ phase: "exec", k: -1, text: `Cada hijo llama a exec(): su imagen se reemplaza por el programa, pero la tabla de descriptores ya redirigida se mantiene.` });
+  for (let i = 0; i < n; i++)
+    S.push({ phase: "data", k: i, text: `${stages[i]}: lee de su entrada estándar y escribe ${runCmd(stages[i], i === 0 ? [] : outputs()[i - 1]).length} líneas en su salida. ${i < n - 1 ? "Si el búfer de la tubería se llena, se bloquea hasta que el siguiente lea." : "La última salida va al terminal."}` });
+  S.push({ phase: "data", k: n - 1, text: `Cada proceso termina al recibir EOF y cerrar. El shell, que hizo wait() de todos, recupera el prompt.` });
+  return S;
+}
+
+function apply() {
+  drawDiagram(sidx);
+  $("#steptext").textContent = steps[sidx].text;
+  $("#counter").textContent = `paso ${sidx + 1} / ${steps.length}`;
+  $("#prev").disabled = sidx === 0;
+  $("#next").disabled = sidx === steps.length - 1;
+}
+function rebuild() {
+  stopPlay();
+  renderCmdline();
+  steps = buildSteps();
+  sidx = 0;
+  apply();
+  $("#prev").disabled = true; $("#next").disabled = stages.length < 1;
+}
+function stopPlay() { if (playTimer) { clearInterval(playTimer); playTimer = null; $("#play").textContent = "▶ Reproducir"; } }
+
+document.querySelectorAll(".chips [data-cmd]").forEach(b =>
+  b.addEventListener("click", () => { if (stages.length < 5) { stages.push(b.dataset.cmd); rebuild(); } }));
+$("#pop").addEventListener("click", () => { if (stages.length > 1) { stages.pop(); rebuild(); } });
+$("#default").addEventListener("click", () => { stages = ["cat frases.txt", "grep sol", "sort", "uniq"]; rebuild(); });
+$("#next").addEventListener("click", () => { if (sidx < steps.length - 1) { sidx++; apply(); } });
+$("#prev").addEventListener("click", () => { if (sidx > 0) { sidx--; apply(); } });
+$("#play").addEventListener("click", () => {
+  if (playTimer) { stopPlay(); return; }
+  if (sidx >= steps.length - 1) { sidx = 0; apply(); }
+  $("#play").textContent = "⏸ Pausa";
+  playTimer = setInterval(() => { if (sidx < steps.length - 1) { sidx++; apply(); } else stopPlay(); }, 1700);
+});
+
+rebuild();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filósofos comensales e interbloqueo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:78ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  label{font-size:12px;color:var(--muted)}
+  select,input[type=range]{accent-color:var(--accent)}
+  select{padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+  button{padding:8px 14px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;justify-content:center}
+  .readout{display:flex;gap:26px;flex-wrap:wrap;margin:12px 2px 0}
+  .readout b{font-size:20px;display:block}
+  .readout span{font-size:12px;color:var(--muted)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:13px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:middle}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;max-width:82ch}
+  .alert{color:#c0392b;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1>Filósofos comensales e interbloqueo</h1>
+  <p>Tema 5 · Cinco filósofos, cinco tenedores, uno entre cada par. Para comer hacen falta los dos tenedores
+     contiguos. Si todos cogen a la vez el de su izquierda y esperan el de la derecha, nadie avanza:
+     espera circular.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field">
+      <label for="strategy">Estrategia</label>
+      <select id="strategy">
+        <option value="naive">Ingenua (izquierda y luego derecha)</option>
+        <option value="order">Orden global de petición</option>
+        <option value="lefty">Un filósofo zurdo</option>
+        <option value="waiter">Camarero (máx. 4 sentados)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="speed">Velocidad</label>
+      <input type="range" id="speed" min="1" max="12" value="5">
+    </div>
+    <button id="deadlock">💥 Forzar interbloqueo</button>
+    <button class="primary" id="play">⏸ Pausa</button>
+    <button id="reset">↺ Reiniciar</button>
+  </div>
+
+  <div class="stage"><div id="host"></div></div>
+
+  <div class="legend">
+    <span><i style="background:#8a94a3"></i>pensando</span>
+    <span><i style="background:#d0a94a"></i>con hambre</span>
+    <span><i style="background:#c77d3a"></i>un tenedor</span>
+    <span><i style="background:#3a8f4e"></i>comiendo</span>
+    <span><i style="background:#c0392b"></i>bloqueado</span>
+  </div>
+  <div class="readout">
+    <div><b id="meals">0</b><span>comidas servidas</span></div>
+    <div><b id="status">en marcha</b><span>estado del sistema</span></div>
+  </div>
+  <p class="note" id="explain"></p>
+</div>
+
+<script>
+const N = 5;
+let phils = [], forks = [], meals = 0, deadlockShown = false;
+const COL = {
+  think: "#8a94a3", hungry: "#d0a94a", one: "#c77d3a", eat: "#3a8f4e", block: "#c0392b"
+};
+const EXPLAIN = {
+  naive: "Cada filósofo coge primero el tenedor de su izquierda y luego el de su derecha. Es la versión que puede llevar a interbloqueo: pulsa «Forzar interbloqueo» para sincronizarlos.",
+  order: "Los tenedores se numeran. Cada filósofo pide siempre primero el de número más bajo. El filósofo 4 (entre el tenedor 4 y el 0) pide antes el 0, lo que rompe la espera circular.",
+  lefty: "Cuatro filósofos son diestros (izquierda primero) y uno es zurdo (derecha primero). Basta esa asimetría para que no pueda cerrarse el ciclo.",
+  waiter: "Un camarero (semáforo) permite sentarse a la mesa a lo sumo a cuatro filósofos a la vez. Con cuatro comensales y cinco tenedores, siempre hay uno que consigue los dos."
+};
+
+function seatedLimit() { return document.getElementById("strategy").value === "waiter" ? 4 : N; }
+
+class Phil {
+  constructor(i) { this.i = i; this.reset(); }
+  reset() {
+    this.state = "think";
+    this.t = random(40, 140);
+    this.left = this.i;            // tenedor a la izquierda
+    this.right = (this.i + 1) % N; // tenedor a la derecha
+    this.hasL = false; this.hasR = false;
+    this.seated = false;
+    this.forcedHungry = false;
+  }
+  order() {
+    const s = document.getElementById("strategy").value;
+    if (s === "order") {
+      const a = Math.min(this.left, this.right), b = Math.max(this.left, this.right);
+      return [a, b];
+    }
+    if (s === "lefty" && this.i === N - 1) return [this.right, this.left];
+    return [this.left, this.right];
+  }
+  step(dt) {
+    if (this.state === "eat") {
+      this.t -= dt;
+      if (this.t <= 0) {
+        forks[this.left] = forks[this.right] = -1;
+        this.hasL = this.hasR = false; this.seated = false;
+        this.state = "think"; this.t = random(50, 150);
+        meals++;
+      }
+      return;
+    }
+    if (this.state === "think") {
+      if (!this.forcedHungry) this.t -= dt;
+      if (this.t <= 0 || this.forcedHungry) {
+        this.forcedHungry = false;
+        // ¿hay sitio a la mesa? (camarero)
+        const seatedCount = phils.filter(p => p.seated).length;
+        if (seatedCount >= seatedLimit()) { this.t = 8; return; }
+        this.seated = true;
+        this.state = "hungry";
+      }
+      return;
+    }
+    // hungry / one -> intentar coger tenedores en el orden de la estrategia
+    const [f1, f2] = this.order();
+    const grab = f => { if (forks[f] === -1) { forks[f] = this.i; return true; } return false; };
+    const have = f => forks[f] === this.i;
+
+    if (!have(f1)) { if (grab(f1)) {/* cogido */} }
+    else if (!have(f2)) { if (grab(f2)) {/* cogido */} }
+
+    this.hasL = have(this.left); this.hasR = have(this.right);
+    const nHave = (this.hasL ? 1 : 0) + (this.hasR ? 1 : 0);
+    if (nHave === 2) { this.state = "eat"; this.t = random(60, 140); }
+    else if (nHave === 1) { this.state = "one"; }
+    else { this.state = "hungry"; }
+  }
+  color() {
+    if (this.state === "eat") return COL.eat;
+    if (this.state === "one") return isDeadlocked() ? COL.block : COL.one;
+    if (this.state === "hungry") return COL.hungry;
+    return COL.think;
+  }
+}
+
+function isDeadlocked() {
+  // todos con exactamente un tenedor y ninguno puede coger el segundo
+  return phils.every(p => {
+    if (p.state !== "one") return false;
+    const [, f2] = p.order();
+    return forks[f2] !== -1 && forks[f2] !== p.i;
+  });
+}
+
+function setup() {
+  const host = document.getElementById("host");
+  const size = Math.min(520, (host.parentElement.clientWidth || 520) - 20);
+  const c = createCanvas(size, size);
+  c.parent(host);
+  restart();
+}
+function windowResized() {
+  const host = document.getElementById("host");
+  const size = Math.min(520, (host.parentElement.clientWidth || 520) - 20);
+  resizeCanvas(size, size);
+}
+function restart() {
+  forks = new Array(N).fill(-1);
+  phils = Array.from({ length: N }, (_, i) => new Phil(i));
+  meals = 0; deadlockShown = false;
+  loop();
+  document.getElementById("play").textContent = "⏸ Pausa";
+}
+
+let playing = true;
+function draw() {
+  const css = getComputedStyle(document.body);
+  const ink = css.getPropertyValue("--ink").trim();
+  const muted = css.getPropertyValue("--muted").trim();
+  const line = css.getPropertyValue("--line").trim();
+  clear();
+  const cx = width / 2, cy = height / 2, R = Math.min(width, height) * 0.32;
+
+  if (playing) {
+    const dt = +document.getElementById("speed").value * 0.9;
+    phils.forEach(p => p.step(dt));
+  }
+
+  // mesa
+  noStroke(); fill(line); circle(cx, cy, R * 1.15 * 2);
+  fill(muted); textAlign(CENTER, CENTER); textSize(12);
+  text("mesa", cx, cy);
+
+  // tenedores (entre filósofo i e i+1 -> ángulo intermedio)
+  for (let f = 0; f < N; f++) {
+    const ang = (-90 + (f + 0.5) * (360 / N)) * Math.PI / 180;
+    const fx = cx + Math.cos(ang) * R * 0.72, fy = cy + Math.sin(ang) * R * 0.72;
+    push();
+    translate(fx, fy); rotate(ang + Math.PI / 2);
+    const owner = forks[f];
+    stroke(owner === -1 ? muted : COL.eat);
+    strokeWeight(owner === -1 ? 2 : 3.4);
+    line2(0, -12, 0, 12);
+    for (let k = -1; k <= 1; k++) line2(k * 4, -12, k * 4, -4);
+    pop();
+    noStroke(); fill(muted); textSize(9); textAlign(CENTER, CENTER);
+    text(f, cx + Math.cos(ang) * R * 0.92, cy + Math.sin(ang) * R * 0.92);
+  }
+
+  // filósofos
+  phils.forEach((p, i) => {
+    const ang = (-90 + i * (360 / N)) * Math.PI / 180;
+    const px = cx + Math.cos(ang) * R * 1.15, py = cy + Math.sin(ang) * R * 1.15;
+    noStroke(); fill(p.color());
+    circle(px, py, 46);
+    fill("#fff"); textSize(12); textAlign(CENTER, CENTER);
+    text("F" + i, px, py - 2);
+    fill(ink); textSize(10);
+    const lbl = { think: "piensa", hungry: "hambre", one: "1 tenedor", eat: "come",
+                  block: "bloqueado" }[p.state] || p.state;
+    text(lbl, px, py + 34);
+  });
+
+  document.getElementById("meals").textContent = meals;
+  const dead = isDeadlocked();
+  const st = document.getElementById("status");
+  if (dead) { st.textContent = "INTERBLOQUEO"; st.className = "alert"; drawCycle(cx, cy, R); }
+  else { st.textContent = playing ? "en marcha" : "en pausa"; st.className = ""; }
+}
+function line2(a, b, c, d) { line(a, b, c, d); }
+
+function drawCycle(cx, cy, R) {
+  const css = getComputedStyle(document.body);
+  stroke("#c0392b"); strokeWeight(2); noFill();
+  drawingContext.setLineDash([6, 5]);
+  beginShape();
+  for (let i = 0; i < N; i++) {
+    const ang = (-90 + i * (360 / N)) * Math.PI / 180;
+    vertex(cx + Math.cos(ang) * R * 0.78, cy + Math.sin(ang) * R * 0.78);
+  }
+  endShape(CLOSE);
+  drawingContext.setLineDash([]);
+  noStroke(); fill("#c0392b"); textSize(11); textAlign(CENTER);
+  text("espera circular", cx, cy - R * 0.78 - 8);
+}
+
+document.getElementById("play").addEventListener("click", () => {
+  playing = !playing;
+  document.getElementById("play").textContent = playing ? "⏸ Pausa" : "▶ Reanudar";
+});
+document.getElementById("reset").addEventListener("click", restart);
+document.getElementById("deadlock").addEventListener("click", () => {
+  // sincroniza: todos sueltan, piensan cero y cogerán su primer tenedor a la vez
+  forks = new Array(N).fill(-1);
+  phils.forEach(p => {
+    p.state = "think"; p.t = 0; p.forcedHungry = true;
+    p.hasL = p.hasR = false; p.seated = false;
+  });
+  deadlockShown = true;
+  playing = true;
+  document.getElementById("play").textContent = "⏸ Pausa";
+});
+document.getElementById("strategy").addEventListener("change", () => {
+  document.getElementById("explain").textContent = EXPLAIN[document.getElementById("strategy").value];
+  restart();
+});
+document.getElementById("explain").textContent = EXPLAIN.naive;
+</script>
+</body>
+</html>

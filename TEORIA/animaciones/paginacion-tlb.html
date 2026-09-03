@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traducción de direcciones con paginación y TLB</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f4f5f7;--panel:#fff;--ink:#1c2128;--muted:#5b6673;--line:#d4d8de;--accent:#2b4a8b;
+    --page:#2b6fb0;--off:#3a8f4e;--hit:#3a8f4e;--miss:#c0392b;--fault:#b7902f}
+  @media (prefers-color-scheme:dark){:root{--bg:#14171c;--panel:#1d2127;--ink:#e7e9ec;--muted:#9aa4b0;--line:#333a44;--accent:#6f9be8;
+    --page:#6f9be8;--off:#5aa86b;--hit:#5aa86b;--miss:#e06b5a;--fault:#d0a94a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 24px 8px}
+  h1{font-size:20px;margin:0 0 4px}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:80ch}
+  .wrap{padding:16px 24px 40px}
+  .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  label{font-size:12px;color:var(--muted)}
+  input[type=text]{padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;width:140px;font-family:ui-monospace,monospace}
+  button{padding:8px 14px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  @media (max-width:920px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 10px}
+  .bits{display:flex;gap:3px;flex-wrap:wrap;font-family:ui-monospace,monospace;font-size:13px}
+  .bit{width:20px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:4px}
+  .bit.page{background:color-mix(in srgb,var(--page) 22%,transparent);border-color:var(--page)}
+  .bit.off{background:color-mix(in srgb,var(--off) 22%,transparent);border-color:var(--off)}
+  .fieldrow{display:flex;gap:14px;margin-top:8px;font-size:13px;flex-wrap:wrap}
+  .tag{padding:2px 8px;border-radius:5px;font-weight:600}
+  .tag.page{color:var(--page)} .tag.off{color:var(--off)}
+  table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  th,td{border:1px solid var(--line);padding:4px 6px;text-align:center}
+  th{color:var(--muted);font-weight:600}
+  tr.hl td{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+  tr.hit td{background:color-mix(in srgb,var(--hit) 26%,transparent)}
+  tr.miss td{background:color-mix(in srgb,var(--miss) 26%,transparent)}
+  .ptwrap{max-height:340px;overflow-y:auto}
+  .steptext{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:14px;min-height:3.4em}
+  .stepbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .result{font-family:ui-monospace,monospace;font-size:14px;margin-top:8px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:5px;color:#fff;font-size:12px;font-weight:600}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;max-width:82ch}
+</style>
+</head>
+<body>
+<header>
+  <h1>Traducción de direcciones: paginación y TLB</h1>
+  <p>Tema 6 · Dirección virtual de 12 bits · páginas de 256 B (8 bits de desplazamiento, 4 bits de nº de página →
+     16 páginas) · memoria física de 8 marcos. La MMU parte la dirección, consulta primero la TLB y, si falla, la
+     tabla de páginas; si la página no está en memoria, se produce un fallo de página.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field">
+      <label for="addr">Dirección virtual (dec. o 0x…)</label>
+      <input type="text" id="addr" value="0x2F3">
+    </div>
+    <button class="primary" id="go">Traducir</button>
+    <button id="reset">↺ Reiniciar TLB y tabla</button>
+    <span class="note" style="margin:0">Prueba <code>0x2F3</code> (fallo de TLB, acierto en tabla), <code>0x6A0</code> (fallo de página) y repite <code>0x2A0</code> para ver el acierto de TLB.</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Dirección virtual</h2>
+      <div class="bits" id="va-bits"></div>
+      <div class="fieldrow">
+        <span><span class="tag page">nº página</span> = <b id="va-page">–</b></span>
+        <span><span class="tag off">desplaz.</span> = <b id="va-off">–</b></span>
+      </div>
+
+      <h2 style="margin-top:18px">TLB (4 entradas, reemplazo FIFO)</h2>
+      <table id="tlb">
+        <thead><tr><th>válida</th><th>página</th><th>marco</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Tabla de páginas (16 entradas)</h2>
+      <div class="ptwrap">
+        <table id="pt">
+          <thead><tr><th>página</th><th>válida</th><th>marco</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Resultado</h2>
+      <p id="verdict" class="result">Introduce una dirección y pulsa «Traducir».</p>
+      <h2 style="margin-top:16px">Dirección física</h2>
+      <div class="bits" id="pa-bits"></div>
+      <div class="fieldrow">
+        <span>marco = <b id="pa-frame">–</b></span>
+        <span>física = <b id="pa-val">–</b></span>
+      </div>
+      <h2 style="margin-top:16px">Marcos físicos (8)</h2>
+      <table id="frames"><tbody></tbody></table>
+    </div>
+  </div>
+
+  <div class="steptext" id="steptext">—</div>
+  <div class="stepbtns">
+    <button id="prev" disabled>◀ Anterior</button>
+    <button id="next" disabled>Siguiente ▶</button>
+    <button id="auto" disabled>▶ Auto</button>
+    <span id="counter" class="note" style="align-self:center;margin:0"></span>
+  </div>
+
+  <p class="note">La TLB y la tabla de páginas conservan su estado entre traducciones: al pulsar «Traducir» la
+     traducción se resuelve por completo (la página se carga, las entradas se actualizan) y los botones de paso
+     solo reproducen lo ocurrido.</p>
+</div>
+
+<script>
+const OFF_BITS = 8, PAGE_BITS = 4, FRAME_BITS = 3, NFRAMES = 8, PAGES = 16;
+const $ = s => document.querySelector(s);
+const clone = x => JSON.parse(JSON.stringify(x));
+const hex = v => "0x" + v.toString(16).toUpperCase();
+
+let committed, steps = [], sidx = 0, autoTimer = null;
+
+function initState() {
+  const preset = { 0: 5, 2: 1, 3: 3, 5: 6, 7: 2, 8: 0, 10: 4 };
+  const pt = Array.from({ length: PAGES }, () => ({ valid: 0, frame: -1 }));
+  const frames = new Array(NFRAMES).fill(null);
+  for (const [p, f] of Object.entries(preset)) { pt[p] = { valid: 1, frame: +f }; frames[+f] = +p; }
+  committed = {
+    pt, frames,
+    loadOrder: Object.keys(preset).map(Number),
+    tlb: [{ valid: 1, page: 8, frame: 0 }, { valid: 1, page: 3, frame: 3 },
+          { valid: 0, page: -1, frame: -1 }, { valid: 0, page: -1, frame: -1 }],
+    tlbOrder: [0, 1, 2, 3],
+  };
+  steps = []; sidx = 0;
+  stopAuto();
+  renderTables(committed);
+  clearHighlights();
+  $("#va-bits").innerHTML = ""; $("#pa-bits").innerHTML = "";
+  $("#va-page").textContent = $("#va-off").textContent = $("#pa-frame").textContent = $("#pa-val").textContent = "–";
+  $("#verdict").textContent = "Introduce una dirección y pulsa «Traducir».";
+  $("#steptext").textContent = "Estado inicial.";
+  $("#counter").textContent = "";
+  ["prev", "next", "auto"].forEach(id => $("#" + id).disabled = true);
+}
+
+function renderBits(el, value, bits, split) {
+  el.innerHTML = "";
+  for (let i = bits - 1; i >= 0; i--) {
+    const d = document.createElement("div");
+    d.className = "bit " + (i >= split ? "page" : "off");
+    d.textContent = (value >> i) & 1;
+    el.appendChild(d);
+  }
+}
+
+function renderTables(st) {
+  const tb = $("#tlb tbody"); tb.innerHTML = "";
+  st.tlb.forEach((e, i) => {
+    const tr = document.createElement("tr"); tr.dataset.i = i;
+    tr.innerHTML = `<td>${e.valid}</td><td>${e.valid ? e.page : "–"}</td><td>${e.valid ? e.frame : "–"}</td>`;
+    tb.appendChild(tr);
+  });
+  const pb = $("#pt tbody"); pb.innerHTML = "";
+  st.pt.forEach((e, i) => {
+    const tr = document.createElement("tr"); tr.dataset.i = i;
+    tr.innerHTML = `<td>${i}</td><td>${e.valid}</td><td>${e.valid ? e.frame : "–"}</td>`;
+    pb.appendChild(tr);
+  });
+  const fb = $("#frames tbody"); fb.innerHTML = "";
+  st.frames.forEach((p, i) => {
+    const tr = document.createElement("tr"); tr.dataset.f = i;
+    tr.innerHTML = `<td>marco ${i}</td><td>${p == null ? "libre" : "página " + p}</td>`;
+    fb.appendChild(tr);
+  });
+}
+function clearHighlights() {
+  document.querySelectorAll("tr.hl,tr.hit,tr.miss").forEach(t => t.className = "");
+}
+
+function parseAddr(s) {
+  s = s.trim();
+  const v = s.toLowerCase().startsWith("0x") ? parseInt(s, 16) : parseInt(s, 10);
+  if (!Number.isFinite(v) || v < 0 || v >= (1 << (OFF_BITS + PAGE_BITS))) return null;
+  return v;
+}
+
+// Resuelve la traducción entera sobre una copia; devuelve la lista de pasos y el estado final.
+function buildSteps(va) {
+  const page = va >> OFF_BITS, off = va & ((1 << OFF_BITS) - 1);
+  const w = clone(committed);
+  const S = [];
+  const snap = extra => ({ pt: clone(w.pt), tlb: clone(w.tlb), frames: [...w.frames], ...extra });
+  const add = (text, disp, hl) => S.push({ text, state: snap(), disp: disp || {}, hl: hl || null });
+
+  const dispVA = { vaPage: page, vaOff: `${off} (${hex(off)})` };
+  add(`Dirección virtual ${hex(va)} (${va}). Se parte en nº de página = ${page} (4 bits altos) y desplazamiento = ${off} (${hex(off)}, 8 bits bajos).`, dispVA);
+
+  const ti = w.tlb.findIndex(e => e.valid && e.page === page);
+  if (ti >= 0) {
+    const frame = w.tlb[ti].frame;
+    add(`Se consulta la TLB en paralelo con las 4 entradas. La entrada ${ti} contiene la página ${page}: ACIERTO de TLB. Marco = ${frame}, sin tocar la tabla de páginas.`,
+      dispVA, { tlb: [ti], cls: "hit" });
+    finish(S, snap, dispVA, page, off, frame, false);
+    return { steps: S, final: w };
+  }
+  add(`Se consulta la TLB: ninguna entrada válida contiene la página ${page}. FALLO de TLB → hay que ir a la tabla de páginas.`,
+    dispVA, { tlb: [0, 1, 2, 3], cls: "miss" });
+  add(`Se indexa la tabla de páginas con la página ${page} (entrada ${page}).`, dispVA, { pt: [page], cls: "hl" });
+
+  if (w.pt[page].valid) {
+    const frame = w.pt[page].frame;
+    add(`Bit de validez = 1. La página ${page} está en el marco ${frame}.`, dispVA, { pt: [page], cls: "hit" });
+    tlbInsert(w, page, frame);
+    add(`Se copia el par (página ${page} → marco ${frame}) a la TLB, reemplazando la entrada más antigua.`, dispVA, { pt: [page], cls: "hit" });
+    finish(S, snap, dispVA, page, off, frame, false);
+  } else {
+    add(`Bit de validez = 0: FALLO DE PÁGINA. La página ${page} no está en memoria; la MMU lanza una excepción y el SO toma el control.`,
+      dispVA, { pt: [page], cls: "miss" });
+    const free = w.frames.indexOf(null);
+    let frame;
+    if (free >= 0) {
+      frame = free;
+      add(`El SO elige el marco libre ${frame}.`, dispVA, { frames: [frame] });
+    } else {
+      const victim = w.loadOrder[0];
+      frame = w.pt[victim].frame;
+      w.pt[victim] = { valid: 0, frame: -1 };
+      w.frames[frame] = null;
+      w.loadOrder = w.loadOrder.filter(p => p !== victim);
+      const vi = w.tlb.findIndex(e => e.valid && e.page === victim);
+      if (vi >= 0) w.tlb[vi] = { valid: 0, page: -1, frame: -1 };
+      add(`No hay marcos libres. El SO desaloja la página ${victim} del marco ${frame} (FIFO): invalida su entrada en la tabla y en la TLB.`,
+        dispVA, { frames: [frame] });
+    }
+    w.pt[page] = { valid: 1, frame };
+    w.frames[frame] = page;
+    w.loadOrder.push(page);
+    add(`Se carga la página ${page} desde el disco al marco ${frame} (operación lenta, milisegundos). Tabla actualizada: válida = 1, marco = ${frame}.`,
+      dispVA, { frames: [frame], pt: [page], cls: "hit" });
+    tlbInsert(w, page, frame);
+    add(`Se reintenta el acceso: la tabla da marco ${frame} y se copia (${page} → ${frame}) a la TLB.`, dispVA, { pt: [page], cls: "hit" });
+    finish(S, snap, dispVA, page, off, frame, true);
+  }
+  return { steps: S, final: w };
+}
+
+function finish(S, snap, dispVA, page, off, frame, wasFault) {
+  const pa = (frame << OFF_BITS) | off;
+  S.push({
+    text: `Dirección física = marco ${frame} × 256 + ${off} = ${pa} (${hex(pa)}).` +
+          (wasFault ? " El coste real lo ha dominado el acceso a disco del fallo de página." : ""),
+    state: snap(),
+    disp: { ...dispVA, pa, paFrame: frame, verdict: wasFault ? "FALLO DE PÁGINA resuelto" : "traducción completada",
+            fault: wasFault },
+    hl: null,
+  });
+}
+
+function tlbInsert(w, page, frame) {
+  let slot = w.tlb.findIndex(e => !e.valid);
+  if (slot < 0) { slot = w.tlbOrder.shift(); w.tlbOrder.push(slot); }
+  else { w.tlbOrder = w.tlbOrder.filter(x => x !== slot); w.tlbOrder.push(slot); }
+  w.tlb[slot] = { valid: 1, page, frame };
+}
+
+function applyStep() {
+  const st = steps[sidx];
+  renderTables(st.state);
+  clearHighlights();
+  const d = st.disp;
+  $("#va-page").textContent = d.vaPage ?? "–";
+  $("#va-off").textContent = d.vaOff ?? "–";
+  if (d.pa != null) {
+    renderBits($("#pa-bits"), d.pa, FRAME_BITS + OFF_BITS, OFF_BITS);
+    $("#pa-frame").textContent = d.paFrame;
+    $("#pa-val").textContent = d.pa + " (" + hex(d.pa) + ")";
+    $("#verdict").innerHTML = `<span class="badge" style="background:${d.fault ? "var(--fault)" : "var(--hit)"}">${d.verdict}</span>`;
+  } else {
+    $("#pa-bits").innerHTML = ""; $("#pa-frame").textContent = "–"; $("#pa-val").textContent = "–";
+    $("#verdict").textContent = "…";
+  }
+  if (st.hl) {
+    (st.hl.tlb || []).forEach(i => { const r = document.querySelector(`#tlb tbody tr[data-i="${i}"]`); if (r) r.className = st.hl.cls; });
+    (st.hl.pt || []).forEach(i => { const r = document.querySelector(`#pt tbody tr[data-i="${i}"]`); if (r) { r.className = st.hl.cls; r.scrollIntoView({ block: "nearest" }); } });
+    (st.hl.frames || []).forEach(i => { const r = document.querySelector(`#frames tbody tr[data-f="${i}"]`); if (r) r.className = "hl"; });
+  }
+  $("#steptext").textContent = st.text;
+  $("#counter").textContent = `paso ${sidx + 1} / ${steps.length}`;
+  $("#prev").disabled = sidx === 0;
+  $("#next").disabled = sidx === steps.length - 1;
+}
+
+function go() {
+  const va = parseAddr($("#addr").value);
+  if (va == null) { $("#steptext").textContent = "Dirección no válida. Rango: 0–4095 (0x000–0xFFF)."; return; }
+  renderBits($("#va-bits"), va, OFF_BITS + PAGE_BITS, OFF_BITS);
+  const r = buildSteps(va);
+  steps = r.steps;
+  committed = r.final;          // la traducción se consolida ya
+  sidx = 0;
+  stopAuto();
+  ["prev", "next", "auto"].forEach(id => $("#" + id).disabled = false);
+  applyStep();
+}
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; $("#auto").textContent = "▶ Auto"; } }
+
+$("#go").addEventListener("click", go);
+$("#addr").addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+$("#reset").addEventListener("click", initState);
+$("#next").addEventListener("click", () => { if (sidx < steps.length - 1) { sidx++; applyStep(); } });
+$("#prev").addEventListener("click", () => { if (sidx > 0) { sidx--; applyStep(); } });
+$("#auto").addEventListener("click", () => {
+  if (autoTimer) { stopAuto(); return; }
+  if (sidx >= steps.length - 1) return;
+  $("#auto").textContent = "⏸ Pausa";
+  autoTimer = setInterval(() => {
+    if (sidx < steps.length - 1) { sidx++; applyStep(); } else stopAuto();
+  }, 2600);
+});
+
+initState();
+</script>
+</body>
+</html>
