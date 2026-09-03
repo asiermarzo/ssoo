@@ -88,6 +88,6 @@ Sobre convenciones de código: aunque cada estudiante puede seguir su propia pre
 - Se evita el uso de variables globales.
 - Los `struct` se definen con `typedef struct` sin darle nombre al `struct`.
 
-## Enlaces a material
+## Material adicional
 
-Vídeos complementarios por tema (canal CoreDumpped) en [`material_adicional.md`](material_adicional.md).
+Vídeos, Películas y Series [`material_adicional.md`](material_adicional.md).
