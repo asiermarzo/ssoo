@@ -47,7 +47,7 @@ En un sistema monoprocesador multiprogramado los procesos se **intercalan** en e
 - **Concurrencia**: varios procesos progresan intercalándose en el tiempo sobre (al menos) un procesador.
 - **Paralelización**: varios procesos se ejecutan literalmente a la vez, en distintos procesadores.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" font-family="sans-serif" font-size="13" role="img" aria-label="Concurrencia: un procesador alternando dos procesos. Paralelismo: dos procesadores ejecutando un proceso cada uno.">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 760 260" font-family="sans-serif" font-size="13" role="img" aria-label="Concurrencia: un procesador alternando dos procesos. Paralelismo: dos procesadores ejecutando un proceso cada uno.">
   <rect width="760" height="260" fill="#ffffff"/>
   <text x="30" y="30" font-size="15" font-weight="bold">Concurrencia (1 CPU)</text>
   <rect x="40"  y="50" width="90" height="34" fill="#57c78a" stroke="#2e7d4f"/><text x="85"  y="72" text-anchor="middle">Proc 1</text>
@@ -71,6 +71,24 @@ Los procesos cooperantes pueden compartir espacios de direcciones o datos a trav
 ## 4.2 Problema de la sección crítica
 
 ### Exclusión mutua
+
+Una condición de carrera aparece cuando el resultado depende del orden imprevisible en que varias ejecuciones acceden a un dato compartido: si dos cajeros leen el mismo saldo de 100 € y cada uno autoriza una retirada, pueden llegar a autorizarse 150 € partiendo de 100 €.
+
+```mermaid
+sequenceDiagram
+    participant A as Cajero A
+    participant S as Saldo compartido = 100 €
+    participant B as Cajero B
+    A->>S: lee 100 €
+    B->>S: lee 100 €
+    rect rgb(251, 224, 224)
+    A->>S: escribe 20 € tras retirar 80 €
+    B->>S: escribe 30 € tras retirar 70 €
+    end
+    Note over A,B: se autorizaron 150 € partiendo de 100 €
+```
+
+*Una condición de carrera aparece cuando el resultado depende del orden imprevisible en que varias ejecuciones acceden a un dato compartido.*
 
 Cuando un proceso ejecuta la sección crítica, **ningún otro** proceso puede ejecutarla: la ejecución de la sección crítica es **mutuamente exclusiva en el tiempo**. Los recursos no compartibles se protegen del acceso simultáneo evitando que los procesos ejecuten concurrentemente sus secciones críticas. Idear soluciones que garanticen la exclusión mutua es uno de los problemas fundamentales de la programación concurrente.
 
@@ -96,6 +114,24 @@ flowchart LR
 ### Sección crítica
 
 Porción de código de un programa en la que se accede a un recurso compartido (estructura de datos o dispositivo) que **no debe ser accedido por más de un hilo** en ejecución. Se necesita un mecanismo de sincronización en la entrada y salida de la sección crítica; el acceso concurrente se controla vigilando las variables que se modifican dentro y fuera de ella. Solo **un proceso** puede estar en una sección crítica a la vez; el método más común es la **exclusión mutua**.
+
+El mutex se comporta como una única llave: mientras un trabajador la tiene y está en la sección crítica, los demás esperan; cuando la libera, otro puede tomarla.
+
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 620 200" font-family="sans-serif" font-size="13" role="img" aria-label="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
+  <rect width="620" height="200" fill="#ffffff"/>
+  <text x="20" y="30" font-weight="bold">Trabajador A</text>
+  <rect x="150" y="15" width="180" height="30" fill="#57c78a" stroke="#2e7d4f"/><text x="240" y="35" text-anchor="middle">tiene la llave · SC</text>
+  <rect x="330" y="15" width="120" height="30" fill="#eeeeee" stroke="#999"/><text x="390" y="35" text-anchor="middle" fill="#777">espera</text>
+  <text x="20" y="90" font-weight="bold">Trabajador B</text>
+  <rect x="150" y="75" width="180" height="30" fill="#eeeeee" stroke="#999"/><text x="240" y="95" text-anchor="middle" fill="#777">espera la llave</text>
+  <rect x="330" y="75" width="120" height="30" fill="#3f9dd6" stroke="#2b6f99"/><text x="390" y="95" text-anchor="middle" fill="#fff">tiene la llave · SC</text>
+  <line x1="150" y1="130" x2="600" y2="130" stroke="#333"/><path d="M600 126 l8 4 l-8 4 z" fill="#333"/><text x="610" y="134" font-size="12">t</text>
+  <line x1="330" y1="120" x2="330" y2="140" stroke="#333" stroke-dasharray="3 3"/>
+  <text x="330" y="155" text-anchor="middle" font-size="12">A libera la llave</text>
+  <text x="240" y="185" text-anchor="middle" font-size="12" fill="#555">la llave (mutex) solo puede estar en una mano: mientras A la tiene, B espera</text>
+</svg>
+
+*El mutex garantiza que solo una ejecución entre en la sección crítica. Las demás esperan hasta que el propietario libere el recurso.*
 
 ### Condiciones para resolver el problema de la sección crítica
 
@@ -224,6 +260,26 @@ Filósofo i:
 
 Si **todos** los filósofos toman a la vez su cubierto `i`, hay **interbloqueo**.
 
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
+  <rect width="340" height="340" fill="#ffffff"/>
+  <circle cx="170" cy="170" r="120" fill="none" stroke="#ccc" stroke-dasharray="2 4"/>
+  <circle cx="170" cy="50"  r="26" fill="#ffe14d" stroke="#b59a00"/><text x="170" y="55" text-anchor="middle">F1</text>
+  <circle cx="284" cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="284" y="138" text-anchor="middle">F2</text>
+  <circle cx="240" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="240" y="272" text-anchor="middle">F3</text>
+  <circle cx="100" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="100" y="272" text-anchor="middle">F4</text>
+  <circle cx="56"  cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="56"  y="138" text-anchor="middle">F5</text>
+  <g stroke="#555" stroke-width="3">
+    <line x1="232" y1="73"  x2="248" y2="57"/>
+    <line x1="278" y1="197" x2="296" y2="205"/>
+    <line x1="170" y1="253" x2="170" y2="275"/>
+    <line x1="62"  y1="205" x2="44"  y2="213"/>
+    <line x1="108" y1="73"  x2="92"  y2="57"/>
+  </g>
+  <text x="170" y="320" text-anchor="middle" font-size="12" fill="#555">cada tenedor (—) es un recurso compartido por dos filósofos vecinos</text>
+</svg>
+
+*El problema de los filósofos muestra cómo competir por varios recursos puede causar bloqueo o inanición incluso cuando cada participante sigue una regla aparentemente razonable.*
+
 **Solución 2** (estado por filósofo + `mutex` + un semáforo `s[i]` por filósofo):
 
 ```text
@@ -254,6 +310,27 @@ test(i):
 ```
 
 ### Problema del productor‑consumidor
+
+Productor y consumidor deben coordinarse sobre un búfer circular: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.
+
+<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 560 220" font-family="sans-serif" font-size="13" role="img" aria-label="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
+  <rect width="560" height="220" fill="#ffffff"/>
+  <rect x="40" y="80" width="70" height="50" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="75" y="108" text-anchor="middle">Productor</text>
+  <rect x="180" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="224" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="268" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="312" y="85" width="42" height="42" fill="#ffffff" stroke="#999"/>
+  <text x="267" y="70" text-anchor="middle" font-size="12">búfer circular (3 llenas, 1 vacía)</text>
+  <rect x="450" y="80" width="70" height="50" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="485" y="108" text-anchor="middle">Consumidor</text>
+  <line x1="112" y1="106" x2="178" y2="106" stroke="#2e7d4f" stroke-width="2"/><path d="M178 106 l-10 -4 l0 8 z" fill="#2e7d4f"/><text x="145" y="96" text-anchor="middle" font-size="11">deposita</text>
+  <line x1="356" y1="106" x2="448" y2="106" stroke="#2b6f99" stroke-width="2"/><path d="M448 106 l-10 -4 l0 8 z" fill="#2b6f99"/><text x="400" y="96" text-anchor="middle" font-size="11">retira</text>
+  <path d="M180 130 Q 110 175 60 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M60 132 l4 12 l10 -6 z" fill="#b03030"/>
+  <text x="120" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está lleno, el productor espera</text>
+  <path d="M354 130 Q 430 175 480 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M480 132 l-13 -2 l3 -11 z" fill="#b03030"/>
+  <text x="420" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está vacío, el consumidor espera</text>
+</svg>
+
+*Productor y consumidor deben coordinarse: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.*
 
 El productor y el consumidor son dos procesos **cíclicos**:
 
@@ -435,6 +512,12 @@ En cuanto a la sincronización hay **tres combinaciones**:
 
 El **interbloqueo**, bloqueo mutuo o *deadlock* es el bloqueo **permanente** de un conjunto de procesos/hilos en un sistema concurrente que compiten por recursos o se comunican entre ellos. **No existe una solución general.** Todos los interbloqueos surgen de necesidades que no pueden ser satisfechas por parte de dos o más procesos: varios procesos esperan acceder a recursos que nunca se liberarán porque los tienen ocupados los procesos implicados.
 
+Como cuatro vehículos que entran a la vez en un cruce estrecho: cada uno conserva el espacio que ocupa mientras espera el que ocupa el siguiente, y la espera circular impide que cualquiera avance.
+
+<img src="img/interbloqueo-cruce.png" width="520" alt="Cuatro vehículos ocupan un cruce y cada uno bloquea el avance del siguiente">
+
+*En un interbloqueo, cada participante conserva un recurso mientras espera otro. La espera circular impide que cualquiera pueda continuar. Ilustración generada para estos apuntes.*
+
 ### Modelo de sistema
 
 - Conjunto de procesos `P₁, P₂, …, Pₙ`.
@@ -512,95 +595,6 @@ Una asignación concreta de recursos a procesos se representa con un grafo en el
 
 ---
 
-## Galería visual complementaria
-
-### T05.1 · Condición de carrera en una cuenta bancaria
-
-```mermaid
-sequenceDiagram
-    participant A as Cajero A
-    participant S as Saldo compartido = 100 €
-    participant B as Cajero B
-    A->>S: lee 100 €
-    B->>S: lee 100 €
-    rect rgb(251, 224, 224)
-    A->>S: escribe 20 € tras retirar 80 €
-    B->>S: escribe 30 € tras retirar 70 €
-    end
-    Note over A,B: se autorizaron 150 € partiendo de 100 €
-```
-
-*Una condición de carrera aparece cuando el resultado depende del orden imprevisible en que varias ejecuciones acceden a un dato compartido.*
-
-### T05.2 · Exclusión mutua mediante una única llave
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" font-family="sans-serif" font-size="13" role="img" aria-label="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
-  <rect width="620" height="200" fill="#ffffff"/>
-  <text x="20" y="30" font-weight="bold">Trabajador A</text>
-  <rect x="150" y="15" width="180" height="30" fill="#57c78a" stroke="#2e7d4f"/><text x="240" y="35" text-anchor="middle">tiene la llave · SC</text>
-  <rect x="330" y="15" width="120" height="30" fill="#eeeeee" stroke="#999"/><text x="390" y="35" text-anchor="middle" fill="#777">espera</text>
-  <text x="20" y="90" font-weight="bold">Trabajador B</text>
-  <rect x="150" y="75" width="180" height="30" fill="#eeeeee" stroke="#999"/><text x="240" y="95" text-anchor="middle" fill="#777">espera la llave</text>
-  <rect x="330" y="75" width="120" height="30" fill="#3f9dd6" stroke="#2b6f99"/><text x="390" y="95" text-anchor="middle" fill="#fff">tiene la llave · SC</text>
-  <line x1="150" y1="130" x2="600" y2="130" stroke="#333"/><path d="M600 126 l8 4 l-8 4 z" fill="#333"/><text x="610" y="134" font-size="12">t</text>
-  <line x1="330" y1="120" x2="330" y2="140" stroke="#333" stroke-dasharray="3 3"/>
-  <text x="330" y="155" text-anchor="middle" font-size="12">A libera la llave</text>
-  <text x="240" y="185" text-anchor="middle" font-size="12" fill="#555">la llave (mutex) solo puede estar en una mano: mientras A la tiene, B espera</text>
-</svg>
-
-*El mutex garantiza que solo una ejecución entre en la sección crítica. Las demás esperan hasta que el propietario libere el recurso.*
-
-### T05.3 · Productor y consumidor en una cinta
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 220" font-family="sans-serif" font-size="13" role="img" aria-label="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
-  <rect width="560" height="220" fill="#ffffff"/>
-  <rect x="40" y="80" width="70" height="50" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="75" y="108" text-anchor="middle">Productor</text>
-  <rect x="180" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="224" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="268" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="312" y="85" width="42" height="42" fill="#ffffff" stroke="#999"/>
-  <text x="267" y="70" text-anchor="middle" font-size="12">búfer circular (3 llenas, 1 vacía)</text>
-  <rect x="450" y="80" width="70" height="50" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="485" y="108" text-anchor="middle">Consumidor</text>
-  <line x1="112" y1="106" x2="178" y2="106" stroke="#2e7d4f" stroke-width="2"/><path d="M178 106 l-10 -4 l0 8 z" fill="#2e7d4f"/><text x="145" y="96" text-anchor="middle" font-size="11">deposita</text>
-  <line x1="356" y1="106" x2="448" y2="106" stroke="#2b6f99" stroke-width="2"/><path d="M448 106 l-10 -4 l0 8 z" fill="#2b6f99"/><text x="400" y="96" text-anchor="middle" font-size="11">retira</text>
-  <path d="M180 130 Q 110 175 60 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M60 132 l4 12 l10 -6 z" fill="#b03030"/>
-  <text x="120" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está lleno, el productor espera</text>
-  <path d="M354 130 Q 430 175 480 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M480 132 l-13 -2 l3 -11 z" fill="#b03030"/>
-  <text x="420" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está vacío, el consumidor espera</text>
-</svg>
-
-*Productor y consumidor deben coordinarse: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.*
-
-### T05.4 · Interbloqueo en un cruce
-
-![Cuatro vehículos ocupan un cruce y cada uno bloquea el avance del siguiente](img/interbloqueo-cruce.png)
-
-*En un interbloqueo, cada participante conserva un recurso mientras espera otro. La espera circular impide que cualquiera pueda continuar. Ilustración generada para estos apuntes.*
-
-### T05.5 · Los filósofos comensales
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
-  <rect width="340" height="340" fill="#ffffff"/>
-  <circle cx="170" cy="170" r="120" fill="none" stroke="#ccc" stroke-dasharray="2 4"/>
-  <circle cx="170" cy="50"  r="26" fill="#ffe14d" stroke="#b59a00"/><text x="170" y="55" text-anchor="middle">F1</text>
-  <circle cx="284" cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="284" y="138" text-anchor="middle">F2</text>
-  <circle cx="240" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="240" y="272" text-anchor="middle">F3</text>
-  <circle cx="100" cy="267" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="100" y="272" text-anchor="middle">F4</text>
-  <circle cx="56"  cy="133" r="26" fill="#ffe14d" stroke="#b59a00"/><text x="56"  y="138" text-anchor="middle">F5</text>
-  <g stroke="#555" stroke-width="3">
-    <line x1="232" y1="73"  x2="248" y2="57"/>
-    <line x1="278" y1="197" x2="296" y2="205"/>
-    <line x1="170" y1="253" x2="170" y2="275"/>
-    <line x1="62"  y1="205" x2="44"  y2="213"/>
-    <line x1="108" y1="73"  x2="92"  y2="57"/>
-  </g>
-  <text x="170" y="320" text-anchor="middle" font-size="12" fill="#555">cada tenedor (—) es un recurso compartido por dos filósofos vecinos</text>
-</svg>
-
-*El problema de los filósofos muestra cómo competir por varios recursos puede causar bloqueo o inanición incluso cuando cada participante sigue una regla aparentemente razonable.*
-
----
-
 ## Material gráfico
 
-Todos los diagramas del Tema 4 están replicados como mermaid o SVG dentro de este documento (concurrencia vs paralelismo, inanición sobre un recurso, mesa de los filósofos, espera circular, grafo de asignación de recursos). Queda como **material fotográfico** (ilustrativo, no reproducible): la lámina de los filósofos monjes, los *clipart* de lectores‑escritores, las fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo».
+Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo, no reproducible): la lámina de los filósofos monjes, los *clipart* de lectores‑escritores, las fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo».

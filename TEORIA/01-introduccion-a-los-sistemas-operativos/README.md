@@ -30,6 +30,12 @@ flowchart TD
     class CP,CR,PL,SV func;
 ```
 
+Aunque cambien radicalmente de tamaño y función —un reloj, un teléfono, un servidor, un automóvil, un robot industrial, un avión o un satélite—, todos estos dispositivos necesitan software de sistema que administre sus recursos y conecte las aplicaciones con el hardware.
+
+<img src="img/dispositivos-con-so.png" width="520" alt="Smartwatch, teléfono, portátil, servidor, automóvil, robot industrial, avión y satélite como ejemplos de dispositivos gobernados por software de sistema">
+
+*Aunque cambien radicalmente de tamaño y función, todos estos dispositivos necesitan software que administre sus recursos y conecte las aplicaciones con el hardware. Ilustración generada para estos apuntes.*
+
 ## 1.2 Componentes del sistema operativo
 
 El software de un computador se organiza en capas sobre el hardware. El sistema operativo se sitúa entre el hardware y el resto del software (compiladores, ensambladores, utilidades y aplicaciones):
@@ -59,7 +65,7 @@ Por debajo del sistema operativo hay una máquina física que sigue la **arquite
 
 En ella se basan los ordenadores actuales: la máquina tiene un conjunto **fijo** de componentes electrónicos cuyas acciones están determinadas por un **programa variable**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" font-family="sans-serif" font-size="13" role="img" aria-label="Arquitectura de Von Neumann: CPU conectada por bus de direcciones y de datos a la memoria principal y a los dispositivos de E/S">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 640 360" font-family="sans-serif" font-size="13" role="img" aria-label="Arquitectura de Von Neumann: CPU conectada por bus de direcciones y de datos a la memoria principal y a los dispositivos de E/S">
   <rect width="640" height="360" fill="#ffffff"/>
   <rect x="190" y="20" width="260" height="100" fill="#9dc3e6" stroke="#333"/>
   <text x="320" y="36" text-anchor="middle" font-weight="bold" font-size="12">Unidad Central de Procesamiento (CPU)</text>
@@ -242,6 +248,23 @@ flowchart TD
     class I interrupcion;
 ```
 
+Una interrupción permite que el procesador inicie una operación en un dispositivo, siga ejecutando otro trabajo mientras espera, y recupere la operación cuando el dispositivo anuncia que ha terminado:
+
+```mermaid
+sequenceDiagram
+    participant CPU as CPU trabajando
+    participant D as Dispositivo de E/S
+    CPU->>D: inicia una operación
+    CPU->>CPU: ejecuta otro proceso
+    rect rgb(253, 238, 242)
+        D-->>CPU: interrupción: operación terminada
+        CPU->>CPU: guarda contexto y atiende el evento
+        CPU-->>CPU: reanuda el trabajo interrumpido
+    end
+```
+
+*Una interrupción permite que el procesador haga otro trabajo mientras espera a un dispositivo y recupere la operación cuando este anuncia que ha terminado.*
+
 **Interrupciones simultáneas.** Cuando se producen varias interrupciones a la vez se puede:
 
 - **Deshabilitar interrupciones**: se manejan una detrás de otra. Puede no ser suficiente para sistemas con fuertes requisitos de tiempo.
@@ -251,7 +274,7 @@ flowchart TD
 
 De más rápida y pequeña (arriba) a más lenta y grande (abajo):
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 350" font-family="sans-serif" font-size="12" role="img" aria-label="Pirámide de la jerarquía de memoria, de registros arriba a unidades magnéticas y ópticas abajo">
+<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 620 350" font-family="sans-serif" font-size="12" role="img" aria-label="Pirámide de la jerarquía de memoria, de registros arriba a unidades magnéticas y ópticas abajo">
   <rect width="620" height="350" fill="#ffffff"/>
   <polygon points="280,20 330,70 230,70" fill="#d9ead3" stroke="#333"/>
   <text x="280" y="60" text-anchor="middle" font-size="11">Registros</text>
@@ -271,6 +294,29 @@ De más rápida y pequeña (arriba) a más lenta y grande (abajo):
   <text x="600" y="35" text-anchor="end" font-size="11">rápida / pequeña</text>
   <text x="600" y="322" text-anchor="end" font-size="11">lenta / grande</text>
 </svg>
+
+La misma jerarquía puede verse como un espacio de trabajo físico: la bandeja inmediata (registros), una mesa auxiliar (caché), la mesa de trabajo (RAM), el archivador (disco) y el almacén (cinta). Cuanto más cerca de la CPU, más rápida y costosa es la memoria, pero también menor su capacidad.
+
+<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 620 330" font-family="sans-serif" font-size="11" role="img" aria-label="Pirámide metafórica de la jerarquía de memoria como espacio de trabajo físico">
+  <rect width="620" height="330" fill="#ffffff"/>
+  <polygon points="280,20 330,70 230,70" fill="#d9ead3" stroke="#333"/>
+  <text x="280" y="50" text-anchor="middle" font-weight="bold" font-size="10">Bandeja inmediata</text>
+  <text x="280" y="63" text-anchor="middle" font-size="9">REGISTROS</text>
+  <polygon points="230,70 330,70 370,130 190,130" fill="#cfe2f3" stroke="#333"/>
+  <text x="280" y="98" text-anchor="middle" font-weight="bold" font-size="10">Mesa auxiliar</text>
+  <text x="280" y="112" text-anchor="middle" font-size="9">CACHÉ · pequeña, muy rápida</text>
+  <polygon points="190,130 370,130 410,190 150,190" fill="#fce5a8" stroke="#333"/>
+  <text x="280" y="158" text-anchor="middle" font-weight="bold" font-size="11">Mesa de trabajo</text>
+  <text x="280" y="174" text-anchor="middle" font-size="9">RAM · capacidad media</text>
+  <polygon points="150,190 410,190 450,250 110,250" fill="#f4cccc" stroke="#333"/>
+  <text x="280" y="218" text-anchor="middle" font-weight="bold" font-size="11">Archivador</text>
+  <text x="280" y="234" text-anchor="middle" font-size="9">SSD / DISCO · grande, persistente</text>
+  <polygon points="110,250 450,250 490,320 70,320" fill="#e2e2e2" stroke="#333"/>
+  <text x="280" y="280" text-anchor="middle" font-weight="bold" font-size="11">Almacén</text>
+  <text x="280" y="296" text-anchor="middle" font-size="9">CINTA / ARCHIVO · enorme, lento</text>
+</svg>
+
+*Cuanto más cerca está la memoria de la CPU, más rápida y costosa es, pero también menor es su capacidad.*
 
 ## 1.4 Características de los sistemas operativos
 
@@ -295,7 +341,7 @@ Visión general: el sistema operativo es una **colección de procedimientos**.
 
 Comparativa de estructuras (usuario / núcleo):
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" font-family="sans-serif" font-size="11" role="img" aria-label="Comparativa de estructuras: monolítico, microkernel e híbrido, con espacio de usuario y espacio de núcleo">
+<svg xmlns="http://www.w3.org/2000/svg" width="620" viewBox="0 0 800 340" font-family="sans-serif" font-size="11" role="img" aria-label="Comparativa de estructuras: monolítico, microkernel e híbrido, con espacio de usuario y espacio de núcleo">
   <rect width="800" height="340" fill="#ffffff"/>
   <!-- Monolítico -->
   <text x="140" y="15" text-anchor="middle" font-weight="bold" font-size="13">Monolítico</text>
@@ -385,6 +431,12 @@ Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas
 
 ### Primeros sistemas
 
+Antes de los sistemas operativos, preparar un programa podía implicar configurar físicamente la máquina. En la imagen, Jean Bartik y Frances Spence preparan ENIAC para una demostración en 1946.
+
+<img src="img/programadoras-eniac.jpg" width="460" alt="Jean Bartik y Frances Spence preparando ENIAC para una demostración en 1946">
+
+<sub>Fuente: fotografía del U.S. Army, 1946; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg).</sub>
+
 - **Caracterización**: gran tamaño; ejecución desde el panel de control.
 - **Organización del trabajo**: programador = operador del sistema; un solo usuario en cada momento (tiempo asignado, reserva); operaciones de carga manual del programa en memoria (instrucción tras instrucción), establecer inicio, activar ejecución y vigilar ejecución.
 - **Mejoras**: físicas (lectores de tarjetas, impresoras, cintas magnéticas); reutilización de código (bibliotecas de funciones comunes); ensambladores, compiladores y cargadores; *drivers* o subrutinas especiales para cada dispositivo de E/S.
@@ -402,6 +454,12 @@ Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas
   - **Uso de búferes**: las transferencias de E/S se hacen a través de una zona intermedia de memoria y solo cuando el dispositivo está preparado.
   - **Spooling**: uso del disco como búfer de gran tamaño, leyendo por adelantado de los dispositivos de entrada, guardando la información y enviándola a los dispositivos de salida cuando estén disponibles.
 
+En los sistemas de procesamiento por lotes, los trabajos y sus datos se preparaban en tarjetas perforadas y se entregaban para su ejecución; el usuario no interactuaba con el programa mientras la computadora procesaba el lote.
+
+<img src="img/operadora-tarjetas-perforadas.jpg" width="460" alt="Operadora del censo estadounidense trabajando con una perforadora de tarjetas IBM 016 en la década de 1950">
+
+<sub>Fuente: U.S. Census Bureau, década de 1950; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg).</sub>
+
 ### Sistemas multiprogramados
 
 - **Planificación de trabajos**: gracias a la reserva de trabajos en disco (*spooling*), el sistema operativo escoge el siguiente trabajo a ejecutar para mejorar el aprovechamiento de la CPU.
@@ -411,7 +469,7 @@ Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas
 
 **Monoprogramado vs multiprogramado** (uso de CPU y E/S a lo largo del tiempo): en el sistema monoprogramado la CPU queda ociosa mientras la Tarea 1 hace E/S; en el multiprogramado, la Tarea 2 aprovecha la CPU mientras la Tarea 1 está en E/S, y viceversa.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cronograma comparando el uso de CPU y E/S en un sistema monoprogramado y en uno multiprogramado">
+<svg xmlns="http://www.w3.org/2000/svg" width="600" viewBox="0 0 780 340" font-family="sans-serif" font-size="13" role="img" aria-label="Cronograma comparando el uso de CPU y E/S en un sistema monoprogramado y en uno multiprogramado">
   <rect width="780" height="340" fill="#ffffff"/>
   <text x="20" y="28" font-size="15" font-weight="bold">Monoprogramado</text>
   <text x="70" y="62" text-anchor="end">CPU</text>
@@ -463,7 +521,11 @@ Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas
 
 ### Sistemas de tiempo real
 
-Para ejecución de tareas que han de completarse en un plazo prefijado (control industrial, robótica, multimedia, cálculo científico, medicina…).
+Para ejecución de tareas que han de completarse en un plazo prefijado (control industrial, robótica, multimedia, cálculo científico, medicina…). En un sistema de tiempo real no basta con obtener el resultado correcto: debe obtenerse antes de que venza su plazo.
+
+<img src="img/sistemas-tiempo-real.png" width="520" alt="Robot industrial, sensor de frenado y aviónica como ejemplos de sistemas con plazos de respuesta">
+
+*En un sistema de tiempo real no basta con obtener el resultado correcto: debe obtenerse antes de que venza su plazo. Ilustración generada para estos apuntes.*
 
 - **Críticos**: exigen el cumplimiento de plazos de finalización; pocos recursos disponibles (datos en memoria de corto plazo o ROM); incompatibles con los sistemas de tiempo compartido; adecuados para industria y robótica.
 - **No críticos**: ejecución por prioridades; no cumplimiento estricto de plazos; adecuados en multimedia, realidad virtual…
@@ -482,146 +544,9 @@ Para ejecución de tareas que han de completarse en un plazo prefijado (control 
 - Los procesos que ejecutan están limitados por los recursos y abstracciones que la máquina virtual proporciona, y están **confinados** en ella.
 - Permiten la convivencia de múltiples sistemas operativos sobre otros sistemas operativos.
 
-### Cronologías (timelines)
+Las máquinas virtuales reproducen un sistema completo (cada una con su propio SO invitado sobre un hipervisor); los contenedores comparten el núcleo del anfitrión y solo aíslan la aplicación y sus dependencias.
 
-Diagramas históricos de familias de sistemas operativos: Windows ([timeline de Microsoft](https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions)), Macintosh, Android e [iOS](https://www.lifewire.com/ios-versions-4147730).
-
----
-
-## Anexo: introducción histórica de los computadores
-
-### Charles Babbage
-
-- Máquina de Diferencias (1822).
-- Primera referencia al concepto de programa almacenado en el computador (1836).
-- Primera máquina de propósito general (máquina analítica).
-
-Muchos historiadores consideran a Babbage y a su socia, la matemática británica **Augusta Ada Byron** (siglo XIX), los verdaderos inventores de la computadora digital moderna. La tecnología de la época no permitía llevar a la práctica sus conceptos, pero la **máquina analítica** ya tenía muchas características de un ordenador moderno: flujo de entrada mediante tarjetas perforadas, memoria para los datos, procesador para las operaciones matemáticas e impresora para el registro permanente. Era completamente automática, no precisaba operador.
-
-### De los analógicos a los electrónicos
-
-- Los primeros **ordenadores analógicos** se construyeron a principios del siglo XX; hacían los cálculos mediante ejes y engranajes giratorios y evaluaban aproximaciones numéricas de ecuaciones difíciles. En las guerras mundiales se usaron para predecir trayectorias de torpedos y para el manejo a distancia de bombas.
-- En **1939** John Atanasoff y Clifford Berry construyeron un prototipo de máquina electrónica en el Iowa State College (el **ABC**, Atanasoff‑Berry Computer).
-- El **ENIAC** (*Electronic Numerical Integrator And Computer*, 1945) se basaba en gran medida en el ABC; contenía 18.000 válvulas de vacío y alcanzaba varios cientos de multiplicaciones por minuto, pero su programa estaba conectado al procesador y debía modificarse manualmente.
-- Durante la II Guerra Mundial, un equipo de Bletchley Park (norte de Londres) creó el **Colossus**, considerado el primer ordenador digital totalmente electrónico. Hacia diciembre de 1943 era operativo (incorporaba 1.500 válvulas) y el equipo dirigido por **Alan Turing** lo usó para descodificar los mensajes cifrados por la máquina **Enigma** alemana.
-- La mayoría de los computadores actuales siguen la **arquitectura de Von Neumann**. El sucesor del ENIAC, el **EDVAC**, incorporaba almacenamiento de programa en memoria, lo que liberaba al ordenador de la velocidad del lector de cinta de papel y permitía resolver problemas sin volver a cablear la máquina. **John von Neumann** (Budapest 1903 – Washington D.C. 1957).
-
-### Generaciones
-
-- **Transistor** (finales de la década de 1950): elementos lógicos más pequeños, rápidos y versátiles que las válvulas, con menos consumo y mayor vida útil ⇒ ordenadores de **segunda generación**; fabricación más barata. **UNIVAC** (*Universal Automatic Computer*): línea de ordenadores de programa almacenado; el **UNIVAC I** fue la primera computadora electrónica de propósito general vendida comercialmente en EE. UU.
-- **Circuito integrado (CI)** (finales de la década de 1960): varios transistores en un único sustrato de silicio; reducción de precio, tamaño y porcentajes de error.
-- **Microprocesador** (mediados de la década de 1970): integración a gran escala (**LSI**, *Large Scale Integrated*) y muy gran escala (**VLSI**, *Very Large Scale Integrated*), con miles de transistores en un único sustrato. Inicio de la multiprogramación.
-- **Cuarta generación** (actual): sustitución de las memorias de núcleos magnéticos por chips de silicio; microminiaturización de los circuitos; el tamaño reducido del microprocesador hizo posible el **ordenador personal (PC)**; integración del ordenador en las telecomunicaciones.
-
-### Cronología de los sistemas operativos
-
-| Periodo | Hitos |
-|---------|-------|
-| **1940‑1950** | Los programadores interactúan directamente con el hardware; **no existe sistema operativo**. Comunicación hombre‑máquina mediante panel de programación (interruptores y displays) y dispositivos de E/S (lector de tarjetas perforadas, impresora). Problemas: planificación de trabajos (reserva manual, mal uso de la CPU, procesos abortados), tiempo de establecimiento (carga de compilador y programa, montaje de cintas/tarjetas…). Procesamiento en serie. |
-| **1950‑1960** | Las máquinas son tan caras que el tiempo de planificación y establecimiento resulta inaceptable. **Sistema operativo por lotes**: un programa **Monitor** gestiona lotes de tareas, controla la secuencia de eventos, reside parcialmente en memoria, carga un trabajo desde el dispositivo de entrada, cede el control al programa y lo recupera al terminar o ante un error. Características nuevas: **protección de memoria**, **gestión del tiempo de proceso**, **interrupciones**, **instrucciones privilegiadas**. Después: sistemas por lotes **multiprogramados** (multitarea), interrupciones de E/S, **DMA** (*Direct Memory Access*), gestión de memoria, planificación de procesos. |
-| **1960‑1970** | **Sistemas de tiempo compartido**: un grupo de usuarios comparte los recursos de la máquina y a cada uno le corresponde una fracción del tiempo de CPU; se busca la interactividad. **CTSS** (*Compatible Time Sharing System*, MIT), Multics, Cal, **UNIX** (Bell, 1970). |
-| **1970‑1980** | **Sistemas distribuidos**: fuertemente acoplados y débilmente acoplados (no comparten memoria ni reloj); típicos de redes de ordenadores que se comunican por paso de mensajes. Ventajas: aceleración de los cálculos, compartir recursos, tolerancia a fallos, comunicación entre usuarios/aplicaciones. |
-| **1980‑1990** | **Sistemas en tiempo real** (Gillies): la corrección depende también del instante en que se entrega el resultado. Características: determinismo, responsividad, usuarios controladores, confiabilidad (QoS), operación a prueba de fallos. **Sistemas embebidos o empotrados**: pocas funciones dedicadas, sistemas autónomos, tiempos de respuesta garantizados, la mayoría de los componentes en la placa base, programados en ensamblador o C/C++, precio y consumo reducidos, problemas de tiempo real. |
-| **1990‑2000** | Aparición de **Linux**: combinación del núcleo (*kernel*) libre similar a Unix con las herramientas de sistema **GNU** (proyecto de R. Stallman, 1983). Iniciado en 1991 por **Linus Torvalds** como reemplazo no comercial de MINIX (A. S. Tanenbaum, 1987). Características: estabilidad, acceso al código fuente, independencia del proveedor, seguridad, escalabilidad, comunidad de desarrollo activa, interoperabilidad, abundante documentación. |
-| **2000‑** | **Sistemas operativos para dispositivos móviles**: iOS, Android, Symbian OS, BlackBerry OS, Windows Phone. Características: simplicidad, orientación a la conectividad inalámbrica, soporte de formatos multimedia móviles. Capas: **Kernel** (acceso al hardware), **Middleware** (módulos que permiten las aplicaciones), **Entorno de ejecución de aplicaciones** (gestor de aplicaciones y APIs), **Interfaz de usuario**. |
-
-Comparación batch multiprogramado vs tiempo compartido:
-
-| | Batch multiprogramado | Time sharing |
-|---|---|---|
-| Objetivo | Maximizar el uso de la CPU | Minimizar el tiempo de respuesta |
-| Instrucciones al S.O. | A través del monitor | Comandos en terminal |
-
----
-
-## Galería visual complementaria
-
-### T01.1 · Un sistema operativo, muchos cuerpos
-
-![Smartwatch, teléfono, portátil, servidor, automóvil, robot industrial, avión y satélite como ejemplos de dispositivos gobernados por software de sistema](img/dispositivos-con-so.png)
-
-*Aunque cambien radicalmente de tamaño y función, todos estos dispositivos necesitan software que administre sus recursos y conecte las aplicaciones con el hardware. Ilustración generada para estos apuntes.*
-
-### T01.2 · Preparación de datos con tarjetas perforadas
-
-![Operadora del censo estadounidense trabajando con una perforadora de tarjetas IBM 016 en la década de 1950](img/operadora-tarjetas-perforadas.jpg)
-
-*En los sistemas de procesamiento por lotes, los trabajos y sus datos se preparaban en tarjetas perforadas y se entregaban para su ejecución. El usuario no interactuaba con el programa mientras la computadora procesaba el lote.*
-
-<sub>Fuente: U.S. Census Bureau, década de 1950; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg).</sub>
-
-### T01.3 · Programar antes del sistema operativo
-
-![Jean Bartik y Frances Spence preparando ENIAC para una demostración en 1946](img/programadoras-eniac.jpg)
-
-*Antes de los sistemas operativos, preparar un programa podía implicar configurar físicamente la máquina. Jean Bartik y Frances Spence aparecen preparando ENIAC para una demostración en 1946.*
-
-<sub>Fuente: fotografía del U.S. Army, 1946; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg).</sub>
-
-### T01.4 · La jerarquía de memoria como espacio de trabajo
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 330" font-family="sans-serif" font-size="11" role="img" aria-label="Pirámide metafórica de la jerarquía de memoria como espacio de trabajo físico">
-  <rect width="620" height="330" fill="#ffffff"/>
-  <polygon points="280,20 330,70 230,70" fill="#d9ead3" stroke="#333"/>
-  <text x="280" y="50" text-anchor="middle" font-weight="bold" font-size="10">Bandeja inmediata</text>
-  <text x="280" y="63" text-anchor="middle" font-size="9">REGISTROS</text>
-  <polygon points="230,70 330,70 370,130 190,130" fill="#cfe2f3" stroke="#333"/>
-  <text x="280" y="98" text-anchor="middle" font-weight="bold" font-size="10">Mesa auxiliar</text>
-  <text x="280" y="112" text-anchor="middle" font-size="9">CACHÉ · pequeña, muy rápida</text>
-  <polygon points="190,130 370,130 410,190 150,190" fill="#fce5a8" stroke="#333"/>
-  <text x="280" y="158" text-anchor="middle" font-weight="bold" font-size="11">Mesa de trabajo</text>
-  <text x="280" y="174" text-anchor="middle" font-size="9">RAM · capacidad media</text>
-  <polygon points="150,190 410,190 450,250 110,250" fill="#f4cccc" stroke="#333"/>
-  <text x="280" y="218" text-anchor="middle" font-weight="bold" font-size="11">Archivador</text>
-  <text x="280" y="234" text-anchor="middle" font-size="9">SSD / DISCO · grande, persistente</text>
-  <polygon points="110,250 450,250 490,320 70,320" fill="#e2e2e2" stroke="#333"/>
-  <text x="280" y="280" text-anchor="middle" font-weight="bold" font-size="11">Almacén</text>
-  <text x="280" y="296" text-anchor="middle" font-size="9">CINTA / ARCHIVO · enorme, lento</text>
-</svg>
-
-*Cuanto más cerca está la memoria de la CPU, más rápida y costosa es, pero también menor es su capacidad.*
-
-### T01.5 · Una interrupción de E/S llama a la CPU
-
-```mermaid
-sequenceDiagram
-    participant CPU as CPU trabajando
-    participant D as Dispositivo de E/S
-    CPU->>D: inicia una operación
-    CPU->>CPU: ejecuta otro proceso
-    rect rgb(253, 238, 242)
-        D-->>CPU: interrupción: operación terminada
-        CPU->>CPU: guarda contexto y atiende el evento
-        CPU-->>CPU: reanuda el trabajo interrumpido
-    end
-```
-
-*Una interrupción permite que el procesador haga otro trabajo mientras espera a un dispositivo y recupere la operación cuando este anuncia que ha terminado.*
-
-### T01.6 · Sistemas de tiempo real
-
-![Robot industrial, sensor de frenado y aviónica como ejemplos de sistemas con plazos de respuesta](img/sistemas-tiempo-real.png)
-
-*En un sistema de tiempo real no basta con obtener el resultado correcto: debe obtenerse antes de que venza su plazo. Ilustración generada para estos apuntes.*
-
-### T01.7 · Del mecanismo al microprocesador
-
-```mermaid
-timeline
-    title Evolución física del computador
-    1830 : Máquina analítica<br/>mecánica y programa mediante tarjetas
-    1940 : Válvulas de vacío<br/>salas completas y gran consumo
-    1950 : Transistor<br/>menor tamaño y mayor fiabilidad
-    1960 : Circuito integrado<br/>muchos componentes en silicio
-    1970 : Microprocesador<br/>CPU integrada en un chip
-    2000 : Sistemas móviles y empotrados<br/>computación ubicua
-```
-
-*La reducción del tamaño y del consumo transformó computadores que ocupaban salas enteras en sistemas empotrados presentes en objetos cotidianos.*
-
-### T01.8 · Máquinas virtuales y contenedores
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" font-family="sans-serif" font-size="11" role="img" aria-label="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 300" font-family="sans-serif" font-size="11" role="img" aria-label="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
   <rect width="700" height="300" fill="#ffffff"/>
   <text x="165" y="22" text-anchor="middle" font-weight="bold" font-size="13">Máquinas virtuales</text>
   <text x="165" y="37" text-anchor="middle" font-size="10" font-style="italic">viviendas completas</text>
@@ -658,11 +583,71 @@ timeline
 
 *La virtualización permite ejecutar varios entornos aislados sobre una misma máquina física. Las máquinas virtuales reproducen un sistema completo; los contenedores comparten el núcleo.*
 
+### Cronologías (timelines)
+
+Diagramas históricos de familias de sistemas operativos: Windows ([timeline de Microsoft](https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions)), Macintosh, Android e [iOS](https://www.lifewire.com/ios-versions-4147730).
+
+---
+
+## Anexo: introducción histórica de los computadores
+
+### Charles Babbage
+
+- Máquina de Diferencias (1822).
+- Primera referencia al concepto de programa almacenado en el computador (1836).
+- Primera máquina de propósito general (máquina analítica).
+
+Muchos historiadores consideran a Babbage y a su socia, la matemática británica **Augusta Ada Byron** (siglo XIX), los verdaderos inventores de la computadora digital moderna. La tecnología de la época no permitía llevar a la práctica sus conceptos, pero la **máquina analítica** ya tenía muchas características de un ordenador moderno: flujo de entrada mediante tarjetas perforadas, memoria para los datos, procesador para las operaciones matemáticas e impresora para el registro permanente. Era completamente automática, no precisaba operador.
+
+### De los analógicos a los electrónicos
+
+- Los primeros **ordenadores analógicos** se construyeron a principios del siglo XX; hacían los cálculos mediante ejes y engranajes giratorios y evaluaban aproximaciones numéricas de ecuaciones difíciles. En las guerras mundiales se usaron para predecir trayectorias de torpedos y para el manejo a distancia de bombas.
+- En **1939** John Atanasoff y Clifford Berry construyeron un prototipo de máquina electrónica en el Iowa State College (el **ABC**, Atanasoff‑Berry Computer).
+- El **ENIAC** (*Electronic Numerical Integrator And Computer*, 1945) se basaba en gran medida en el ABC; contenía 18.000 válvulas de vacío y alcanzaba varios cientos de multiplicaciones por minuto, pero su programa estaba conectado al procesador y debía modificarse manualmente.
+- Durante la II Guerra Mundial, un equipo de Bletchley Park (norte de Londres) creó el **Colossus**, considerado el primer ordenador digital totalmente electrónico. Hacia diciembre de 1943 era operativo (incorporaba 1.500 válvulas) y el equipo dirigido por **Alan Turing** lo usó para descodificar los mensajes cifrados por la máquina **Enigma** alemana.
+- La mayoría de los computadores actuales siguen la **arquitectura de Von Neumann**. El sucesor del ENIAC, el **EDVAC**, incorporaba almacenamiento de programa en memoria, lo que liberaba al ordenador de la velocidad del lector de cinta de papel y permitía resolver problemas sin volver a cablear la máquina. **John von Neumann** (Budapest 1903 – Washington D.C. 1957).
+
+### Generaciones
+
+- **Transistor** (finales de la década de 1950): elementos lógicos más pequeños, rápidos y versátiles que las válvulas, con menos consumo y mayor vida útil ⇒ ordenadores de **segunda generación**; fabricación más barata. **UNIVAC** (*Universal Automatic Computer*): línea de ordenadores de programa almacenado; el **UNIVAC I** fue la primera computadora electrónica de propósito general vendida comercialmente en EE. UU.
+- **Circuito integrado (CI)** (finales de la década de 1960): varios transistores en un único sustrato de silicio; reducción de precio, tamaño y porcentajes de error.
+- **Microprocesador** (mediados de la década de 1970): integración a gran escala (**LSI**, *Large Scale Integrated*) y muy gran escala (**VLSI**, *Very Large Scale Integrated*), con miles de transistores en un único sustrato. Inicio de la multiprogramación.
+- **Cuarta generación** (actual): sustitución de las memorias de núcleos magnéticos por chips de silicio; microminiaturización de los circuitos; el tamaño reducido del microprocesador hizo posible el **ordenador personal (PC)**; integración del ordenador en las telecomunicaciones.
+
+```mermaid
+timeline
+    title Evolución física del computador
+    1830 : Máquina analítica<br/>mecánica y programa mediante tarjetas
+    1940 : Válvulas de vacío<br/>salas completas y gran consumo
+    1950 : Transistor<br/>menor tamaño y mayor fiabilidad
+    1960 : Circuito integrado<br/>muchos componentes en silicio
+    1970 : Microprocesador<br/>CPU integrada en un chip
+    2000 : Sistemas móviles y empotrados<br/>computación ubicua
+```
+
+*La reducción del tamaño y del consumo transformó computadores que ocupaban salas enteras en sistemas empotrados presentes en objetos cotidianos.*
+
+### Cronología de los sistemas operativos
+
+| Periodo | Hitos |
+|---------|-------|
+| **1940‑1950** | Los programadores interactúan directamente con el hardware; **no existe sistema operativo**. Comunicación hombre‑máquina mediante panel de programación (interruptores y displays) y dispositivos de E/S (lector de tarjetas perforadas, impresora). Problemas: planificación de trabajos (reserva manual, mal uso de la CPU, procesos abortados), tiempo de establecimiento (carga de compilador y programa, montaje de cintas/tarjetas…). Procesamiento en serie. |
+| **1950‑1960** | Las máquinas son tan caras que el tiempo de planificación y establecimiento resulta inaceptable. **Sistema operativo por lotes**: un programa **Monitor** gestiona lotes de tareas, controla la secuencia de eventos, reside parcialmente en memoria, carga un trabajo desde el dispositivo de entrada, cede el control al programa y lo recupera al terminar o ante un error. Características nuevas: **protección de memoria**, **gestión del tiempo de proceso**, **interrupciones**, **instrucciones privilegiadas**. Después: sistemas por lotes **multiprogramados** (multitarea), interrupciones de E/S, **DMA** (*Direct Memory Access*), gestión de memoria, planificación de procesos. |
+| **1960‑1970** | **Sistemas de tiempo compartido**: un grupo de usuarios comparte los recursos de la máquina y a cada uno le corresponde una fracción del tiempo de CPU; se busca la interactividad. **CTSS** (*Compatible Time Sharing System*, MIT), Multics, Cal, **UNIX** (Bell, 1970). |
+| **1970‑1980** | **Sistemas distribuidos**: fuertemente acoplados y débilmente acoplados (no comparten memoria ni reloj); típicos de redes de ordenadores que se comunican por paso de mensajes. Ventajas: aceleración de los cálculos, compartir recursos, tolerancia a fallos, comunicación entre usuarios/aplicaciones. |
+| **1980‑1990** | **Sistemas en tiempo real** (Gillies): la corrección depende también del instante en que se entrega el resultado. Características: determinismo, responsividad, usuarios controladores, confiabilidad (QoS), operación a prueba de fallos. **Sistemas embebidos o empotrados**: pocas funciones dedicadas, sistemas autónomos, tiempos de respuesta garantizados, la mayoría de los componentes en la placa base, programados en ensamblador o C/C++, precio y consumo reducidos, problemas de tiempo real. |
+| **1990‑2000** | Aparición de **Linux**: combinación del núcleo (*kernel*) libre similar a Unix con las herramientas de sistema **GNU** (proyecto de R. Stallman, 1983). Iniciado en 1991 por **Linus Torvalds** como reemplazo no comercial de MINIX (A. S. Tanenbaum, 1987). Características: estabilidad, acceso al código fuente, independencia del proveedor, seguridad, escalabilidad, comunidad de desarrollo activa, interoperabilidad, abundante documentación. |
+| **2000‑** | **Sistemas operativos para dispositivos móviles**: iOS, Android, Symbian OS, BlackBerry OS, Windows Phone. Características: simplicidad, orientación a la conectividad inalámbrica, soporte de formatos multimedia móviles. Capas: **Kernel** (acceso al hardware), **Middleware** (módulos que permiten las aplicaciones), **Entorno de ejecución de aplicaciones** (gestor de aplicaciones y APIs), **Interfaz de usuario**. |
+
+Comparación batch multiprogramado vs tiempo compartido:
+
+| | Batch multiprogramado | Time sharing |
+|---|---|---|
+| Objetivo | Maximizar el uso de la CPU | Minimizar el tiempo de respuesta |
+| Instrucciones al S.O. | A través del monitor | Comandos en terminal |
+
 ---
 
 ## Material gráfico
 
-Todos los diagramas del Tema 1 están replicados como mermaid o SVG dentro de este documento. Quedan como **material fotográfico** (no reproducible), a criterio del profesor:
-
-- Retratos y fotos históricas: Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I.
-- Cronologías (*timelines*) de familias de sistemas operativos (imágenes externas): se enlazan a Wikipedia en la sección «Cronologías».
+Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (no reproducible), a criterio del profesor: retratos y fotos históricas (Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I) y las cronologías (*timelines*) de familias de sistemas operativos, enlazadas a Wikipedia en la sección «Cronologías».

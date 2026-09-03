@@ -44,6 +44,12 @@ flowchart LR
     class GR recurso;
 ```
 
+La CPU es como una única pista de aterrizaje: hay varios aviones (procesos preparados) esperando en distintas colas y una torre de control (el planificador) decide cuál la usa en cada momento. La política elegida afecta al rendimiento, la espera y el tiempo de respuesta.
+
+<img src="img/planificador-pista-aeropuerto.png" width="520" alt="Una torre de control decide qué avión de varias colas utiliza una única pista activa">
+
+*El planificador decide qué proceso preparado recibe la CPU. La política elegida afecta al rendimiento, la espera y el tiempo de respuesta. Ilustración generada para estos apuntes.*
+
 Sucesos que disparan la planificación: solicitud de E/S (el proceso pasa a la cola de E/S), fin de la porción de tiempo, creación de un hijo, fin del hijo, o una interrupción.
 
 ### Cesión de la CPU
@@ -61,7 +67,7 @@ La selección del proceso a ejecutar se realiza en función de **prioridades**: 
 - **Causas**: invocación de una llamada al sistema (paso de modo usuario a modo supervisor); una interrupción hardware, error en el bus, error de segmentación, excepción de coma flotante o de división por cero; un proceso pasa voluntariamente a suspendido porque espera un recurso; el kernel interrumpe el proceso actual por exigencia del planificador.
 - En un cambio de contexto se debe: almacenar el estado del proceso saliente, cargar el estado del entrante y acceder a los registros generales y de estado. Implica una **doble operación de cambio** (procesos entrante y saliente).
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" font-family="sans-serif" font-size="14" role="img" aria-label="La CPU guarda sus registros en el descriptor del hilo saliente y carga los del hilo entrante">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 760 400" font-family="sans-serif" font-size="14" role="img" aria-label="La CPU guarda sus registros en el descriptor del hilo saliente y carga los del hilo entrante">
   <rect width="760" height="400" fill="#ffffff"/>
   <rect x="40" y="90" width="240" height="220" fill="#dbeafe" stroke="#2563a6" stroke-width="1.5"/>
   <text x="160" y="115" text-anchor="middle" font-size="16" font-weight="bold">CPU</text>
@@ -92,6 +98,27 @@ La selección del proceso a ejecutar se realiza en función de **prioridades**: 
   <text x="360" y="345" text-anchor="middle" fill="#1d7a3c" font-size="13">restaurar contexto</text>
   <text x="160" y="345" text-anchor="middle" font-size="15" font-weight="bold">Cambio de contexto</text>
 </svg>
+
+Visto como un relevo: el núcleo recibe la interrupción o cesión del proceso saliente, guarda su contexto en su PCB y carga el del proceso entrante para reanudarlo en su siguiente instrucción.
+
+```mermaid
+sequenceDiagram
+    participant P1 as Proceso saliente
+    participant SO as Núcleo · relevo
+    participant PCB1 as PCB de P1
+    participant PCB2 as PCB de P2
+    participant P2 as Proceso entrante
+    P1->>SO: interrupción o cesión
+    rect rgb(207, 226, 243)
+    SO->>PCB1: guarda PC, registros y pila
+    end
+    rect rgb(217, 234, 211)
+    SO->>PCB2: carga PC, registros y pila
+    SO->>P2: reanuda en su siguiente instrucción
+    end
+```
+
+*Para sustituir un proceso, el núcleo guarda su contexto y restaura el de otro. Durante ese tiempo la CPU administra la ejecución, pero no avanza en el trabajo de las aplicaciones.*
 
 El tiempo de cambio de contexto se puede modelar como:
 
@@ -168,6 +195,30 @@ Las decisiones de planificación a corto plazo se deben a: (1) un proceso finali
 - **Tiempo de espera**: minimizar el tiempo que un proceso ha estado esperando en la cola de preparados.
 - **Tiempo de respuesta**: minimizar el tiempo desde que se remite una solicitud hasta que se produce la primera respuesta (no confundir con su finalización).
 
+Como en la cola de una tienda: FCFS respeta el orden de llegada, SJF deja pasar primero al que lleva menos artículos y Round Robin atiende a todos por turnos breves.
+
+```mermaid
+flowchart TB
+    subgraph F["FCFS · orden de llegada"]
+        F1["A · 8 artículos"] --> F2["B · 2 artículos"] --> F3["C · 5 artículos"]
+    end
+    subgraph S["SJF · trabajo más corto"]
+        S1["B · 2 artículos"] --> S2["C · 5 artículos"] --> S3["A · 8 artículos"]
+    end
+    subgraph R["Round Robin · turnos breves"]
+        R1["A · un turno"] --> R2["B · un turno"] --> R3["C · un turno"] --> R1
+    end
+
+    classDef clienteA fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef clienteB fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
+    classDef clienteC fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    class F1,S3,R1 clienteA;
+    class F2,S1,R2 clienteB;
+    class F3,S2,R3 clienteC;
+```
+
+*FCFS respeta el orden de llegada, SJF favorece los trabajos cortos y Round Robin reparte la CPU en cuantos de tiempo.*
+
 ### FCFS — *first come, first served* (primero en llegar, primero en ser atendido)
 
 - La CPU se asigna en el orden en el que llegan las solicitudes de los hilos/procesos.
@@ -202,7 +253,41 @@ Las decisiones de planificación a corto plazo se deben a: (1) un proceso finali
 - Un proceso se admite en la cola de preparados si, y solo si, el planificador puede **garantizar la ejecución** de todos los procesos preparados en el tiempo límite fijado.
 - Se emplea para evitar latencias en aplicaciones de audio y vídeo y prevenir cortes de servicio (VoIP, sensores, grabación de CD). Se usan hilos/procesos en primer y segundo plano.
 
+```mermaid
+sequenceDiagram
+    participant S as Sensor
+    participant P as Planificador de tiempo real
+    participant T as Tarea de control
+    participant A as Actuador
+    rect rgb(217, 234, 211)
+    S->>P: evento en t = 0 ms
+    P->>T: despacha con máxima prioridad
+    T->>T: calcula respuesta
+    T->>A: orden en t = 7 ms
+    end
+    Note over S,A: plazo máximo = 10 ms · respuesta válida
+```
+
+*En aplicaciones de tiempo real, una respuesta correcta que llega después del plazo puede resultar inútil o peligrosa.*
+
 ### Round Robin (RR) o turno rotatorio
+
+```mermaid
+flowchart LR
+    Q1["P1<br/>cuanto"] --> CPU((CPU))
+    CPU -->|vence el cuanto| Q2["P2<br/>cuanto"]
+    Q2 --> CPU
+    CPU -->|vence el cuanto| Q3["P3<br/>cuanto"]
+    Q3 --> CPU
+    CPU -->|vence el cuanto| Q1
+
+    classDef cola fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    class Q1,Q2,Q3 cola;
+    class CPU cpu;
+```
+
+*Round Robin funciona como un carrusel: cada proceso dispone de un intervalo limitado antes de ceder el turno, de modo que ninguno monopoliza la CPU.*
 
 - Es la planificación más empleada para **tiempo compartido**; busca la asignación equitativa de la CPU. Es la típica de un sistema multiprogramado interactivo.
 - El rendimiento puede ser bajo si el cuanto es extremadamente pequeño.
@@ -289,99 +374,4 @@ Utiliza una **cola realimentada de múltiples niveles** con cuatro niveles de pr
 
 ---
 
-## Galería visual complementaria
-
-### T04.1 · La CPU como una única pista de aterrizaje
-
-![Una torre de control decide qué avión de varias colas utiliza una única pista activa](img/planificador-pista-aeropuerto.png)
-
-*El planificador decide qué proceso preparado recibe la CPU. La política elegida afecta al rendimiento, la espera y el tiempo de respuesta. Ilustración generada para estos apuntes.*
-
-### T04.2 · Tres políticas en la cola de una tienda
-
-```mermaid
-flowchart TB
-    subgraph F["FCFS · orden de llegada"]
-        F1["A · 8 artículos"] --> F2["B · 2 artículos"] --> F3["C · 5 artículos"]
-    end
-    subgraph S["SJF · trabajo más corto"]
-        S1["B · 2 artículos"] --> S2["C · 5 artículos"] --> S3["A · 8 artículos"]
-    end
-    subgraph R["Round Robin · turnos breves"]
-        R1["A · un turno"] --> R2["B · un turno"] --> R3["C · un turno"] --> R1
-    end
-
-    classDef clienteA fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef clienteB fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
-    classDef clienteC fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    class F1,S3,R1 clienteA;
-    class F2,S1,R2 clienteB;
-    class F3,S2,R3 clienteC;
-```
-
-*FCFS respeta el orden de llegada, SJF favorece los trabajos cortos y Round Robin reparte la CPU en cuantos de tiempo.*
-
-### T04.3 · Round Robin como carrusel
-
-```mermaid
-flowchart LR
-    Q1["P1<br/>cuanto"] --> CPU((CPU))
-    CPU -->|vence el cuanto| Q2["P2<br/>cuanto"]
-    Q2 --> CPU
-    CPU -->|vence el cuanto| Q3["P3<br/>cuanto"]
-    Q3 --> CPU
-    CPU -->|vence el cuanto| Q1
-
-    classDef cola fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    class Q1,Q2,Q3 cola;
-    class CPU cpu;
-```
-
-*Round Robin evita que un proceso monopolice la CPU. Cada proceso dispone de un intervalo limitado antes de ceder el turno.*
-
-### T04.4 · Cambio de contexto como relevo
-
-```mermaid
-sequenceDiagram
-    participant P1 as Proceso saliente
-    participant SO as Núcleo · relevo
-    participant PCB1 as PCB de P1
-    participant PCB2 as PCB de P2
-    participant P2 as Proceso entrante
-    P1->>SO: interrupción o cesión
-    rect rgb(207, 226, 243)
-    SO->>PCB1: guarda PC, registros y pila
-    end
-    rect rgb(217, 234, 211)
-    SO->>PCB2: carga PC, registros y pila
-    SO->>P2: reanuda en su siguiente instrucción
-    end
-```
-
-*Para sustituir un proceso, el núcleo guarda su contexto y restaura el de otro. Durante ese tiempo la CPU administra la ejecución, pero no avanza en el trabajo de las aplicaciones.*
-
-### T04.5 · Planificación con fecha límite
-
-```mermaid
-sequenceDiagram
-    participant S as Sensor
-    participant P as Planificador de tiempo real
-    participant T as Tarea de control
-    participant A as Actuador
-    rect rgb(217, 234, 211)
-    S->>P: evento en t = 0 ms
-    P->>T: despacha con máxima prioridad
-    T->>T: calcula respuesta
-    T->>A: orden en t = 7 ms
-    end
-    Note over S,A: plazo máximo = 10 ms · respuesta válida
-```
-
-*En aplicaciones de tiempo real, una respuesta correcta que llega después del plazo puede resultar inútil o peligrosa.*
-
----
-
-## Material gráfico
-
-Todos los diagramas del Tema 3 están replicados como mermaid, SVG o tabla dentro de este documento (flujo de planificación, niveles de planificador, cambio de contexto, tabla de prioridades de Windows 2000). Las capturas de pantalla del Administrador de tareas y del Monitor de recursos de Windows se omiten. No queda material fotográfico pendiente.
+Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

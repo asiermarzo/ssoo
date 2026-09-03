@@ -13,7 +13,7 @@ Práctica asociada: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).
 
 ## Esquema de una cola de mensajes
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" font-family="sans-serif" font-size="13" role="img" aria-label="Productores envían mensajes a una cola FIFO con prioridad; los consumidores extraen mensajes completos de la cola">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 640 200" font-family="sans-serif" font-size="13" role="img" aria-label="Productores envían mensajes a una cola FIFO con prioridad; los consumidores extraen mensajes completos de la cola">
   <rect width="640" height="200" fill="#ffffff"/>
   <rect x="20" y="70" width="140" height="60" rx="6" fill="#eef2f7" stroke="#666"/>
   <text x="90" y="95" text-anchor="middle">productor(es)</text>
@@ -30,13 +30,9 @@ Práctica asociada: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).
   <line x1="422" y1="100" x2="460" y2="100" stroke="#333" stroke-width="2"/><path d="M460 100 l-10 -5 l0 10 z" fill="#333"/>
 </svg>
 
-Detalle en la práctica: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).
+Una cola conserva mensajes completos hasta que un receptor los recoge, y puede ordenarlos por tipo o prioridad: el clasificador del núcleo coloca cada mensaje según su prioridad y entrega primero el más prioritario.
 
-## Galería visual complementaria
-
-### T09.1 · Una cola como oficina postal
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 260" font-family="sans-serif" font-size="12" role="img" aria-label="Tres remitentes envían mensajes con distinta prioridad; el nucleo los coloca en una cola ordenada por prioridad, con el mensaje de mayor prioridad más cerca de la salida; el receptor extrae mensajes completos">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 260" font-family="sans-serif" font-size="12" role="img" aria-label="Tres remitentes envían mensajes con distinta prioridad; el nucleo los coloca en una cola ordenada por prioridad, con el mensaje de mayor prioridad más cerca de la salida; el receptor extrae mensajes completos">
   <rect width="700" height="260" fill="#ffffff"/>
   <rect x="20" y="20" width="170" height="46" rx="6" fill="#eef2f7" stroke="#666"/><text x="105" y="40" text-anchor="middle">Remitente A</text><text x="105" y="56" text-anchor="middle" font-size="11" fill="#555">mensaje m1 · prioridad 2</text>
   <rect x="20" y="107" width="170" height="46" rx="6" fill="#eef2f7" stroke="#666"/><text x="105" y="127" text-anchor="middle">Remitente B</text><text x="105" y="143" text-anchor="middle" font-size="11" fill="#555">mensaje m2 · prioridad 8</text>
@@ -66,7 +62,9 @@ Detalle en la práctica: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).
 
 *Una cola conserva mensajes completos hasta que un receptor los recoge. Puede distinguirlos por tipo o prioridad.*
 
-### T09.2 · Productores y consumidores desacoplados
+## Productores y consumidores desacoplados
+
+El emisor y el receptor no necesitan ejecutarse simultáneamente: la cola actúa como almacenamiento intermedio persistente.
 
 ```mermaid
 sequenceDiagram
@@ -83,7 +81,9 @@ sequenceDiagram
 
 *El emisor y el receptor no necesitan ejecutarse simultáneamente: la cola actúa como almacenamiento intermedio.*
 
-### T09.3 · Una cola POSIX visible en Linux
+## Una cola POSIX en Linux
+
+Las colas POSIX son objetos administrados por el sistema operativo, con límites de tamaño, persistencia y operaciones bloqueantes o no bloqueantes. En Linux son visibles bajo `/dev/mqueue`.
 
 ```mermaid
 flowchart TB
@@ -105,6 +105,4 @@ flowchart TB
 
 *Las colas POSIX son objetos administrados por el sistema operativo, con límites de tamaño, persistencia y operaciones bloqueantes o no bloqueantes.*
 
-## Material
-
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Detalle en la práctica: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/). Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

@@ -1,6 +1,6 @@
 # Catálogo de imágenes de teoría
 
-Este documento registra la campaña visual complementaria de los 13 temas. Cada figura está integrada en el `README.md` de su tema con un identificador estable, un texto explicativo y texto alternativo cuando se trata de un archivo de imagen.
+Este documento registra la campaña visual de los 13 temas. Cada figura está integrada en el punto del `README.md` de su tema donde se explica el concepto correspondiente, con un texto explicativo y texto alternativo cuando se trata de un archivo de imagen. Los códigos `TNN.n` de este catálogo son una referencia interna: ya no aparecen como encabezados en los `README.md`.
 
 ## Resumen
 

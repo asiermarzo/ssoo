@@ -20,6 +20,16 @@ Cada práctica se compila con `gcc` y trae su propio script de compilación en b
 gcc -Wall -Wextra -o programa programa.c
 ```
 
+Para compilar de una vez todos los ejemplos del repositorio hay un `Makefile` en la raíz que delega en el `Makefile` de cada carpeta (las de práctica y, más adelante, las de teoría):
+
+```bash
+make          # compila todo
+make clean    # borra los binarios
+make list     # lista las carpetas que se recorren
+```
+
+Cada carpeta de práctica incluye además `ejercicios_extra.md`, con cinco ejercicios adicionales por tema y su solución en C (`extra_01.c` … `extra_05.c`), compilables con el `Makefile` de esa carpeta.
+
 ## Teoría
 
 | Tema | Carpeta |

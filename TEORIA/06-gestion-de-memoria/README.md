@@ -18,6 +18,22 @@
 | Capacidad de direccionamiento marcada por el bus | Mayor capacidad de almacenamiento |
 | Memoria de acceso aleatorio (RAM) | |
 
+```mermaid
+flowchart LR
+    CPU((CPU)) <-->|trabaja directamente| RAM["Mesa de trabajo · RAM<br/>rápida, volátil y limitada"]
+    RAM <-->|cargar / guardar| SSD["Archivador · SSD o disco<br/>grande, persistente y más lento"]
+    SSD --> BK["Almacén de respaldo<br/>mayor capacidad y latencia"]
+
+    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef rapida fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef lenta fill:#d9d9d9,stroke:#555555,color:#222222;
+    class CPU cpu;
+    class RAM rapida;
+    class SSD,BK lenta;
+```
+
+*La memoria principal es rápida pero limitada. El sistema operativo mueve información entre la memoria y el almacenamiento para mantener activos los procesos.*
+
 Para que un programa se ejecute debe estar **cargado en memoria principal**. El sistema operativo gestiona la memoria: carga y descarga bloques desde y hacia el almacenamiento secundario minimizando el efecto de la E/S sobre el rendimiento. La información permanente se guarda en almacenamiento secundario.
 
 ### Objetivos del sistema de gestión de memoria
@@ -64,7 +80,7 @@ Se asigna a cada proceso una **zona contigua** de memoria para su mapa. Elemento
 - **Registro límite**: el procesador comprueba que cada dirección generada por el proceso no sea mayor que su valor; si lo es, se genera una **excepción**.
 - **Registro base**: comprobado el límite, el procesador **suma** el valor de este registro a la dirección lógica y obtiene la **dirección física**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" font-family="sans-serif" font-size="12" role="img" aria-label="Traducción con registro base y límite: la CPU genera una dirección lógica que se compara con el límite; si no lo supera se le suma la base para obtener la dirección física dentro del programa en memoria">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 760 320" font-family="sans-serif" font-size="12" role="img" aria-label="Traducción con registro base y límite: la CPU genera una dirección lógica que se compara con el límite; si no lo supera se le suma la base para obtener la dirección física dentro del programa en memoria">
   <rect width="760" height="320" fill="#ffffff"/>
   <text x="65" y="120" text-anchor="middle" font-size="11">dirección lógica</text>
   <rect x="20" y="130" width="90" height="60" fill="#eef2f7" stroke="#333"/>
@@ -122,6 +138,27 @@ El SO ocupa siempre una zona; el resto se reserva para procesos de usuario, divi
 - **Fragmentación interna**: particiones de tamaño **fijo** cuyo tamaño no coincide con la información que se almacena en ellas.
 - **Fragmentación externa**: particiones de tamaño **variable**; desaprovechamiento del espacio **entre** particiones. Relacionada con la contigüidad entre espacios libres.
 
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 320" font-family="sans-serif" font-size="12" role="img" aria-label="Fragmentación externa: huecos libres dispersos que no bastan aunque su suma alcance el tamaño pedido. Fragmentación interna: espacio sobrante dentro de una misma partición">
+  <rect width="700" height="320" fill="#ffffff"/>
+  <text x="250" y="20" text-anchor="middle" font-weight="bold">Fragmentación externa</text>
+  <rect x="40" y="35" width="90" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="85" y="59" text-anchor="middle" fill="#fff" font-size="10">Proceso A</text>
+  <rect x="130" y="35" width="60" height="40" fill="#eaf7ea" stroke="#7bbf8a" stroke-dasharray="4 3"/><text x="160" y="59" text-anchor="middle" font-size="9">2 MiB</text>
+  <rect x="190" y="35" width="90" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="235" y="59" text-anchor="middle" fill="#fff" font-size="10">Proceso B</text>
+  <rect x="280" y="35" width="90" height="40" fill="#eaf7ea" stroke="#7bbf8a" stroke-dasharray="4 3"/><text x="325" y="59" text-anchor="middle" font-size="9">3 MiB</text>
+  <rect x="370" y="35" width="90" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="415" y="59" text-anchor="middle" fill="#fff" font-size="10">Proceso C</text>
+  <rect x="130" y="100" width="120" height="30" fill="none" stroke="#b3261e" stroke-dasharray="3 3"/>
+  <line x1="130" y1="100" x2="250" y2="130" stroke="#b3261e"/><line x1="250" y1="100" x2="130" y2="130" stroke="#b3261e"/>
+  <text x="270" y="120" font-size="10" fill="#b3261e">no cabe (no contiguo)</text>
+  <text x="85" y="150" font-size="11">Petición: 4 MiB — hay 5 MiB libres en total, pero repartidos en dos huecos</text>
+  <text x="250" y="195" text-anchor="middle" font-weight="bold">Fragmentación interna</text>
+  <rect x="250" y="210" width="200" height="60" fill="none" stroke="#333"/>
+  <text x="350" y="202" text-anchor="middle" font-size="10">Partición de 8 MiB</text>
+  <rect x="250" y="210" width="125" height="60" fill="#b9e6c9" stroke="#2f9e58"/><text x="312" y="245" text-anchor="middle" font-size="10">Proceso usa 5 MiB</text>
+  <rect x="375" y="210" width="75" height="60" fill="#eeeeee" stroke="#999" stroke-dasharray="4 3"/><text x="412" y="245" text-anchor="middle" font-size="10">3 MiB sin usar</text>
+</svg>
+
+*La fragmentación deja memoria libre en huecos que pueden resultar inutilizables aunque su suma parezca suficiente.*
+
 ### Tabla de descripción de particiones
 
 Ejemplo con el SO en `0K–100K` y 1000K de memoria:
@@ -148,7 +185,7 @@ Surge para solucionar los problemas de fragmentación del particionado. La memor
 
 La dirección se parte en dos campos. El **número de página / marco** se traduce con la tabla de páginas; el **desplazamiento** dentro de la página/marco no cambia:
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 260" font-family="sans-serif" font-size="13" role="img" aria-label="La dirección lógica (página, desplazamiento) se traduce a dirección física (marco, desplazamiento) mediante la tabla de páginas">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 260" font-family="sans-serif" font-size="13" role="img" aria-label="La dirección lógica (página, desplazamiento) se traduce a dirección física (marco, desplazamiento) mediante la tabla de páginas">
   <rect width="700" height="260" fill="#ffffff"/>
   <text x="20" y="40" font-weight="bold">Dirección lógica</text>
   <rect x="150" y="22" width="300" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="270" y="44" text-anchor="middle" fill="#fff">Página</text>
@@ -165,6 +202,40 @@ La dirección se parte en dos campos. El **número de página / marco** se tradu
 </svg>
 
 El SO mantiene **una tabla de páginas por proceso**, que relaciona cada página con el marco en el que se encuentra.
+
+```mermaid
+flowchart LR
+    subgraph L["Documento lógico · proceso"]
+        P0[Página 0]
+        P1[Página 1]
+        P2[Página 2]
+        P3[Página 3]
+    end
+    PT["Tabla de páginas<br/>0→5 · 1→1 · 2→7 · 3→3"]
+    subgraph F["Casilleros físicos · RAM"]
+        F1[Marco 1]
+        F3[Marco 3]
+        F5[Marco 5]
+        F7[Marco 7]
+    end
+    P0 --> PT --> F5
+    P1 --> PT --> F1
+    P2 --> PT --> F7
+    P3 --> PT --> F3
+
+    classDef tabla fill:#d9d9d9,stroke:#555555,color:#222222;
+    classDef par0 fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef par1 fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
+    classDef par2 fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef par3 fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
+    class PT tabla;
+    class P0,F5 par0;
+    class P1,F1 par1;
+    class P2,F7 par2;
+    class P3,F3 par3;
+```
+
+*La paginación divide la memoria lógica y física en bloques del mismo tamaño. Las páginas de un proceso pueden ocupar marcos no contiguos.*
 
 ### Paginación: MMU
 
@@ -235,7 +306,7 @@ Los procesos se dividen en **segmentos** de longitud distinta, nunca superior al
 - La **dirección física** = dirección de comienzo del segmento en MP + desplazamiento.
 - Al cargar el proceso se le asignan tantas zonas como segmentos tenga y se rellena la **tabla de segmentos**. La **protección** se realiza según el **límite** del segmento.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" font-family="sans-serif" font-size="13" role="img" aria-label="Traducción en segmentación: número de segmento más desplazamiento a dirección de comienzo del segmento más desplazamiento">
+<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 640 200" font-family="sans-serif" font-size="13" role="img" aria-label="Traducción en segmentación: número de segmento más desplazamiento a dirección de comienzo del segmento más desplazamiento">
   <rect width="640" height="200" fill="#ffffff"/>
   <text x="20" y="40" font-weight="bold">Dirección lógica</text>
   <rect x="170" y="22" width="240" height="34" fill="#6ba3d6" stroke="#2b6f99"/><text x="290" y="44" text-anchor="middle" fill="#fff">Nº de segmento</text>
@@ -252,7 +323,7 @@ Ventajas e inconvenientes: el control de acceso se realiza con **bits de acceso*
 
 Vista de la traducción por la MMU (segmentos dispersos en la memoria física, datos compartidos):
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 300" font-family="sans-serif" font-size="12" role="img" aria-label="Cada segmento del espacio virtual se traduce mediante la MMU a una zona de memoria física distinta y no contigua; los datos compartidos son accesibles desde varios procesos">
+<svg xmlns="http://www.w3.org/2000/svg" width="600" viewBox="0 0 780 300" font-family="sans-serif" font-size="12" role="img" aria-label="Cada segmento del espacio virtual se traduce mediante la MMU a una zona de memoria física distinta y no contigua; los datos compartidos son accesibles desde varios procesos">
   <rect width="780" height="300" fill="#ffffff"/>
   <text x="115" y="18" text-anchor="middle" font-weight="bold">Espacio virtual</text>
   <rect x="40" y="30" width="150" height="40" fill="#b0b0b0" stroke="#666"/><text x="115" y="54" text-anchor="middle">Código</text>
@@ -286,7 +357,7 @@ Combina lo mejor de la paginación y la segmentación:
 
 Un segmento está formado por un **conjunto de páginas** y no tiene que estar contiguo. La dirección lógica = **número de segmento + número de página dentro del segmento + desplazamiento dentro de la página**. La MMU usa una **tabla de segmentos** en la que cada entrada apunta a una **tabla de páginas**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 230" font-family="sans-serif" font-size="12" role="img" aria-label="Segmentación paginada: la dirección segmento, página, desplazamiento se resuelve con la tabla de segmentos y luego la tabla de páginas para llegar a la memoria principal">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 230" font-family="sans-serif" font-size="12" role="img" aria-label="Segmentación paginada: la dirección segmento, página, desplazamiento se resuelve con la tabla de segmentos y luego la tabla de páginas para llegar a la memoria principal">
   <rect width="700" height="230" fill="#ffffff"/>
   <rect x="40"  y="20" width="150" height="30" fill="#6ba3d6" stroke="#2b6f99"/><text x="115" y="40" text-anchor="middle" fill="#fff">Segmento</text>
   <rect x="190" y="20" width="150" height="30" fill="#3f7fb5" stroke="#2b6f99"/><text x="265" y="40" text-anchor="middle" fill="#fff">Página</text>
@@ -329,7 +400,7 @@ La **memoria virtual** es una técnica que permite **ejecutar procesos que no ca
 - El programa se divide en **bloques** que no necesitan ocupar posiciones consecutivas. La traducción de direcciones es **dinámica**; es posible reubicar el proceso en memoria.
 - Se implementa normalmente mediante **paginación bajo demanda** (también posible con segmentación). Los sistemas siguen un esquema de **segmentación paginada** con los segmentos divididos en páginas.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 280" font-family="sans-serif" font-size="12" role="img" aria-label="La memoria lógica se traduce mediante la MMU a memoria física; el área de swap actúa como respaldo de la memoria física para las páginas que no caben en ella">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 680 280" font-family="sans-serif" font-size="12" role="img" aria-label="La memoria lógica se traduce mediante la MMU a memoria física; el área de swap actúa como respaldo de la memoria física para las páginas que no caben en ella">
   <rect width="680" height="280" fill="#ffffff"/>
   <rect x="30" y="40" width="160" height="70" fill="#cfe0f2" stroke="#2b6f99"/>
   <text x="110" y="65" text-anchor="middle" font-weight="bold">Memoria lógica</text>
@@ -447,7 +518,7 @@ El **intercambio** usa un disco o parte de un disco (**dispositivo de swap**) co
 - Asignación de espacio en el dispositivo de swap: **preasignación** (se reserva espacio al crear el proceso) o **sin preasignación** (solo al expulsar el proceso).
 - Al **desalojar** un proceso se copia toda su imagen ejecutable a memoria secundaria; al **realojar** en memoria primaria, la imagen se copia sobre el nuevo bloque asignado por el gestor de memoria.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 280" font-family="sans-serif" font-size="12" role="img" aria-label="El intercambio copia la imagen de un proceso de memoria primaria a memoria secundaria (desalojo) y de vuelta (realojo)">
+<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 640 280" font-family="sans-serif" font-size="12" role="img" aria-label="El intercambio copia la imagen de un proceso de memoria primaria a memoria secundaria (desalojo) y de vuelta (realojo)">
   <rect width="640" height="280" fill="#ffffff"/>
   <rect x="50" y="60" width="150" height="150" fill="#cfe0f2" stroke="#2b6f99"/>
   <rect x="50" y="60" width="150" height="60" fill="#6ba3d6" stroke="#2b6f99"/>
@@ -476,6 +547,23 @@ El **intercambio** usa un disco o parte de un disco (**dispositivo de swap**) co
   1. **Servicio a la interrupción de página**: el proceso se detiene.
   2. **Incorporación de la página**: mediante una instrucción de E/S se transfiere la página a un marco.
   3. **Reinicio del proceso**: se comunica a la CPU que la página ya está en MP y el proceso continuará cuando el *dispatcher* lo estime oportuno.
+
+```mermaid
+sequenceDiagram
+    participant P as Proceso · mesa
+    participant SO as Sistema operativo
+    participant D as Disco · archivo
+    P->>SO: necesito la página 12
+    SO->>SO: no está en RAM · elige un marco
+    rect rgb(238, 242, 247)
+    SO->>D: trae la página 12
+    D-->>SO: contenido de la página
+    end
+    SO->>SO: actualiza la tabla de páginas
+    SO-->>P: reejecuta la instrucción
+```
+
+*Si una página necesaria no está en memoria, el núcleo detiene temporalmente el proceso, la carga desde disco y reanuda la instrucción.*
 
 ## 6.3 Copy‑on‑write
 
@@ -558,6 +646,28 @@ sequenceDiagram
 
 Ver la tabla de la sección de paginación (Tema 5): **FIFO**, **LRU**, **NRU**, **segunda oportunidad**, **envejecimiento**.
 
+### Hiperpaginación (*thrashing*)
+
+Cuando el número de marcos asignados a los procesos activos es insuficiente para su conjunto de trabajo, cada pocas instrucciones provocan un fallo de página que expulsa otra página aún necesaria. El sistema entra en un ciclo en el que invierte más tiempo intercambiando páginas con el disco que ejecutando instrucciones útiles.
+
+```mermaid
+flowchart LR
+    A[Ejecutar unas pocas instrucciones] --> F[Fallo de página]
+    F --> O[Expulsar otra página]
+    O --> C[Cargar desde disco]
+    C --> A
+    C -. la CPU espera mientras el disco domina el tiempo .-> T((THRASHING))
+
+    classDef ejecutar fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
+    classDef ciclo fill:#fce5a8,stroke:#b8860b,color:#5c4600;
+    classDef alerta fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
+    class A ejecutar;
+    class F,O,C ciclo;
+    class T alerta;
+```
+
+*Cuando faltan marcos, el sistema puede invertir más tiempo intercambiando páginas que ejecutando instrucciones útiles.*
+
 ### Anomalía de Belady
 
 Muestra que, con **FIFO**, es posible tener **más fallos de página al aumentar el número de marcos**. Referencia: L. A. Belady, R. A. Nelson, G. S. Shedler, «An anomaly in space‑time characteristics of certain programs running in a paging machine», *Communications of the ACM* 12(6):349‑353, junio de 1969.
@@ -590,126 +700,6 @@ Con 4 marcos:
 
 ---
 
-## Galería visual complementaria
-
-### T06.1 · Memoria como mesa de trabajo y archivo
-
-```mermaid
-flowchart LR
-    CPU((CPU)) <-->|trabaja directamente| RAM["Mesa de trabajo · RAM<br/>rápida, volátil y limitada"]
-    RAM <-->|cargar / guardar| SSD["Archivador · SSD o disco<br/>grande, persistente y más lento"]
-    SSD --> BK["Almacén de respaldo<br/>mayor capacidad y latencia"]
-
-    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef rapida fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef lenta fill:#d9d9d9,stroke:#555555,color:#222222;
-    class CPU cpu;
-    class RAM rapida;
-    class SSD,BK lenta;
-```
-
-*La memoria principal es rápida pero limitada. El sistema operativo mueve información entre la memoria y el almacenamiento para mantener activos los procesos.*
-
-### T06.2 · Fragmentación como equipaje mal distribuido
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 320" font-family="sans-serif" font-size="12" role="img" aria-label="Fragmentación externa: huecos libres dispersos que no bastan aunque su suma alcance el tamaño pedido. Fragmentación interna: espacio sobrante dentro de una misma partición">
-  <rect width="700" height="320" fill="#ffffff"/>
-  <text x="250" y="20" text-anchor="middle" font-weight="bold">Fragmentación externa</text>
-  <rect x="40" y="35" width="90" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="85" y="59" text-anchor="middle" fill="#fff" font-size="10">Proceso A</text>
-  <rect x="130" y="35" width="60" height="40" fill="#eaf7ea" stroke="#7bbf8a" stroke-dasharray="4 3"/><text x="160" y="59" text-anchor="middle" font-size="9">2 MiB</text>
-  <rect x="190" y="35" width="90" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="235" y="59" text-anchor="middle" fill="#fff" font-size="10">Proceso B</text>
-  <rect x="280" y="35" width="90" height="40" fill="#eaf7ea" stroke="#7bbf8a" stroke-dasharray="4 3"/><text x="325" y="59" text-anchor="middle" font-size="9">3 MiB</text>
-  <rect x="370" y="35" width="90" height="40" fill="#6ba3d6" stroke="#2b6f99"/><text x="415" y="59" text-anchor="middle" fill="#fff" font-size="10">Proceso C</text>
-  <rect x="130" y="100" width="120" height="30" fill="none" stroke="#b3261e" stroke-dasharray="3 3"/>
-  <line x1="130" y1="100" x2="250" y2="130" stroke="#b3261e"/><line x1="250" y1="100" x2="130" y2="130" stroke="#b3261e"/>
-  <text x="270" y="120" font-size="10" fill="#b3261e">no cabe (no contiguo)</text>
-  <text x="85" y="150" font-size="11">Petición: 4 MiB — hay 5 MiB libres en total, pero repartidos en dos huecos</text>
-  <text x="250" y="195" text-anchor="middle" font-weight="bold">Fragmentación interna</text>
-  <rect x="250" y="210" width="200" height="60" fill="none" stroke="#333"/>
-  <text x="350" y="202" text-anchor="middle" font-size="10">Partición de 8 MiB</text>
-  <rect x="250" y="210" width="125" height="60" fill="#b9e6c9" stroke="#2f9e58"/><text x="312" y="245" text-anchor="middle" font-size="10">Proceso usa 5 MiB</text>
-  <rect x="375" y="210" width="75" height="60" fill="#eeeeee" stroke="#999" stroke-dasharray="4 3"/><text x="412" y="245" text-anchor="middle" font-size="10">3 MiB sin usar</text>
-</svg>
-
-*La fragmentación deja memoria libre en huecos que pueden resultar inutilizables aunque su suma parezca suficiente.*
-
-### T06.3 · Páginas distribuidas en marcos
-
-```mermaid
-flowchart LR
-    subgraph L["Documento lógico · proceso"]
-        P0[Página 0]
-        P1[Página 1]
-        P2[Página 2]
-        P3[Página 3]
-    end
-    PT["Tabla de páginas<br/>0→5 · 1→1 · 2→7 · 3→3"]
-    subgraph F["Casilleros físicos · RAM"]
-        F1[Marco 1]
-        F3[Marco 3]
-        F5[Marco 5]
-        F7[Marco 7]
-    end
-    P0 --> PT --> F5
-    P1 --> PT --> F1
-    P2 --> PT --> F7
-    P3 --> PT --> F3
-
-    classDef tabla fill:#d9d9d9,stroke:#555555,color:#222222;
-    classDef par0 fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef par1 fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
-    classDef par2 fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef par3 fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
-    class PT tabla;
-    class P0,F5 par0;
-    class P1,F1 par1;
-    class P2,F7 par2;
-    class P3,F3 par3;
-```
-
-*La paginación divide la memoria lógica y física en bloques del mismo tamaño. Las páginas de un proceso pueden ocupar marcos no contiguos.*
-
-### T06.4 · Fallo de página como petición al archivo
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso · mesa
-    participant SO as Sistema operativo
-    participant D as Disco · archivo
-    P->>SO: necesito la página 12
-    SO->>SO: no está en RAM · elige un marco
-    rect rgb(238, 242, 247)
-    SO->>D: trae la página 12
-    D-->>SO: contenido de la página
-    end
-    SO->>SO: actualiza la tabla de páginas
-    SO-->>P: reejecuta la instrucción
-```
-
-*Si una página necesaria no está en memoria, el núcleo detiene temporalmente el proceso, la carga desde disco y reanuda la instrucción.*
-
-### T06.5 · Hiperpaginación: mover carpetas sin trabajar
-
-```mermaid
-flowchart LR
-    A[Ejecutar unas pocas instrucciones] --> F[Fallo de página]
-    F --> O[Expulsar otra página]
-    O --> C[Cargar desde disco]
-    C --> A
-    C -. la CPU espera mientras el disco domina el tiempo .-> T((THRASHING))
-
-    classDef ejecutar fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef ciclo fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef alerta fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
-    class A ejecutar;
-    class F,O,C ciclo;
-    class T alerta;
-```
-
-*Cuando faltan marcos, el sistema puede invertir más tiempo intercambiando páginas que ejecutando instrucciones útiles.*
-
----
-
 ## Material gráfico
 
-Todos los diagramas de los Temas 5 y 6 están replicados como mermaid, SVG o tabla dentro de este documento (base/límite, traducción en paginación y en segmentación, segmentación paginada, esquema de memoria virtual, intercambio, tratamiento del fallo de página, anomalía de Belady). Queda como **material fotográfico** (ilustrativo): el símil del aparcamiento y las capturas de las herramientas de gestión de memoria de Windows y Linux.
+Las figuras de los Temas 5 y 6 están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo): el símil del aparcamiento y las capturas de las herramientas de gestión de memoria de Windows y Linux.

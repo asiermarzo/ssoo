@@ -44,11 +44,50 @@
 - **Velocidad de transmisión**: muy variable según la naturaleza del dispositivo.
 - **Utilidad**, **complejidad de control** y **representación de los datos**.
 
+```mermaid
+flowchart TB
+    IO[Dispositivos de E/S] --> B["BLOQUE<br/>unidades direccionables"]
+    IO --> C["CARÁCTER<br/>secuencia continua"]
+    B --> SSD[SSD]
+    B --> HDD[Disco duro]
+    B --> USB[Memoria USB]
+    C --> KEY[Teclado]
+    C --> MOUSE[Ratón]
+    C --> SER[Puerto serie · sensor]
+
+    classDef raiz fill:#d9d9d9,stroke:#333,color:#000;
+    classDef bloque fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef caracter fill:#fce5a8,stroke:#333,color:#000;
+    class IO raiz;
+    class B,SSD,HDD,USB bloque;
+    class C,KEY,MOUSE,SER caracter;
+```
+
+*Los dispositivos de bloque transfieren unidades direccionables de datos; los de carácter producen o consumen secuencias continuas.*
+
 ## 7.2 Funciones de entrada/salida
 
 - El acceso mediante **E/S directa** transfiere los datos de entrada desde el controlador a un registro de la CPU y de éste a memoria principal (ídem para la salida).
 - El acceso mediante **DMA** transfiere los datos entre el controlador y la memoria principal **directamente**.
 - Si el dispositivo dispone de **interrupciones**, el software no necesita recurrir a operaciones periódicas de **sondeo**.
+
+```mermaid
+sequenceDiagram
+    participant CPU as CPU
+    participant DMA as Controlador DMA
+    participant D as Dispositivo
+    participant M as Memoria RAM
+    CPU->>DMA: origen, destino y tamaño
+    DMA->>D: inicia transferencia
+    rect rgb(207, 226, 243)
+        loop bloque completo
+            D->>M: dato directo a memoria
+        end
+    end
+    DMA-->>CPU: interrupción de fin
+```
+
+*El acceso directo a memoria (DMA) permite transferir bloques sin que la CPU tenga que copiar personalmente cada palabra.*
 
 **Estrategias de acceso**: E/S directa con sondeo · E/S por DMA con sondeo *(muy poco frecuente)* · E/S directa con interrupciones · E/S por DMA con interrupciones.
 
@@ -95,6 +134,24 @@ sequenceDiagram
     end
     D-->>P: 9. proceso LISTO (datos disponibles)
 ```
+
+En lugar de consultar continuamente al dispositivo, el procesador puede dedicarse a otro proceso y recibir una interrupción («timbre») cuando la operación de E/S ha concluido:
+
+```mermaid
+sequenceDiagram
+    participant P as Proceso
+    participant CPU as CPU
+    participant D as Dispositivo
+    P->>CPU: solicita E/S
+    CPU->>D: encarga la operación
+    rect rgb(217, 234, 211)
+        CPU->>CPU: ejecuta otro proceso
+    end
+    D-->>CPU: timbre · interrupción de fin
+    CPU-->>P: datos disponibles · vuelve a listo
+```
+
+*En lugar de consultar continuamente al dispositivo, el procesador recibe una interrupción cuando la operación de E/S ha concluido.*
 
 ### Gestor general de interrupciones
 
@@ -170,6 +227,12 @@ Un **búfer** es un almacenamiento en memoria principal que se emplea en la gest
 ## 7.5 Planificación de discos
 
 ### Geometría del disco
+
+En un disco magnético, el tiempo de acceso depende del movimiento del cabezal (unido al brazo actuador) y de la rotación de los platos necesaria para alcanzar el sector.
+
+<img src="img/disco-duro-abierto.jpg" width="460" alt="Disco duro Seagate abierto, con platos, brazo actuador y cabezales visibles">
+
+<sub>Fuente: © Raimond Spekking / CC BY-SA 4.0, vía Wikimedia Commons. [Ficha y licencia](https://commons.wikimedia.org/wiki/File:Seagate_ST9300AG_-_opened._Platter_and_head_mechanics-9324.jpg).</sub>
 
 - Los discos magnéticos se organizan en **placas** de discos físicos, cada uno con una o dos **superficies** de almacenamiento.
 - Cada superficie se divide lógicamente en **sectores** (porciones angulares del círculo, del mismo tamaño en bytes) y en **pistas** (anillos concéntricos).
@@ -277,6 +340,35 @@ Se sirven antes las solicitudes que requieren un **menor tiempo de búsqueda**. 
 
 Recorridos totales para la cola del ejemplo: **LOOK ≈ 512** · **SCAN ≈ 512** (con vuelta a extremo) · **C‑LOOK** y **C‑SCAN** reducen la espera media al recorrer siempre en el mismo sentido.
 
+SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor que recoge pasajeros según sube y no cambia de sentido hasta llegar al extremo:
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" font-family="sans-serif" font-size="12" role="img" aria-label="Movimiento de la cabeza con SCAN en forma de ascensor: 10, 22, 35, 61, 88, extremo, invierte sentido, 74, 40">
+  <rect width="480" height="300" fill="#ffffff"/>
+  <line x1="55" y1="20" x2="55" y2="250" stroke="#333"/>
+  <line x1="55" y1="250" x2="460" y2="250" stroke="#333"/>
+  <text x="15" y="25">pista</text>
+  <text x="20" y="250">0</text>
+  <polyline fill="none" stroke="#2b4a8b" stroke-width="1.6"
+    points="55,229 112,204 169,177 226,123 284,66 341,41 398,95 455,166"/>
+  <g fill="#c0392b">
+    <circle cx="55" cy="229" r="3"/><circle cx="112" cy="204" r="3"/><circle cx="169" cy="177" r="3"/>
+    <circle cx="226" cy="123" r="3"/><circle cx="284" cy="66" r="3"/>
+    <circle cx="398" cy="95" r="3"/><circle cx="455" cy="166" r="3"/>
+  </g>
+  <circle cx="341" cy="41" r="4" fill="none" stroke="#c0392b" stroke-width="1.5"/>
+  <g fill="#333">
+    <text x="45" y="225">10</text><text x="102" y="200">22</text><text x="159" y="173">35</text>
+    <text x="216" y="119">61</text><text x="274" y="62">88</text>
+    <text x="316" y="34">extremo</text>
+    <text x="388" y="91">74</text><text x="445" y="180">40</text>
+  </g>
+  <text x="170" y="270" font-size="11">orden de atención →</text>
+  <line x1="284" y1="55" x2="341" y2="45" stroke="#999" stroke-dasharray="2,2"/>
+  <text x="345" y="20" font-size="11" fill="#666">invierte el sentido</text>
+</svg>
+
+*SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor.*
+
 ## 7.6 Caché de disco
 
 Es un conjunto de **búferes de memoria**, cada uno del tamaño de un bloque de disco. Cuando un proceso quiere acceder a un bloque, el **sistema de ficheros** (parte del SO) busca primero una copia en la caché:
@@ -320,108 +412,6 @@ Como la memoria es mucho más rápida que el disco y los bloques más frecuentes
 
 ---
 
-## Galería visual complementaria
-
-### T11.1 · Dispositivos de bloque y de carácter
-
-```mermaid
-flowchart TB
-    IO[Dispositivos de E/S] --> B["BLOQUE<br/>unidades direccionables"]
-    IO --> C["CARÁCTER<br/>secuencia continua"]
-    B --> SSD[SSD]
-    B --> HDD[Disco duro]
-    B --> USB[Memoria USB]
-    C --> KEY[Teclado]
-    C --> MOUSE[Ratón]
-    C --> SER[Puerto serie · sensor]
-
-    classDef raiz fill:#d9d9d9,stroke:#333,color:#000;
-    classDef bloque fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef caracter fill:#fce5a8,stroke:#333,color:#000;
-    class IO raiz;
-    class B,SSD,HDD,USB bloque;
-    class C,KEY,MOUSE,SER caracter;
-```
-
-*Los dispositivos de bloque transfieren unidades direccionables de datos; los de carácter producen o consumen secuencias continuas.*
-
-### T11.2 · Anatomía de un disco duro
-
-![Disco duro Seagate abierto, con platos, brazo actuador y cabezales visibles](img/disco-duro-abierto.jpg)
-
-*En un disco magnético, el tiempo de acceso depende del movimiento del cabezal y de la rotación necesaria para alcanzar el sector.*
-
-<sub>Fuente: © Raimond Spekking / CC BY-SA 4.0, vía Wikimedia Commons. [Ficha y licencia](https://commons.wikimedia.org/wiki/File:Seagate_ST9300AG_-_opened._Platter_and_head_mechanics-9324.jpg).</sub>
-
-### T11.3 · SCAN como ascensor
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" font-family="sans-serif" font-size="12" role="img" aria-label="Movimiento de la cabeza con SCAN en forma de ascensor: 10, 22, 35, 61, 88, extremo, invierte sentido, 74, 40">
-  <rect width="480" height="300" fill="#ffffff"/>
-  <line x1="55" y1="20" x2="55" y2="250" stroke="#333"/>
-  <line x1="55" y1="250" x2="460" y2="250" stroke="#333"/>
-  <text x="15" y="25">pista</text>
-  <text x="20" y="250">0</text>
-  <polyline fill="none" stroke="#2b4a8b" stroke-width="1.6"
-    points="55,229 112,204 169,177 226,123 284,66 341,41 398,95 455,166"/>
-  <g fill="#c0392b">
-    <circle cx="55" cy="229" r="3"/><circle cx="112" cy="204" r="3"/><circle cx="169" cy="177" r="3"/>
-    <circle cx="226" cy="123" r="3"/><circle cx="284" cy="66" r="3"/>
-    <circle cx="398" cy="95" r="3"/><circle cx="455" cy="166" r="3"/>
-  </g>
-  <circle cx="341" cy="41" r="4" fill="none" stroke="#c0392b" stroke-width="1.5"/>
-  <g fill="#333">
-    <text x="45" y="225">10</text><text x="102" y="200">22</text><text x="159" y="173">35</text>
-    <text x="216" y="119">61</text><text x="274" y="62">88</text>
-    <text x="316" y="34">extremo</text>
-    <text x="388" y="91">74</text><text x="445" y="180">40</text>
-  </g>
-  <text x="170" y="270" font-size="11">orden de atención →</text>
-  <line x1="284" y1="55" x2="341" y2="45" stroke="#999" stroke-dasharray="2,2"/>
-  <text x="345" y="20" font-size="11" fill="#666">invierte el sentido</text>
-</svg>
-
-*SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor.*
-
-### T11.4 · DMA: ruta directa entre dispositivo y memoria
-
-```mermaid
-sequenceDiagram
-    participant CPU as CPU
-    participant DMA as Controlador DMA
-    participant D as Dispositivo
-    participant M as Memoria RAM
-    CPU->>DMA: origen, destino y tamaño
-    DMA->>D: inicia transferencia
-    rect rgb(207, 226, 243)
-        loop bloque completo
-            D->>M: dato directo a memoria
-        end
-    end
-    DMA-->>CPU: interrupción de fin
-```
-
-*El acceso directo a memoria permite transferir bloques sin que la CPU tenga que copiar personalmente cada palabra.*
-
-### T11.5 · E/S dirigida por interrupciones
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso
-    participant CPU as CPU
-    participant D as Dispositivo
-    P->>CPU: solicita E/S
-    CPU->>D: encarga la operación
-    rect rgb(217, 234, 211)
-        CPU->>CPU: ejecuta otro proceso
-    end
-    D-->>CPU: timbre · interrupción de fin
-    CPU-->>P: datos disponibles · vuelve a listo
-```
-
-*En lugar de consultar continuamente al dispositivo, el procesador recibe una interrupción cuando la operación de E/S ha concluido.*
-
----
-
 ## Material gráfico
 
-Todos los diagramas del Tema 7 están replicados como mermaid, SVG o tabla dentro de este documento (capas de la E/S, E/S con sondeo y con interrupciones, doble búfer, geometría del disco, FCFS y SSTF, arquitectura UNIX). Queda como **material fotográfico** (ilustrativo): las fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD y el render 3D del disco con pistas y sectores.
+Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo): las fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD y el render 3D del disco con pistas y sectores.

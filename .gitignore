@@ -8,6 +8,9 @@ a.out
 # Binarios compilados (sin extensión) — descomenta si molestan
 # PRACTICA/**/build/
 
+# Binarios de los ejercicios extra (extra_01 .. extra_09, sin extensión)
+PRACTICA/*/extra_0[0-9]
+
 # Material original de partida (PDFs del curso anterior) — no se versiona
 /Practicas_240304-25-26.pdf
 /Practicas_240304-250304_25-26-anexo.pdf
@@ -23,3 +26,5 @@ a.out
 /????DE.md
 REVISION-DIAGRAMAS-MERMAID.pdf
 REVISION-DIAGRAMAS-MERMAID.md
+TEORIA/ANIMACIONES.md
+TEORIA/IMAGENES.md

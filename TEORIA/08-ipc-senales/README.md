@@ -11,6 +11,26 @@ Práctica asociada: [`PRACTICA/04`](../../PRACTICA/04-senales/).
 - Máscara de señales, señales pendientes y bloqueadas.
 - Espera de señales: `pause()`, `sleep()`, `sigsuspend()`.
 
+## Concepto de señal
+
+Una señal no transporta un flujo de datos: notifica de forma asíncrona que ha ocurrido un determinado evento. El proceso interrumpe lo que está haciendo, ejecuta una acción breve (el manejador) y continúa donde estaba.
+
+```mermaid
+sequenceDiagram
+    participant P as Proceso concentrado en su trabajo
+    participant K as Núcleo
+    participant H as Manejador
+    K-->>P: señal · aviso inesperado
+    rect rgb(252, 229, 168)
+        P->>P: guarda el punto de reanudación
+        P->>H: ejecuta una acción breve
+        H-->>P: retorna
+    end
+    P->>P: continúa donde estaba
+```
+
+*Una señal no transporta un flujo de datos: notifica de forma asíncrona que ha ocurrido un determinado evento.*
+
 ## Entrega de una señal
 
 ```mermaid
@@ -37,27 +57,9 @@ flowchart TD
 
 Detalle y tabla de señales: [`PRACTICA/04`](../../PRACTICA/04-senales/).
 
-## Galería visual complementaria
+## De `Ctrl+C` a `SIGINT`
 
-### T08.1 · Una señal como aviso asíncrono
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso concentrado en su trabajo
-    participant K as Núcleo
-    participant H as Manejador
-    K-->>P: señal · aviso inesperado
-    rect rgb(252, 229, 168)
-        P->>P: guarda el punto de reanudación
-        P->>H: ejecuta una acción breve
-        H-->>P: retorna
-    end
-    P->>P: continúa donde estaba
-```
-
-*Una señal no transporta un flujo de datos: notifica de forma asíncrona que ha ocurrido un determinado evento.*
-
-### T08.2 · De `Ctrl+C` a `SIGINT`
+Al pulsar `Ctrl+C`, el *driver* de terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.
 
 ```mermaid
 flowchart LR
@@ -82,7 +84,9 @@ flowchart LR
 
 *Al pulsar `Ctrl+C`, el terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.*
 
-### T08.3 · Señal bloqueada y pendiente
+## Señal bloqueada y pendiente
+
+Bloquear una señal no implica necesariamente descartarla: puede permanecer pendiente hasta que la máscara permita su entrega.
 
 ```mermaid
 stateDiagram-v2
@@ -103,7 +107,9 @@ stateDiagram-v2
 
 *Bloquear una señal no implica necesariamente descartarla: puede permanecer pendiente hasta que la máscara permita su entrega.*
 
-### T08.4 · `SIGTERM` frente a `SIGKILL`
+## `SIGTERM` frente a `SIGKILL`
+
+`SIGTERM` permite que el proceso responda y libere recursos. `SIGKILL` no puede capturarse ni ignorarse y provoca su terminación inmediata.
 
 ```mermaid
 flowchart TB
@@ -125,6 +131,4 @@ flowchart TB
 
 *`SIGTERM` permite que el proceso responda y libere recursos. `SIGKILL` no puede capturarse ni ignorarse y provoca su terminación inmediata.*
 
-## Material
-
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

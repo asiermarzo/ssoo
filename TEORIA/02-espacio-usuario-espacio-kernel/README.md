@@ -10,52 +10,9 @@
   - Microkernels: primitivas mínimas (espacios de direcciones, IPC, planificación básica); el resto de servicios como procesos servidores en espacio de usuario. Ventajas (complejidad, aislamiento de fallos, portabilidad, drivers) e inconvenientes (sincronización entre módulos).
   - Sistemas por capas, máquinas virtuales, exokernels.
 
-## Flujo de una llamada al sistema
+## Modo usuario y modo kernel
 
-```mermaid
-sequenceDiagram
-    participant U as Programa · modo usuario
-    participant W as Envoltorio de libc
-    participant K as Núcleo · modo kernel
-    U->>W: read(fd, buf, n)
-    W->>K: instrucción de trap · nº de syscall + parámetros
-    rect rgb(207, 226, 243)
-        Note over K: cambio a modo kernel
-        K->>K: valida parámetros y ejecuta el servicio
-        K-->>W: valor de retorno / -1 y errno
-    end
-    Note over U: vuelta a modo usuario
-    W-->>U: resultado
-```
-
-## Estructuras: monolítico frente a microkernel
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 320" font-family="sans-serif" font-size="12" role="img" aria-label="Comparación en capas de un núcleo monolítico y un microkernel, con la frontera entre espacio de usuario y espacio de kernel marcada en cada caso">
-  <rect width="700" height="320" fill="#ffffff"/>
-  <text x="180" y="25" text-anchor="middle" font-weight="bold">Monolítico</text>
-  <text x="520" y="25" text-anchor="middle" font-weight="bold">Microkernel</text>
-  <rect x="60" y="45" width="240" height="30" fill="#8fbf6a" stroke="#4d7a33"/><text x="180" y="65" text-anchor="middle" fill="#fff">aplicaciones (usuario)</text>
-  <line x1="55" y1="85" x2="305" y2="85" stroke="#b5651d" stroke-dasharray="5 3"/>
-  <text x="180" y="98" text-anchor="middle" font-size="10" fill="#b5651d">frontera usuario / kernel</text>
-  <rect x="60" y="105" width="240" height="130" fill="#1f3f66" stroke="#132840"/>
-  <text x="180" y="165" text-anchor="middle" fill="#fff" font-size="11">núcleo: planificador</text>
-  <text x="180" y="180" text-anchor="middle" fill="#fff" font-size="11">memoria · FS · drivers · IPC</text>
-  <rect x="60" y="245" width="240" height="30" fill="#888" stroke="#444"/><text x="180" y="265" text-anchor="middle" fill="#fff">hardware</text>
-  <rect x="400" y="45" width="240" height="30" fill="#8fbf6a" stroke="#4d7a33"/><text x="520" y="65" text-anchor="middle" fill="#fff">aplicaciones</text>
-  <rect x="400" y="85" width="76" height="40" fill="#eef2f7" stroke="#666"/><text x="438" y="108" text-anchor="middle" font-size="10">FS</text>
-  <rect x="482" y="85" width="76" height="40" fill="#eef2f7" stroke="#666"/><text x="520" y="108" text-anchor="middle" font-size="10">drivers</text>
-  <rect x="564" y="85" width="76" height="40" fill="#eef2f7" stroke="#666"/><text x="602" y="108" text-anchor="middle" font-size="10">memoria</text>
-  <line x1="395" y1="135" x2="645" y2="135" stroke="#b5651d" stroke-dasharray="5 3"/>
-  <text x="520" y="148" text-anchor="middle" font-size="10" fill="#b5651d">frontera usuario / kernel</text>
-  <rect x="400" y="155" width="240" height="55" fill="#1f3f66" stroke="#132840"/>
-  <text x="520" y="178" text-anchor="middle" fill="#fff" font-size="11">microkernel: IPC</text>
-  <text x="520" y="193" text-anchor="middle" fill="#fff" font-size="11">planificación · direcciones</text>
-  <rect x="400" y="245" width="240" height="30" fill="#888" stroke="#444"/><text x="520" y="265" text-anchor="middle" fill="#fff">hardware</text>
-</svg>
-
-## Galería visual complementaria
-
-### T02.1 · El kernel como zona restringida
+Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos (memoria, CPU, dispositivos, sistema de ficheros) deben solicitar un servicio al núcleo a través de un único punto de control: la llamada al sistema.
 
 ```mermaid
 flowchart TB
@@ -91,7 +48,25 @@ flowchart TB
 
 *Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos deben solicitar un servicio al núcleo.*
 
-### T02.2 · La llamada al sistema como ventanilla
+## Flujo de una llamada al sistema
+
+```mermaid
+sequenceDiagram
+    participant U as Programa · modo usuario
+    participant W as Envoltorio de libc
+    participant K as Núcleo · modo kernel
+    U->>W: read(fd, buf, n)
+    W->>K: instrucción de trap · nº de syscall + parámetros
+    rect rgb(207, 226, 243)
+        Note over K: cambio a modo kernel
+        K->>K: valida parámetros y ejecuta el servicio
+        K-->>W: valor de retorno / -1 y errno
+    end
+    Note over U: vuelta a modo usuario
+    W-->>U: resultado
+```
+
+La llamada al sistema se comporta como una ventanilla segura: la aplicación entrega una petición y unos parámetros, el núcleo comprueba permisos y direcciones, ejecuta el servicio y devuelve el resultado, sin ceder nunca a la aplicación el control directo del hardware.
 
 ```mermaid
 sequenceDiagram
@@ -113,9 +88,34 @@ sequenceDiagram
 
 *Una llamada al sistema cruza temporalmente la frontera entre modo usuario y modo kernel sin entregar a la aplicación el control directo del hardware.*
 
-### T02.3 · Núcleo monolítico y microkernel como talleres
+## Estructuras: monolítico frente a microkernel
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" font-family="sans-serif" font-size="11" role="img" aria-label="Un gran taller único frente a varios talleres aislados que se comunican por mensajes, ambos apoyados sobre el mismo hardware">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 320" font-family="sans-serif" font-size="12" role="img" aria-label="Comparación en capas de un núcleo monolítico y un microkernel, con la frontera entre espacio de usuario y espacio de kernel marcada en cada caso">
+  <rect width="700" height="320" fill="#ffffff"/>
+  <text x="180" y="25" text-anchor="middle" font-weight="bold">Monolítico</text>
+  <text x="520" y="25" text-anchor="middle" font-weight="bold">Microkernel</text>
+  <rect x="60" y="45" width="240" height="30" fill="#8fbf6a" stroke="#4d7a33"/><text x="180" y="65" text-anchor="middle" fill="#fff">aplicaciones (usuario)</text>
+  <line x1="55" y1="85" x2="305" y2="85" stroke="#b5651d" stroke-dasharray="5 3"/>
+  <text x="180" y="98" text-anchor="middle" font-size="10" fill="#b5651d">frontera usuario / kernel</text>
+  <rect x="60" y="105" width="240" height="130" fill="#1f3f66" stroke="#132840"/>
+  <text x="180" y="165" text-anchor="middle" fill="#fff" font-size="11">núcleo: planificador</text>
+  <text x="180" y="180" text-anchor="middle" fill="#fff" font-size="11">memoria · FS · drivers · IPC</text>
+  <rect x="60" y="245" width="240" height="30" fill="#888" stroke="#444"/><text x="180" y="265" text-anchor="middle" fill="#fff">hardware</text>
+  <rect x="400" y="45" width="240" height="30" fill="#8fbf6a" stroke="#4d7a33"/><text x="520" y="65" text-anchor="middle" fill="#fff">aplicaciones</text>
+  <rect x="400" y="85" width="76" height="40" fill="#eef2f7" stroke="#666"/><text x="438" y="108" text-anchor="middle" font-size="10">FS</text>
+  <rect x="482" y="85" width="76" height="40" fill="#eef2f7" stroke="#666"/><text x="520" y="108" text-anchor="middle" font-size="10">drivers</text>
+  <rect x="564" y="85" width="76" height="40" fill="#eef2f7" stroke="#666"/><text x="602" y="108" text-anchor="middle" font-size="10">memoria</text>
+  <line x1="395" y1="135" x2="645" y2="135" stroke="#b5651d" stroke-dasharray="5 3"/>
+  <text x="520" y="148" text-anchor="middle" font-size="10" fill="#b5651d">frontera usuario / kernel</text>
+  <rect x="400" y="155" width="240" height="55" fill="#1f3f66" stroke="#132840"/>
+  <text x="520" y="178" text-anchor="middle" fill="#fff" font-size="11">microkernel: IPC</text>
+  <text x="520" y="193" text-anchor="middle" fill="#fff" font-size="11">planificación · direcciones</text>
+  <rect x="400" y="245" width="240" height="30" fill="#888" stroke="#444"/><text x="520" y="265" text-anchor="middle" fill="#fff">hardware</text>
+</svg>
+
+Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado; un microkernel conserva solo los mecanismos esenciales y delega el resto a procesos aislados que se comunican por mensajes, como talleres separados apoyados sobre el mismo hardware.
+
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 700 300" font-family="sans-serif" font-size="11" role="img" aria-label="Un gran taller único frente a varios talleres aislados que se comunican por mensajes, ambos apoyados sobre el mismo hardware">
   <rect width="700" height="300" fill="#ffffff"/>
   <text x="160" y="22" text-anchor="middle" font-weight="bold">Gran taller central</text>
   <rect x="30" y="35" width="260" height="170" fill="#eef2f7" stroke="#333" stroke-width="2"/>
@@ -142,6 +142,6 @@ sequenceDiagram
 
 *Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado. Un microkernel conserva solo los mecanismos esenciales y delega otros servicios a procesos aislados.*
 
-## Material
+---
 
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

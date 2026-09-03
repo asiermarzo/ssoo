@@ -10,9 +10,37 @@ Práctica asociada: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaf
 - Mutex y semáforos como mecanismo de protección de la región compartida.
 - Mutex POSIX (`pthread_mutex_*`) y semáforos POSIX (`sem_open`/`sem_wait`/`sem_post`), con y sin nombre, compartidos entre procesos.
 
+## Memoria compartida y exclusión mutua
+
+La memoria compartida evita copiar datos entre procesos, pero obliga a sincronizar los accesos para impedir escrituras simultáneas. Un testigo único (el mutex) decide quién puede tocar la pizarra común en cada momento.
+
+```mermaid
+flowchart LR
+    A["Proceso A<br/>espacio privado"] --> LA[lock]
+    B["Proceso B<br/>espacio privado"] --> LB[lock]
+    LA --> K{{"testigo único<br/>mutex"}}
+    LB -. espera .-> K
+    K --> S[["pizarra común<br/>memoria compartida"]]
+    S --> U[unlock]
+    U --> K
+
+    classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef avanza fill:#d9ead3,stroke:#333,color:#000;
+    classDef espera fill:#fce5a8,stroke:#333,color:#000;
+    classDef mutex fill:#fbe0e0,stroke:#333,color:#000;
+    classDef recurso fill:#d9d9d9,stroke:#333,color:#000;
+    class A,B proceso;
+    class LA avanza;
+    class LB espera;
+    class K mutex;
+    class S,U recurso;
+```
+
+*La memoria compartida evita copiar datos entre procesos, pero obliga a sincronizar los accesos para impedir escrituras simultáneas.*
+
 ## Memoria compartida protegida por un mutex/semáforo
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" font-family="sans-serif" font-size="12" role="img" aria-label="Linea de tiempo vertical: el proceso A bloquea el mutex, trabaja y libera; el proceso B permanece bloqueado durante exactamente ese intervalo y solo entonces empieza su propia sección critica">
+<svg xmlns="http://www.w3.org/2000/svg" width="520" viewBox="0 0 640 340" font-family="sans-serif" font-size="12" role="img" aria-label="Linea de tiempo vertical: el proceso A bloquea el mutex, trabaja y libera; el proceso B permanece bloqueado durante exactamente ese intervalo y solo entonces empieza su propia sección critica">
   <rect width="640" height="340" fill="#ffffff"/>
   <text x="130" y="24" text-anchor="middle" font-weight="bold">Proceso A</text>
   <text x="500" y="24" text-anchor="middle" font-weight="bold">Proceso B</text>
@@ -40,37 +68,7 @@ Práctica asociada: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaf
   <line x1="500" y1="214" x2="350" y2="290" stroke="#333" stroke-dasharray="2 2"/>
 </svg>
 
-Detalle en la práctica: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaforos/).
-
-## Galería visual complementaria
-
-### T10.1 · Dos procesos ante una misma pizarra
-
-```mermaid
-flowchart LR
-    A["Proceso A<br/>espacio privado"] --> LA[lock]
-    B["Proceso B<br/>espacio privado"] --> LB[lock]
-    LA --> K{{"testigo único<br/>mutex"}}
-    LB -. espera .-> K
-    K --> S[["pizarra común<br/>memoria compartida"]]
-    S --> U[unlock]
-    U --> K
-
-    classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef avanza fill:#d9ead3,stroke:#333,color:#000;
-    classDef espera fill:#fce5a8,stroke:#333,color:#000;
-    classDef mutex fill:#fbe0e0,stroke:#333,color:#000;
-    classDef recurso fill:#d9d9d9,stroke:#333,color:#000;
-    class A,B proceso;
-    class LA avanza;
-    class LB espera;
-    class K mutex;
-    class S,U recurso;
-```
-
-*La memoria compartida evita copiar datos entre procesos, pero obliga a sincronizar los accesos para impedir escrituras simultáneas.*
-
-### T10.2 · Sin mutex y con mutex
+Sin mutex, dos procesos pueden leer el mismo valor y escribir encima el uno del otro, perdiendo una actualización. Con mutex, los accesos se ordenan y el resultado es coherente.
 
 ```mermaid
 flowchart TB
@@ -96,9 +94,11 @@ flowchart TB
 
 *Compartir memoria aporta velocidad. El mutex aporta el orden necesario para que esa velocidad no produzca resultados incoherentes.*
 
-### T10.3 · Una sala común mapeada en dos procesos
+## El mismo segmento en dos espacios de direcciones
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 280" font-family="sans-serif" font-size="12" role="img" aria-label="Los procesos A y B mapean, en direcciones virtuales distintas, el mismo segmento físico de memoria compartida">
+Cada proceso conserva su memoria privada, pero el núcleo puede mapear (`mmap`) el mismo segmento físico dentro de varios espacios de direcciones, posiblemente en direcciones virtuales distintas.
+
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 680 280" font-family="sans-serif" font-size="12" role="img" aria-label="Los procesos A y B mapean, en direcciones virtuales distintas, el mismo segmento físico de memoria compartida">
   <rect width="680" height="280" fill="#ffffff"/>
   <text x="150" y="24" text-anchor="middle" font-weight="bold">Espacio virtual — proceso A</text>
   <rect x="30" y="40" width="240" height="50" fill="#cfe0f2" stroke="#3773a0"/><text x="150" y="70" text-anchor="middle">memoria privada A</text>
@@ -113,6 +113,4 @@ flowchart TB
 
 *Cada proceso conserva su memoria privada, pero el núcleo puede mapear el mismo segmento físico dentro de varios espacios de direcciones.*
 
-## Material
-
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Detalle en la práctica: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaforos/). Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

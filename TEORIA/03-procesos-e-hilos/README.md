@@ -15,6 +15,24 @@ Un **proceso** es la ejecución de una aplicación o programa sobre un computado
 
 Un **programa por sí mismo NO es un proceso**: un programa es una entidad **pasiva** y un proceso es una entidad **activa**.
 
+```mermaid
+flowchart LR
+    P["Receta guardada<br/>PROGRAMA<br/>código pasivo"] -->|cargar y ejecutar| X
+    D["Ingredientes<br/>datos"] --> X
+    R["Herramientas abiertas<br/>ficheros y recursos"] --> X
+    C["Punto de trabajo<br/>PC · registros · pila"] --> X
+    X(("Cocinero trabajando<br/>PROCESO<br/>entidad activa"))
+
+    classDef pasivo fill:#d9d9d9,stroke:#555,color:#000;
+    classDef insumo fill:#eef2f7,stroke:#555,color:#000;
+    classDef activo fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    class P pasivo;
+    class D,R,C insumo;
+    class X activo;
+```
+
+*Un programa es código almacenado. Un proceso aparece cuando ese código se ejecuta junto con sus datos, pila, recursos y contexto del procesador.*
+
 ### Multiprogramación y máquina virtual
 
 Para lograr la multiprogramación se hace creer a los programas que están solos en la máquina ⇒ **máquina virtual**:
@@ -66,6 +84,12 @@ Además, aportan eficiencia en la comunicación entre programas en ejecución y 
 
 ## 2.3 Diferencias entre proceso e hilo
 
+Los procesos son como cocinas independientes, cada una con su despensa, su banco de trabajo y su receta; los hilos de un mismo proceso son varios cocineros que comparten la misma cocina, aunque cada uno lleve su tabla de preparación personal (su pila y su estado de ejecución).
+
+<img src="img/procesos-vs-hilos-cocinas.png" width="520" alt="Dos cocinas independientes comparadas con varios cocineros que comparten una sola cocina">
+
+*Los procesos poseen espacios de memoria independientes. Los hilos de un mismo proceso comparten código, datos y recursos, pero cada uno mantiene su propia pila y estado de ejecución. Ilustración generada para estos apuntes.*
+
 - Los hilos de un mismo proceso **comparten la memoria** del proceso; para compartir memoria entre procesos se requieren mecanismos de comunicación entre procesos como la memoria compartida (`shm`).
 - Los hilos de un mismo proceso **se reparten el tiempo de CPU** asignado al proceso.
 
@@ -96,7 +120,7 @@ Además, aportan eficiencia en la comunicación entre programas en ejecución y 
 
 En un proceso **monohilo**, el código, los datos y los ficheros, junto con los registros y la pila, pertenecen al único hilo. En un proceso **multihilo**, el código, los datos y los ficheros se **comparten**, mientras que cada hilo tiene sus propios **registros** y su propia **pila**.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" font-family="sans-serif" font-size="14" role="img" aria-label="Disposición de memoria de un proceso monohilo frente a un proceso multihilo">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 780 440" font-family="sans-serif" font-size="14" role="img" aria-label="Disposición de memoria de un proceso monohilo frente a un proceso multihilo">
   <rect width="780" height="440" fill="#ffffff"/>
   <text x="185" y="30" text-anchor="middle" font-size="16" font-weight="bold">Proceso monohilo</text>
   <rect x="30" y="45" width="310" height="370" fill="#eef6ee" stroke="#4a7a4a" stroke-width="1.5"/>
@@ -247,6 +271,34 @@ stateDiagram-v2
     class en_espera stBloqueado;
 ```
 
+Visto como un recorrido, un proceso pasa por estaciones: entra en *Listo*, obtiene el único vehículo disponible (la CPU) para pasar a *Ejecución*, y de ahí puede volver a la cola al vencer el cuanto, quedar en *Espera* si necesita E/S, o detenerse en *Parado* con `SIGSTOP`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Listo: entra en la estación
+    Listo --> Ejecución: obtiene el único vehículo · CPU
+    Ejecución --> Listo: vence el cuanto
+    Ejecución --> Espera: necesita E/S o un suceso
+    Espera --> Listo: llega el recurso
+    Ejecución --> Parado: recibe SIGSTOP
+    Parado --> Listo: recibe SIGCONT
+    Ejecución --> Terminado: finaliza
+    Terminado --> [*]
+
+    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
+    classDef stParado fill:#fce5a8,stroke:#a67c00,color:#000;
+    classDef stTerminado fill:#d9d9d9,stroke:#555,color:#000;
+    class Listo stListo;
+    class Ejecución stEjecutando;
+    class Espera stBloqueado;
+    class Parado stParado;
+    class Terminado stTerminado;
+```
+
+*Un proceso no permanece siempre ejecutándose: alterna entre esperar su turno, usar la CPU y quedar bloqueado por sucesos o recursos.*
+
 ### Estados de un proceso en UNIX
 
 | Estado | Descripción |
@@ -385,6 +437,25 @@ stateDiagram-v2
 
 ### Creación de procesos: `fork()` / `wait()`
 
+La llamada `fork()` crea un nuevo proceso a partir del actual; desde ese punto, padre e hijo continúan como ejecuciones independientes y pueden a su vez crear más hijos, formando un árbol de procesos.
+
+```mermaid
+flowchart TB
+    S["shell · PID 1200"] --> A["programa · PID 1240"]
+    A -->|fork| B["hijo 1 · PID 1241"]
+    A -->|fork| C["hijo 2 · PID 1242"]
+    B -->|fork| D["nieto · PID 1243"]
+    A -. wait .-> B
+    A -. wait .-> C
+
+    classDef existente fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    classDef creado fill:#d9ead3,stroke:#4d7a33,color:#000;
+    class S,A existente;
+    class B,C,D creado;
+```
+
+*La llamada `fork()` crea un nuevo proceso a partir del proceso actual. Desde ese punto, padre e hijo continúan como ejecuciones independientes.*
+
 ```c
 #include <stdio.h>
 
@@ -451,86 +522,7 @@ gcc -o prog prog.c -lpthread
 
 ### Herramientas de gestión de procesos
 
-En Linux, los comandos `ps`, `top`, `jobs`, `fg`, `bg`, `kill` y `killall` permiten obtener información sobre el estado de ejecución de los procesos y modificarlo.
-
----
-
-## Galería visual complementaria
-
-### T03.1 · Procesos e hilos como cocinas
-
-![Dos cocinas independientes comparadas con varios cocineros que comparten una sola cocina](img/procesos-vs-hilos-cocinas.png)
-
-*Los procesos poseen espacios de memoria independientes. Los hilos de un mismo proceso comparten código, datos y recursos, pero cada uno mantiene su propia pila y estado de ejecución. Ilustración generada para estos apuntes.*
-
-### T03.2 · Programa pasivo y proceso activo
-
-```mermaid
-flowchart LR
-    P["Receta guardada<br/>PROGRAMA<br/>código pasivo"] -->|cargar y ejecutar| X
-    D["Ingredientes<br/>datos"] --> X
-    R["Herramientas abiertas<br/>ficheros y recursos"] --> X
-    C["Punto de trabajo<br/>PC · registros · pila"] --> X
-    X(("Cocinero trabajando<br/>PROCESO<br/>entidad activa"))
-
-    classDef pasivo fill:#d9d9d9,stroke:#555,color:#000;
-    classDef insumo fill:#eef2f7,stroke:#555,color:#000;
-    classDef activo fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    class P pasivo;
-    class D,R,C insumo;
-    class X activo;
-```
-
-*Un programa es código almacenado. Un proceso aparece cuando ese código se ejecuta junto con sus datos, pila, recursos y contexto del procesador.*
-
-### T03.3 · Árbol de procesos creado con `fork()`
-
-```mermaid
-flowchart TB
-    S["shell · PID 1200"] --> A["programa · PID 1240"]
-    A -->|fork| B["hijo 1 · PID 1241"]
-    A -->|fork| C["hijo 2 · PID 1242"]
-    B -->|fork| D["nieto · PID 1243"]
-    A -. wait .-> B
-    A -. wait .-> C
-
-    classDef existente fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef creado fill:#d9ead3,stroke:#4d7a33,color:#000;
-    class S,A existente;
-    class B,C,D creado;
-```
-
-*La llamada `fork()` crea un nuevo proceso a partir del proceso actual. Desde ese punto, padre e hijo continúan como ejecuciones independientes.*
-
-### T03.4 · Estados como estaciones de un recorrido
-
-```mermaid
-stateDiagram-v2
-    [*] --> Listo: entra en la estación
-    Listo --> Ejecución: obtiene el único vehículo · CPU
-    Ejecución --> Listo: vence el cuanto
-    Ejecución --> Espera: necesita E/S o un suceso
-    Espera --> Listo: llega el recurso
-    Ejecución --> Parado: recibe SIGSTOP
-    Parado --> Listo: recibe SIGCONT
-    Ejecución --> Terminado: finaliza
-    Terminado --> [*]
-
-    classDef stListo fill:#d9ead3,stroke:#4d7a33,color:#000;
-    classDef stEjecutando fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef stBloqueado fill:#fbe0e0,stroke:#b33,color:#000;
-    classDef stParado fill:#fce5a8,stroke:#a67c00,color:#000;
-    classDef stTerminado fill:#d9d9d9,stroke:#555,color:#000;
-    class Listo stListo;
-    class Ejecución stEjecutando;
-    class Espera stBloqueado;
-    class Parado stParado;
-    class Terminado stTerminado;
-```
-
-*Un proceso no permanece siempre ejecutándose: alterna entre esperar su turno, usar la CPU y quedar bloqueado por sucesos o recursos.*
-
-### T03.5 · El sistema visto desde un monitor de procesos
+En Linux, los comandos `ps`, `top`, `jobs`, `fg`, `bg`, `kill` y `killall` permiten obtener información sobre el estado de ejecución de los procesos y modificarlo. Las abstracciones del sistema operativo pueden observarse en tiempo real: cada fila de un monitor de procesos representa una tarea cuyo estado y consumo controla el núcleo.
 
 | PID | Usuario | Estado | CPU | Memoria | Comando |
 |-----|---------|--------|-----|---------|---------|
@@ -538,12 +530,8 @@ stateDiagram-v2
 | 1240 | ana | S | 02% | 18 MiB | editor |
 | 1241 | root | S | 00% | 06 MiB | servicio |
 
-*Resumen del sistema: CPU 42 % · RAM 5,1 / 8 GiB.*
-
-*Las abstracciones del sistema operativo pueden observarse en tiempo real: cada fila representa una tarea cuyo estado y consumo controla el núcleo.*
+*Resumen del sistema: CPU 42 % · RAM 5,1 / 8 GiB. Cada fila representa una tarea cuyo estado y consumo controla el núcleo.*
 
 ---
 
-## Material gráfico
-
-Todos los diagramas del Tema 2 están replicados como mermaid o SVG dentro de este documento (disposición de memoria monohilo/multihilo, diagrama básico de estados, diagrama completo de estados en UNIX, colas de estado, estados en Linux). No queda material fotográfico pendiente.
+Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

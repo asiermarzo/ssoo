@@ -9,9 +9,17 @@ Tema de ampliación.
 - Toolkits y entornos de escritorio.
 - Relación con el SO: eventos de entrada, framebuffer, aceleración por GPU.
 
+## Antecedentes: el Xerox Alto
+
+El Xerox Alto, desarrollado en Xerox PARC durante la década de 1970, reunió varias ideas que definirían la interacción gráfica posterior: pantalla de mapa de bits, ventanas, teclado y ratón.
+
+<img src="img/xerox-alto.jpg" width="440" alt="Estación de trabajo Xerox Alto con pantalla vertical, teclado, ratón y unidad central">
+
+<sub>Fuente: Maksym Kozlenko, CC BY-SA 4.0, vía Wikimedia Commons. [Ficha y licencia](https://commons.wikimedia.org/wiki/File:Xerox_Alto_computer.jpg).</sub>
+
 ## Arquitectura de un entorno gráfico (modelo X11)
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 320" font-family="sans-serif" font-size="12" role="img" aria-label="Las aplicaciones y el gestor de ventanas hablan con el servidor X mediante el protocolo X; el servidor X se apoya en el núcleo para acceder al hardware gráfico y de entrada">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 680 320" font-family="sans-serif" font-size="12" role="img" aria-label="Las aplicaciones y el gestor de ventanas hablan con el servidor X mediante el protocolo X; el servidor X se apoya en el núcleo para acceder al hardware gráfico y de entrada">
   <rect width="680" height="320" fill="#ffffff"/>
   <rect x="30" y="20" width="180" height="46" rx="6" fill="#eef2f7" stroke="#666"/><text x="120" y="48" text-anchor="middle">aplicación cliente 1</text>
   <rect x="250" y="20" width="180" height="46" rx="6" fill="#eef2f7" stroke="#666"/><text x="340" y="48" text-anchor="middle">aplicación cliente 2</text>
@@ -33,19 +41,11 @@ Tema de ampliación.
 
 En Wayland el compositor asume el papel del servidor X y del gestor de ventanas, y cada cliente dibuja en su propio búfer.
 
-## Galería visual complementaria
+## Composición de ventanas
 
-### T13.1 · El escritorio gráfico del Xerox Alto
+Las aplicaciones dibujan en superficies independientes. El compositor decide su posición, orden Z, recorte, transparencia y sombras, y produce el framebuffer final que se envía a la pantalla.
 
-![Estación de trabajo Xerox Alto con pantalla vertical, teclado, ratón y unidad central](img/xerox-alto.jpg)
-
-*El Xerox Alto, desarrollado en Xerox PARC durante la década de 1970, reunió varias ideas que definirían la interacción gráfica posterior: pantalla de mapa de bits, ventanas, teclado y ratón.*
-
-<sub>Fuente: Maksym Kozlenko, CC BY-SA 4.0, vía Wikimedia Commons. [Ficha y licencia](https://commons.wikimedia.org/wiki/File:Xerox_Alto_computer.jpg).</sub>
-
-### T13.2 · Las ventanas como láminas compuestas
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 260" font-family="sans-serif" font-size="12" role="img" aria-label="Tres aplicaciones dibujan en búferes independientes representados como láminas superpuestas; el compositor las combina en el framebuffer final que se muestra en pantalla">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 680 260" font-family="sans-serif" font-size="12" role="img" aria-label="Tres aplicaciones dibujan en búferes independientes representados como láminas superpuestas; el compositor las combina en el framebuffer final que se muestra en pantalla">
   <rect width="680" height="260" fill="#ffffff"/>
   <rect x="40" y="40" width="130" height="90" fill="#6ba3d6" fill-opacity="0.55" stroke="#2b6f99"/>
   <rect x="60" y="60" width="130" height="90" fill="#5cb85c" fill-opacity="0.55" stroke="#3d8b3d"/>
@@ -66,7 +66,9 @@ En Wayland el compositor asume el papel del servidor X y del gestor de ventanas,
 
 *Las aplicaciones dibujan en superficies independientes. El compositor decide su posición, orden, transparencia y presentación final.*
 
-### T13.3 · El viaje de un clic
+## El viaje de un clic
+
+Un clic atraviesa varias capas del sistema antes de convertirse en una respuesta visual.
 
 ```mermaid
 sequenceDiagram
@@ -84,7 +86,9 @@ sequenceDiagram
 
 *Un clic atraviesa varias capas del sistema antes de convertirse en una respuesta visual.*
 
-### T13.4 · X11 frente a Wayland
+## X11 frente a Wayland
+
+X11 distribuye el dibujo y los eventos mediante un servidor gráfico con funciones separadas. En Wayland, un compositor unificado coordina directamente clientes, entrada y presentación.
 
 ```mermaid
 flowchart TB
@@ -110,6 +114,4 @@ flowchart TB
 
 *X11 distribuye el dibujo y los eventos mediante un servidor gráfico. En Wayland, el compositor coordina directamente clientes, entrada y presentación.*
 
-## Material
-
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

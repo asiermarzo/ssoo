@@ -24,13 +24,9 @@ flowchart LR
     class BUF nucleo;
 ```
 
-Detalle en la práctica: [`PRACTICA/03`](../../PRACTICA/03-pipes-y-fifos/).
+Una pipe funciona como un tubo neumático de sentido único administrado por el núcleo: un proceso introduce una secuencia de bytes por el extremo de escritura y otro la recibe, en el mismo orden, por el extremo de lectura.
 
-## Galería visual complementaria
-
-### T07.1 · Una pipe como tubo neumático
-
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" font-family="sans-serif" font-size="12" role="img" aria-label="Una pipe como un tubo neumático de sentido único: el escritor introduce bytes por un extremo y el lector los recibe en el mismo orden por el otro">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" viewBox="0 0 640 200" font-family="sans-serif" font-size="12" role="img" aria-label="Una pipe como un tubo neumático de sentido único: el escritor introduce bytes por un extremo y el lector los recibe en el mismo orden por el otro">
   <rect width="640" height="200" fill="#ffffff"/>
   <text x="320" y="25" text-anchor="middle" font-size="11" fill="#666">sentido único →</text>
   <rect x="20" y="70" width="130" height="55" rx="6" fill="#6ba3d6" stroke="#2b6f99"/><text x="85" y="93" text-anchor="middle" fill="#fff" font-size="10">Proceso</text><text x="85" y="108" text-anchor="middle" fill="#fff" font-size="10">escritor</text>
@@ -49,7 +45,9 @@ Detalle en la práctica: [`PRACTICA/03`](../../PRACTICA/03-pipes-y-fifos/).
 
 *Una pipe es un canal unidireccional administrado por el núcleo: un proceso escribe una secuencia de bytes y otro la lee.*
 
-### T07.2 · Una pipeline de shell
+## Pipelines de shell
+
+La shell conecta la salida estándar de un programa con la entrada del siguiente (mediante `dup2` sobre los extremos de una pipe), formando herramientas complejas a partir de programas sencillos.
 
 ```mermaid
 flowchart LR
@@ -66,7 +64,9 @@ flowchart LR
 
 *La shell conecta la salida estándar de un programa con la entrada del siguiente, formando herramientas complejas a partir de programas sencillos.*
 
-### T07.3 · Pipe anónima frente a FIFO con nombre
+## Pipe anónima frente a FIFO con nombre
+
+Las pipes anónimas conectan procesos emparentados que heredan los descriptores. Una FIFO posee un nombre en el sistema de ficheros y permite conectar procesos que no comparten parentesco.
 
 ```mermaid
 flowchart TB
@@ -85,6 +85,4 @@ flowchart TB
 
 *Las pipes se usan normalmente entre procesos emparentados. Una FIFO posee un nombre y permite conectar procesos que no comparten parentesco.*
 
-## Material
-
-Las figuras complementarias de este tema están incluidas en la galería anterior y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Detalle en la práctica: [`PRACTICA/03`](../../PRACTICA/03-pipes-y-fifos/). Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
