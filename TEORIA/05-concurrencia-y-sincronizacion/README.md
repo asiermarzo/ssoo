@@ -1,10 +1,10 @@
 # Tema 4: Sincronización de procesos
 
-4.1 Conceptos básicos · 4.2 Problema de la sección crítica · 4.3 Semáforos · 4.4 Problemas clásicos de sincronización · 4.5 Monitores · 4.6 Interbloqueo.
+Conceptos básicos · Problema de la sección crítica · Semáforos · Problemas clásicos de sincronización · Monitores · Interbloqueo.
 
 ---
 
-## 4.1 Conceptos básicos
+## Conceptos básicos
 
 ### Recursos del sistema
 
@@ -55,7 +55,7 @@ Los procesos cooperantes pueden compartir espacios de direcciones o datos a trav
 
 **Mecanismos de sincronización entre procesos**: semáforos · monitores · paso de mensajes.
 
-## 4.2 Problema de la sección crítica
+## Problema de la sección crítica
 
 ### Exclusión mutua
 
@@ -136,7 +136,7 @@ La solución se implementa mediante distintos algoritmos; las instrucciones máq
 | **Interbloqueo** | Dos o más procesos esperan la ocurrencia de un evento que solo uno de los procesos que esperan puede causar. |
 | **Inanición** (bloqueo indefinido) | Los procesos interbloqueados esperan indefinidamente. |
 
-## 4.3 Semáforos
+## Semáforos
 
 Los **semáforos** son herramientas elementales de sincronización que evitan la **espera activa**. Un semáforo es una zona de memoria compartida que almacena un **entero no negativo** sobre el que solo puede actuarse con:
 
@@ -191,7 +191,7 @@ Proceso i                     Proceso j
     V(semA);                      V(semB);
 ```
 
-## 4.4 Problemas clásicos de sincronización
+## Problemas clásicos de sincronización
 
 Filósofos comensales · productor‑consumidor · lectores‑escritores.
 
@@ -361,7 +361,7 @@ Write_unlock:                        if (num_lecturas == 1) wait(sem_escritura);
                                      signal(mutex);
 ```
 
-## 4.5 Monitores
+## Monitores
 
 - El concepto de **monitor** fue definido por **Hoare (1974)**. Java emplea monitores para garantizar la exclusión mutua.
 - Un monitor es una herramienta evolucionada de sincronización: un **tipo abstracto de datos** para el cual, en cada instante, un proceso/hilo puede estar ejecutando **cualquiera de sus procedimientos miembro**.
@@ -432,7 +432,7 @@ En cuanto a la sincronización hay **tres combinaciones**:
 - El `send` **no bloqueante** es lo más natural para muchas tareas concurrentes, pero por error puede llevar a generar mensajes repetidamente.
 - El `receive` **bloqueante** es lo más natural: un proceso que solicita un mensaje suele necesitar la información antes de continuar.
 
-## 4.6 Interbloqueo
+## Interbloqueo
 
 El **interbloqueo**, bloqueo mutuo o *deadlock* es el bloqueo **permanente** de un conjunto de procesos/hilos en un sistema concurrente que compiten por recursos o se comunican entre ellos. **No existe una solución general.** Todos los interbloqueos surgen de necesidades que no pueden ser satisfechas por parte de dos o más procesos: varios procesos esperan acceder a recursos que nunca se liberarán porque los tienen ocupados los procesos implicados.
 

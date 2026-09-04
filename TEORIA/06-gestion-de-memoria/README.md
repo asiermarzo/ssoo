@@ -1,12 +1,12 @@
 # Temas 5 y 6: Gestión de la memoria principal y memoria virtual
 
-**Tema 5** — 5.1 Conceptos básicos · esquemas de gestión de memoria · asignación contigua (registro base y límite) · memoria particionada (MFT, MVT) · fragmentación · paginación · segmentación · segmentación paginada. **Tema 6** — 6.1 Concepto de memoria virtual · 6.2 Paginación bajo demanda · 6.3 Copy‑on‑write · 6.4 Fallos de página · 6.5 Algoritmos de reemplazo.
+**Tema 5** — Conceptos básicos · esquemas de gestión de memoria · asignación contigua (registro base y límite) · memoria particionada (MFT, MVT) · fragmentación · paginación · segmentación · segmentación paginada. **Tema 6** — Concepto de memoria virtual · Paginación bajo demanda · Copy‑on‑write · Fallos de página · Algoritmos de reemplazo.
 
 ---
 
 # Tema 5 — Gestión de la memoria principal
 
-## 5.1 Conceptos básicos
+## Conceptos básicos
 
 ### Jerarquía de memoria
 
@@ -281,7 +281,7 @@ Windows y Linux usan **segmentación paginada** (Windows 10 incluido). El estado
 
 # Tema 6 — Memoria virtual
 
-## 6.1 Concepto de memoria virtual
+## Concepto de memoria virtual
 
 La **memoria virtual** es una técnica que permite **ejecutar procesos que no caben totalmente en memoria principal** (programas más grandes que la memoria física) y ejecutar un **mayor número de procesos**. Es la separación entre la memoria lógica disponible para el usuario y la memoria principal: aunque los procesos se cargan en la **memoria real**, el usuario tiene la sensación de trabajar con más memoria de la físicamente disponible (**memoria virtual**), que se sitúa en **memoria secundaria**.
 
@@ -393,7 +393,7 @@ El **intercambio** usa un disco o parte de un disco (**dispositivo de swap**) co
 - Sin hardware de reubicación, el intercambio sería difícil por el problema del enlazado de direcciones; con él, se copia la imagen a la nueva memoria y se carga el registro de reubicación.
 - Los sistemas de tiempo compartido usan intercambio para dar servicio equitativo en un sistema sobrecargado: cuando el número de usuarios activos supera cierto umbral, el gestor de memoria empieza a intercambiar. El efecto lo percibe el usuario como un **incremento del tiempo de respuesta**.
 
-## 6.2 Paginación bajo demanda
+## Paginación bajo demanda
 
 - Similar a un sistema de paginación con intercambios: los procesos residen en disco y, al ejecutar un proceso, se lleva a memoria — pero con un **intercambiador perezoso** (*lazy swapper*) que nunca incorpora una página a memoria a menos que se necesite.
 - Un **intercambiador** manipula procesos enteros; un **paginador** trata individualmente las páginas de un proceso.
@@ -419,7 +419,7 @@ sequenceDiagram
 
 *Si una página necesaria no está en memoria, el núcleo detiene temporalmente el proceso, la carga desde disco y reanuda la instrucción.*
 
-## 6.3 Copy‑on‑write
+## Copy‑on‑write
 
 **Copy‑on‑write** (copiar al escribir, COW) es una política de optimización:
 
@@ -463,7 +463,7 @@ $ ps -a -ocomm,rssize | grep memalloc
 ./memalloc   524604       # (III) escribiendo todo
 ```
 
-## 6.4 Fallos de página
+## Fallos de página
 
 Un **fallo de página** es la secuencia de eventos que ocurre cuando un programa intenta acceder a datos o código que están en su espacio de direcciones pero **no están en la memoria principal**. El SO lo maneja haciendo residentes los datos accedidos, de modo que el programa continúa como si el fallo nunca hubiera ocurrido.
 
@@ -496,7 +496,7 @@ sequenceDiagram
     SO-->>P: reejecutar la instrucción
 ```
 
-## 6.5 Algoritmos de reemplazo
+## Algoritmos de reemplazo
 
 Ver la tabla de la sección de paginación (Tema 5): **FIFO**, **LRU**, **NRU**, **segunda oportunidad**, **envejecimiento**.
 

@@ -1,13 +1,12 @@
 # Tema 1: Introducción a los sistemas operativos y conceptos básicos
 
-## 1.1 Definición de sistema operativo
+## Definición de sistema operativo
 
 - **H. M. Deitel**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre el usuario de un ordenador y el hardware del mismo *(Deitel, Deitel y Choffnes,* Operating Systems*, 3.ª ed., 2004, §1.2)*.
 - **W. Stallings**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre las aplicaciones y el hardware del ordenador *(Stallings,* Operating Systems: Internals and Design Principles*, 8.ª ed., 2015, cap. 2)*.
 - **Silberschatz, Galvin y Gagne**: un programa que gestiona el hardware del ordenador; sirve de base a los programas de aplicación y actúa como intermediario entre el usuario y el hardware *(*Operating System Concepts*, 10.ª ed., 2018, cap. 1)*.
 - **A. Tanenbaum** — como máquina extendida: el sistema operativo presenta al usuario el equivalente de una máquina extendida (o virtual), más fácil de programar que el hardware subyacente *(Tanenbaum y Bos,* Modern Operating Systems*, 4.ª ed., 2014, §1.1.1)*.
 - **A. Tanenbaum** — como administrador de recursos: su tarea es proporcionar una asignación ordenada y controlada de los procesadores, la memoria y los dispositivos de E/S entre los programas que compiten por ellos *(ibid., §1.1.2)*.
-- **Arpaci-Dusseau** *(OSTEP)*: los sistemas operativos cogen un recurso físico (el procesador, la memoria, un disco) y lo transforman en una versión virtual de sí mismo — más general, potente y fácil de usar *(*Operating Systems: Three Easy Pieces*, cap. "Introduction", ostep.org, gratuito)*.
 
 **Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus programas (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para ellos, facilitando su programación, depuración y distribución.
 
@@ -55,13 +54,8 @@ Aunque tengan tamaño físico y función diferentes, un smartwatch, un móvil, u
 
 *Aunque cambien radicalmente de tamaño y función, todos estos dispositivos necesitan software que administre sus recursos y conecte las aplicaciones con el hardware. Ilustración generada para estos apuntes.*
 
-## 1.2 Componentes del sistema operativo
 
-El software de un computador se organiza en capas sobre el hardware. El sistema operativo se sitúa entre el hardware y el resto del software (compiladores, ensambladores, utilidades y aplicaciones):
-
-<img src="img/capas-software.svg" width="460" alt="Capas de software: aplicaciones, utilidades, sistema operativo y hardware apilados">
-
-Por debajo del sistema operativo hay una máquina física que sigue la **arquitectura de Von Neumann**.
+## Conceptos básicos previos
 
 ### Arquitectura de Von Neumann
 
@@ -99,7 +93,7 @@ sub   R1, R2     ; R1 <- R1 - 100
 store R1, d      ; memoria[d] <- R1
 ```
 
-Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilador real genera instrucciones equivalentes para una CPU concreta, ver en Compiler Explorer, está en el [material extra](material-extra/material_extra.md#3-del-código-c-al-código-máquina).
+Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilador real genera instrucciones equivalentes para una CPU concreta, ver en Compiler Explorer, está en el [material extra](material-extra/material_extra.md#del-código-c-al-código-máquina).
 
 **Ruta de datos**: los registros aportan a la unidad funcional el operando izquierdo y el derecho; ésta calcula el resultado, lo deja en un registro y actualiza los registros de estado. Los registros intercambian datos con la memoria primaria.
 
@@ -120,8 +114,6 @@ Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilado
 - **Operación de salida**: la CPU obtiene información de la memoria principal y la coloca en sus registros para volcarla sobre un dispositivo de salida con ayuda del bus de datos.
   - *Pantalla*: la CPU toma de la memoria principal los datos del framebuffer, los pasa a sus registros y los vuelca por el bus de datos al controlador gráfico, que los envía al monitor.
   - *Impresora*: la CPU lee de la memoria principal el texto o la imagen a imprimir, lo coloca en sus registros y lo transfiere por el bus de datos al controlador de la impresora.
-
-## 1.3 Conceptos básicos de los sistemas operativos
 
 
 ### Interrupciones
@@ -191,7 +183,7 @@ Esta pirámide existe por **coste**: la memoria rápida (SRAM de registros y cac
 | Caché L2 | ~3–5 ns (~12–15 ciclos) | 256 KB–2 MB por núcleo | ~1000 €/GB (estimado, SRAM) |
 | RAM DDR4 | ~60–90 ns (~200–300 ciclos) | 8–128 GB | ~2–4 €/GB |
 
-## 1.5 Estructuras de los sistemas operativos
+## Estructuras de los sistemas operativos
 
 En su forma más básica, el sistema operativo es un **conjunto de funciones** que implementan sus tareas: `fork()` para crear un proceso, `read()` para leer de un fichero, `kmalloc()` para reservar memoria del núcleo, `schedule()` para elegir el siguiente proceso, etc.
 
@@ -230,7 +222,7 @@ Hay microkernels que meten código **no esencial** en espacio de núcleo para qu
 
 Linux, aunque es monolítico, soporta **módulos cargables** (`insmod`/`rmmod`, `modprobe`) que añaden o quitan código al núcleo en caliente; así se instala el *driver* de una tarjeta wifi nueva sin tener que reconstruir el resto del kernel.
 
-## 1.6 Clases de sistemas operativos
+## Clases de sistemas operativos
 
 Dos bloques: primero una **evolución histórica**, cada paso resolviendo el desperdicio de CPU del anterior; luego una **clasificación** de los sistemas actuales según su arquitectura y su uso.
 
@@ -342,10 +334,3 @@ timeline
 | **1980‑1990** | Tiempo real y empotrados | La corrección depende también del **instante** de entrega: determinismo, responsividad, tolerancia a fallos. Empotrados: hardware mínimo, ensamblador o C, bajo consumo | Recursos muy escasos; difícil garantizar los plazos; poca portabilidad; herramientas de desarrollo limitadas | VxWorks, QNX, VRTX, pSOS |
 | **1990‑2000** | Ordenador personal y software libre | GUI de uso masivo; redes domésticas; **Linux** (Torvalds, 1991) = núcleo tipo Unix + herramientas **GNU** (Stallman, 1983): código abierto, portable, sin dependencia de un fabricante | Fragmentación y problemas de compatibilidad de controladores; curva de aprendizaje | **Windows 3.x/9x/NT**, **Mac OS**, **Linux**, distintos UNIX comerciales (Solaris, AIX, HP‑UX) |
 | **2000‑** | Dispositivos móviles y computación ubicua | Diseño para batería y conectividad inalámbrica; pantalla táctil; tiendas de aplicaciones; organización en capas (**kernel**, ***middleware***, entorno de ejecución con APIs, interfaz de usuario) | Autonomía de la batería, seguridad y privacidad, diversidad de dispositivos | **Android** (núcleo Linux), **iOS** (núcleo Darwin/XNU); antes Symbian, BlackBerry OS, Windows Phone |
-
----
-
-## Material gráfico
-
-Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (no reproducible), a criterio del profesor: retratos y fotos históricas (Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I) y las cronologías (*timelines*) de familias de sistemas operativos, enlazadas a Wikipedia en la sección «Cronologías».
-

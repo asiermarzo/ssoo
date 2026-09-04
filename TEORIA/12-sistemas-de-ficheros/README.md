@@ -1,10 +1,10 @@
 # Tema 8: Sistema de ficheros
 
-8.1 Abstracción del sistema de ficheros · 8.2 Conceptos de fichero y directorio · 8.3 Nombrado del fichero, propietarios y permisos · 8.4 Estructura y almacenamiento del fichero · 8.5 Seguridad en los sistemas de ficheros · 8.6 Sistemas de ficheros.
+Abstracción del sistema de ficheros · Conceptos de fichero y directorio · Nombrado del fichero, propietarios y permisos · Estructura y almacenamiento del fichero · Seguridad en los sistemas de ficheros · Sistemas de ficheros.
 
 ---
 
-## 8.1 Abstracción del sistema de ficheros
+## Abstracción del sistema de ficheros
 
 - Para el **usuario**, un archivo es un conjunto de datos con un nombre asociado que reside en un dispositivo de almacenamiento permanente.
 - Para el **sistema operativo**, un archivo es un **tipo abstracto de datos** que permite gestionar el acceso de los procesos a los dispositivos de almacenamiento permanente.
@@ -32,7 +32,7 @@ Un **sistema de archivos** es la estructura de datos que permite almacenar archi
 
 <img src="img/traduccion-registro-flujo-bloque.svg" width="620" alt="Cadena de traducción registro-flujo-bloque: de registros a flujo y de flujo a bloques">
 
-## 8.2 Conceptos de fichero y directorio
+## Conceptos de fichero y directorio
 
 El sistema de archivos es un **servicio** para los usuarios: acceder a los dispositivos es incómodo, requiere conocer detalles físicos, depende de direcciones físicas (no seguro) y, a nivel físico, el usuario no tiene restricciones.
 
@@ -112,7 +112,7 @@ flowchart LR
 | 4 | Nodo‑i 26 | modo · tamaño · tiempos · datos en el **bloque 406** | `/usr/ast` está en el bloque 406 |
 | 5 | Bloque 406 (directorio de `/usr/ast`) | `26 .` · `6 ..` · `64 grants` · `92 books` · `60 mbox` · `81 minix` · `17 src` | `/usr/ast/mbox` es el **nodo‑i 60** |
 
-## 8.3 Nombrado del fichero, propietarios y permisos
+## Nombrado del fichero, propietarios y permisos
 
 - La mayoría de los sistemas de archivos modernos permiten asignar **permisos** (derechos de acceso) a usuarios y grupos, restringiendo o permitiendo visualización, modificación y/o ejecución.
 - **UNIX, POSIX, Linux y macOS X** tienen un sistema simple para archivos individuales. POSIX especifica **listas de control de acceso (ACL)**, pero solo lo implementan ciertos sistemas.
@@ -155,7 +155,7 @@ flowchart LR
 
 *Los permisos determinan qué operaciones puede realizar cada categoría de usuario sobre un fichero.*
 
-## 8.4 Estructura y almacenamiento del fichero
+## Estructura y almacenamiento del fichero
 
 ### Primitivas de acceso
 
@@ -227,7 +227,7 @@ Al leer un bloque: (1) comprobar si está en la caché; si no, leerlo del dispos
 - Todo directorio contiene al menos **`.`** (el propio directorio) y **`..`** (enlace a su directorio padre).
 - Cada directorio y su contenido pueden pertenecer a un punto de montaje distinto.
 
-## 8.6 Sistemas de ficheros
+## Sistemas de ficheros
 
 | SO | Sistemas de ficheros |
 |----|----------------------|
@@ -288,7 +288,7 @@ Visto como un adaptador universal: las aplicaciones usan siempre las mismas llam
 
 *El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados con formatos diferentes.*
 
-## 8.5 Seguridad en los sistemas de ficheros
+## Seguridad en los sistemas de ficheros
 
 El sistema de ficheros debe **garantizar la consistencia** de los datos y que solo los usuarios **autorizados** accedan a ellos para operaciones autorizadas (lectura, escritura, ejecución).
 

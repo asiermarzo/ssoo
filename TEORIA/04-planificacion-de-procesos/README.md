@@ -1,10 +1,10 @@
 # Tema 3: Planificación de procesos
 
-3.1 Conceptos básicos · 3.2 Criterios de planificación · 3.3 Algoritmos de planificación.
+Conceptos básicos · Criterios de planificación · Algoritmos de planificación.
 
 ---
 
-## 3.1 Conceptos básicos
+## Conceptos básicos
 
 Un sistema operativo multiusuario puede cargar en memoria principal varios procesos simultáneamente (**multiplexación espacial**), con sus hilos, y compartir la CPU mediante **multiplexación en el tiempo**. Las máquinas abstractas parecen ejecutarse a la vez, produciéndose un funcionamiento **concurrente** gracias a altas tasas de multiplexación en MP y CPU. Los sistemas multiprogramados permiten que, mientras un hilo espera por una operación de E/S, otro hilo ocupe su CPU.
 
@@ -102,7 +102,7 @@ t_camCont ≈ 2 · (#regGen + #regEst) · #almReg · t_insAlm
 - `#almReg`: número de operaciones de almacenamiento para guardar un registro.
 - `t_insAlm`: tiempo empleado en una instrucción de almacenamiento.
 
-## 3.2 Criterios de planificación
+## Criterios de planificación
 
 En los sistemas de tiempo compartido a veces es necesario desalojar procesos de la CPU e introducir otros (**intercambio**).
 
@@ -155,7 +155,7 @@ Las decisiones de planificación a corto plazo se deben a: (1) un proceso finali
 - **No apropiativa (sin desplazamiento)**: una vez asignado el procesador a un proceso, no se le puede retirar hasta que voluntariamente lo deje, finalice o se bloquee.
 - **Apropiativa (con desplazamiento)**: el SO puede apropiarse del procesador cuando lo decida.
 
-## 3.3 Algoritmos de planificación
+## Algoritmos de planificación
 
 ### Criterios de evaluación
 

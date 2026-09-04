@@ -1,10 +1,10 @@
 # Tema 7: Dispositivos de Entrada/Salida
 
-7.1 Conceptos básicos · 7.2 Funciones de entrada/salida · 7.3 Almacenamiento intermedio · 7.4 Tipos de discos duros · 7.5 Planificación de discos · 7.6 Caché de disco · 7.7 Entrada/salida en Linux.
+Conceptos básicos · Funciones de entrada/salida · Almacenamiento intermedio · Tipos de discos duros · Planificación de discos · Caché de disco · Entrada/salida en Linux.
 
 ---
 
-## 7.1 Conceptos básicos
+## Conceptos básicos
 
 - Los **controladores** son la interfaz **software** entre el hardware del dispositivo y el sistema operativo.
 - Para lograr **homogeneidad** en el conjunto de instrucciones que el SO puede invocar sobre un dispositivo, se dispone de **manejadores de dispositivos**: un conjunto de funciones que abstraen el funcionamiento de un controlador concreto.
@@ -43,7 +43,7 @@ flowchart TB
 
 *Los dispositivos de bloque transfieren unidades direccionables de datos; los de carácter producen o consumen secuencias continuas.*
 
-## 7.2 Funciones de entrada/salida
+## Funciones de entrada/salida
 
 - El acceso mediante **E/S directa** transfiere los datos de entrada desde el controlador a un registro de la CPU y de éste a memoria principal (ídem para la salida).
 - El acceso mediante **DMA** transfiere los datos entre el controlador y la memoria principal **directamente**.
@@ -159,7 +159,7 @@ E/S con interrupciones:  tiempo_sobrecarga = tiempo_manejador + tiempo_listo
 
 Con varios hilos de ejecución y solapamiento mediante interrupciones, el `tiempo_total` deja de ser la suma de los `tiempo_total` individuales: mientras un hilo hace E/S (`tiempo_dispositivo`), otro computa (`tiempo_cómputo`). **Al emplear interrupciones se reduce el tiempo medio de ejecución de cada proceso.**
 
-## 7.3 Almacenamiento intermedio
+## Almacenamiento intermedio
 
 Un **búfer** es un almacenamiento en memoria principal que se emplea en la gestión de dispositivos de E/S para **mantener su ocupación** cuando un proceso no solicita operaciones de E/S, de modo que se **solapan** el funcionamiento del dispositivo y de la CPU. Permite realizar tareas en paralelo y reducir los tiempos de espera.
 
@@ -170,7 +170,7 @@ Un **búfer** es un almacenamiento en memoria principal que se emplea en la gest
 
 <img src="img/doble-bufer.svg" width="520" alt="Doble búfer: mientras el dispositivo llena un búfer, el proceso vacía el otro; los papeles se alternan en el instante siguiente">
 
-## 7.4 Tipos de discos duros
+## Tipos de discos duros
 
 | Tipo | Descripción |
 |------|-------------|
@@ -180,7 +180,7 @@ Un **búfer** es un almacenamiento en memoria principal que se emplea en la gest
 
 **Tipos de conexión**: **SATA** (discos internos) · **NVMe** (SSD de alta velocidad, placa base) · **USB** (discos externos) · **tarjetas SD** (externos).
 
-## 7.5 Planificación de discos
+## Planificación de discos
 
 ### Geometría del disco
 
@@ -239,7 +239,7 @@ SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza a
 
 *SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor.*
 
-## 7.6 Caché de disco
+## Caché de disco
 
 Es un conjunto de **búferes de memoria**, cada uno del tamaño de un bloque de disco. Cuando un proceso quiere acceder a un bloque, el **sistema de ficheros** (parte del SO) busca primero una copia en la caché:
 
@@ -248,7 +248,7 @@ Es un conjunto de **búferes de memoria**, cada uno del tamaño de un bloque de 
 
 Como la memoria es mucho más rápida que el disco y los bloques más frecuentes se leen (salvo la primera vez) de memoria principal, se **reduce el tiempo de E/S**.
 
-## 7.7 Entrada/salida en UNIX
+## Entrada/salida en UNIX
 
 <img src="img/es-unix.svg" width="420" alt="Capas de E/S en UNIX: programas y aplicaciones, herramientas del sistema, kernel y hardware">
 

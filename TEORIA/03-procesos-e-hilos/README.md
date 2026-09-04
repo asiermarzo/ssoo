@@ -1,10 +1,10 @@
 # Tema 2: Procesos e hilos
 
-2.1 Concepto de proceso · 2.2 Concepto de hilo · 2.3 Diferencias entre proceso e hilo · 2.4 Operaciones de los procesos · 2.5 Estados de un proceso · 2.6 Mecanismos de comunicación entre procesos.
+Concepto de proceso · Concepto de hilo · Diferencias entre proceso e hilo · Operaciones de los procesos · Estados de un proceso · Mecanismos de comunicación entre procesos.
 
 ---
 
-## 2.1 Concepto de proceso
+## Concepto de proceso
 
 Un **proceso** es la ejecución de una aplicación o programa sobre un computador de Von Neumann. Un proceso incluye:
 
@@ -54,7 +54,7 @@ El sistema operativo realiza una **multiplexación espacial** de la memoria prin
 
 En la literatura se usan indistintamente **proceso** (*process*), **tarea** (*task*) y **trabajo** (*job*).
 
-## 2.2 Concepto de hilo
+## Concepto de hilo
 
 Un **hilo** es la parte del proceso relacionada con la ejecución del código dentro del entorno computacional protegido definido por el proceso.
 
@@ -82,7 +82,7 @@ Además, aportan eficiencia en la comunicación entre programas en ejecución y 
 | **Transición** | Tras una espera, el hilo está listo para ejecutar pero alguno de sus recursos no está disponible aún. |
 | **Terminado** | El hilo termina normalmente o su proceso padre ha terminado. |
 
-## 2.3 Diferencias entre proceso e hilo
+## Diferencias entre proceso e hilo
 
 Los procesos son como cocinas independientes, cada una con su despensa, su banco de trabajo y su receta; los hilos de un mismo proceso son varios cocineros que comparten la misma cocina, aunque cada uno lleve su tabla de preparación personal (su pila y su estado de ejecución).
 
@@ -129,7 +129,7 @@ Las cuatro combinaciones posibles son:
 | **Un proceso** | Un proceso, un hilo | Un proceso, múltiples hilos |
 | **Múltiples procesos** | Múltiples procesos, un hilo por proceso | Múltiples procesos, múltiples hilos por proceso |
 
-## 2.4 Operaciones de los procesos
+## Operaciones de los procesos
 
 ### Descripción de procesos
 
@@ -216,7 +216,7 @@ flowchart LR
     class FIN fin;
 ```
 
-## 2.5 Estados de un proceso
+## Estados de un proceso
 
 Diagrama de estados básico:
 
@@ -321,7 +321,7 @@ stateDiagram-v2
     class Z stZombie;
 ```
 
-## 2.6 Mecanismos de comunicación entre procesos
+## Mecanismos de comunicación entre procesos
 
 - **Tuberías** (*pipe*).
 - **Memoria compartida** (SHM) y **semáforos** (SEM).

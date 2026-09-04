@@ -1,11 +1,11 @@
 # Tema 1 · Material extra: tres demostraciones en máquina
 
 
-## 1. El sistema operativo gestiona varios procesos a la vez
+## El sistema operativo gestiona varios procesos a la vez
 
 Un proceso es un **programa en memoria**, con espacio reservado para su código y sus datos y con tiempo de CPU asignado. El SO tiene varios a la vez y los coordina.
 
-### 1.1 Ver tus procesos
+### Ver tus procesos
 
 ```bash
 top -u $USER          # procesos del usuario actual, en tiempo real
@@ -15,7 +15,7 @@ ps -u $USER -o pid,ppid,stat,%cpu,%mem,rss,comm
 
 Cada línea es un proceso: tiene un **PID**, un padre (**PPID**), un estado, un porcentaje de CPU y una cantidad de memoria residente (`RSS`, KiB de RAM que ocupa ahora mismo). Solo con una sesión de escritorio ya hay decenas de procesos: el shell, el navegador, el gestor de ventanas, servicios del sistema… todos comparten una sola CPU física (o unos pocos núcleos) y una sola memoria.
 
-### 1.2 Un proceso que falla no tumba el sistema
+### Un proceso que falla no tumba el sistema
 
 Con un SO, la CPU genera una **interrupción de la clase «programa»** (Tema 1, tabla de clases de interrupciones), el SO la recoge, **mata solo al proceso culpable** y sigue funcionando.
 
@@ -26,7 +26,7 @@ Con un SO, la CPU genera una **interrupción de la clase «programa»** (Tema 1,
 
 El shell imprime el motivo: la señal con la que el SO ha matado al proceso. Los dos programas cascan, pero el shell (y el resto del sistema) siguen vivos.
 
-### 1.3 El mapa de memoria de un proceso: código, pila y heap
+### El mapa de memoria de un proceso: código, pila y heap
 
 `direcciones.c` declara **tres variables locales** (pila) y hace **tres reservas con `malloc`** (heap), e imprime la dirección de todas y la de `main` (código).
 
@@ -56,7 +56,7 @@ heap     h3    = 0x55555555aac0
 
 Todas son **direcciones virtuales**: el SO y la MMU dan a cada proceso su propio mapa, así que dos procesos pueden ver la misma dirección sin pisarse.
 
-### 1.4 El planificador reparte la CPU
+### El planificador reparte la CPU
 
 `primos_cpu.c` busca primos a tope durante ~3 s, imprime el último y espera un ENTER.
 
@@ -73,7 +73,7 @@ Es la multiprogramación del Tema 1: la CPU nunca está ociosa si hay trabajo pe
 
 ---
 
-## 2. Tres formas de llegar a la ejecución
+## Tres formas de llegar a la ejecución
 
 ```mermaid
 flowchart LR
@@ -106,11 +106,11 @@ La constante: para que la CPU haga algo, **siempre** hay que acabar en código m
 
 ---
 
-## 3. Del código C al código máquina
+## Del código C al código máquina
 
 **Compiler Explorer** — <https://godbolt.org>. Pega el fuente a la izquierda, elige *x86-64 gcc* y en el panel derecho aparece el ensamblador.
 
-### 3.1 Instrucciones y registros básicos
+### Instrucciones y registros básicos
 
 Con `a = b + c;` el compilador genera 3 o 4 instrucciones de los tipos vistos en el Tema 1 (transferencia y aritmético-lógicas):
 
@@ -124,7 +124,7 @@ mov     DWORD PTR [rbp-4], eax     ; transferencia: guarda el resultado en a
 - **Registros especiales**: `rip` = contador de programa (**PC**), `rsp` = puntero de la cima de la pila, `rbp` = puntero al marco de pila actual (*base pointer*, referencia fija desde la que se accede a variables locales y argumentos), `rflags` = registros de estado (bit *zero*, *carry*, *sign*, *overflow*…).
 - `cmp a, b` + `je etiqueta` (*jump if equal*) es el salto condicional: `cmp` fija los flags y `je` salta según el bit *zero*. Así se construyen `if` y bucles.
 
-### 3.2 Subrutinas — `cuadrado.c`
+### Subrutinas — `cuadrado.c`
 
 ```c
 int cuadrado(int x) { return x * x; }
@@ -151,7 +151,7 @@ cuadrado:
 - La subrutina recibe los argumentos en registros (`rdi`, `rsi`, `rdx`, `rcx`, `r8`, `r9`; los demás en la pila) y devuelve el resultado en `rax`.
 - Cada llamada crea un **marco de pila** (variables locales + dirección de retorno). Las llamadas anidadas apilan marcos; cada `ret` desapila el suyo. Es el mismo mecanismo que usa la CPU para guardar el contexto al atender una interrupción.
 
-### 3.3 Interrupciones y llamadas al sistema — `escribe.c`
+### Interrupciones y llamadas al sistema — `escribe.c`
 
 ```c
 #include <unistd.h>
