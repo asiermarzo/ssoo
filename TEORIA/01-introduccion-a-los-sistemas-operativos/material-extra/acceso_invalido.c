@@ -4,7 +4,7 @@
  * al resto del sistema. Sin proteccion de memoria, un acceso asi podria
  * corromper cualquier cosa y dejar la maquina en un estado de error.
  *
- *   gcc -Wall -Wextra -O0 -o acceso_invalido acceso_invalido.c
+ *   gcc acceso_invalido.c -Wall -Wextra -O0 -o acceso_invalido
  *   ./acceso_invalido        -> "Segmentation fault (core dumped)"  (SIGSEGV)
  */
 #include <stdio.h>

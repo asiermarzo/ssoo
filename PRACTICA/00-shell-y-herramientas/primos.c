@@ -3,7 +3,7 @@
  * sin imprimir nada mas y sin terminar nunca (no casca, no consume CPU util).
  * El objetivo es engancharse con gdb al proceso ya en marcha y ver por que.
  *
- *   gcc -g -Wall -Wextra -o primos primos.c
+ *   gcc primos.c -g -Wall -Wextra -o primos
  *   ./primos      -> deberia imprimir 2 3 5 7 11 y terminar
  */
 #include <stdio.h>

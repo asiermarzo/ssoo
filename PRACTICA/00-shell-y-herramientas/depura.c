@@ -2,7 +2,7 @@
  * con N pequeno da un resultado erroneo y con N grande termina abruptamente.
  * El objetivo es encontrarlo con gdb (y con valgrind).
  *
- *   gcc -g -Wall -Wextra -o depura depura.c
+ *   gcc depura.c -g -Wall -Wextra -o depura
  *   ./depura 5        -> deberia imprimir 15
  *   ./depura 500      -> deberia imprimir 125250
  */

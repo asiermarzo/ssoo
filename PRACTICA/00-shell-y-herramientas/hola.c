@@ -1,6 +1,6 @@
 /* hola.c — primer programa: editar, compilar y ejecutar.
  *
- *   gcc -Wall -Wextra -o hola hola.c
+ *   gcc hola.c -Wall -Wextra -o hola
  *   ./hola
  */
 #include <stdio.h>

@@ -1,9 +1,9 @@
-# Tema 1 · Material extra: tres demostraciones en máquina
+# Tema 1 Extra: tres demostraciones en máquina
 
 
 ## El sistema operativo gestiona varios procesos a la vez
 
-Un proceso es un **programa en memoria**, con espacio reservado para su código y sus datos y con tiempo de CPU asignado. El SO tiene varios a la vez y los coordina.
+Un proceso es un **programa en memoria**, con espacio reservado para su código y sus datos y con tiempo de CPU asignado. El SO tiene varios a la vez y reparte la CPU y memoria entre ellos.
 
 ### Ver tus procesos
 
@@ -13,11 +13,11 @@ top -u $USER          # procesos del usuario actual, en tiempo real
 ps -u $USER -o pid,ppid,stat,%cpu,%mem,rss,comm
 ```
 
-Cada línea es un proceso: tiene un **PID**, un padre (**PPID**), un estado, un porcentaje de CPU y una cantidad de memoria residente (`RSS`, KiB de RAM que ocupa ahora mismo). Solo con una sesión de escritorio ya hay decenas de procesos: el shell, el navegador, el gestor de ventanas, servicios del sistema… todos comparten una sola CPU física (o unos pocos núcleos) y una sola memoria.
+Cada línea es un proceso: tiene un **PID**, un padre (**PPID**), un estado, un porcentaje de CPU y una cantidad de memoria. Solo con una sesión de escritorio ya hay decenas de procesos: el shell, el navegador, el gestor de ventanas, servicios del sistema… todos comparten una sola CPU y memoria.
 
 ### Un proceso que falla no tumba el sistema
 
-Con un SO, la CPU genera una **interrupción de la clase «programa»** (Tema 1, tabla de clases de interrupciones), el SO la recoge, **mata solo al proceso culpable** y sigue funcionando.
+Cuando un proceso genera un error, la CPU genera una **interrupción de la clase «programa»**, el SO la atiende, **mata solo al proceso culpable** y sigue funcionando. Además puede grabar información de diagnóstico que nos será de ayuda para arreglar el fallo.
 
 ```bash
 ./acceso_invalido      # -> "Segmentation fault (core dumped)"        SIGSEGV
@@ -31,7 +31,7 @@ El shell imprime el motivo: la señal con la que el SO ha matado al proceso. Los
 `direcciones.c` declara **tres variables locales** (pila) y hace **tres reservas con `malloc`** (heap), e imprime la dirección de todas y la de `main` (código).
 
 ```bash
-gcc -Wall -Wextra -O0 -o direcciones direcciones.c
+gcc direcciones.c -Wall -Wextra -O0 -o direcciones
 ./direcciones
 ```
 
@@ -52,7 +52,7 @@ heap     h3    = 0x55555555aac0
 - El **código** (`&main`) está en direcciones bajas.
 - La **pila** está en la parte alta del espacio (`0x7fff…`), muy lejos del resto; crece **hacia direcciones bajas**.
 - El **heap** justo detrás del código; cada `malloc` devuelve una dirección **mayor** que el anterior, así que crece **hacia direcciones altas**.
-- Pila y heap arrancan en **extremos opuestos** y crecen **una hacia la otra**, con un hueco en medio.
+- Pila y heap empiezan en **extremos opuestos** y crecen **una hacia la otra**, con un hueco en medio.
 
 Todas son **direcciones virtuales**: el SO y la MMU dan a cada proceso su propio mapa, así que dos procesos pueden ver la misma dirección sin pisarse.
 
@@ -61,7 +61,7 @@ Todas son **direcciones virtuales**: el SO y la MMU dan a cada proceso su propio
 `primos_cpu.c` busca primos a tope durante ~3 s, imprime el último y espera un ENTER.
 
 ```bash
-gcc -Wall -Wextra -O2 -o primos_cpu primos_cpu.c
+gcc primos_cpu.c -Wall -Wextra -O2 -o primos_cpu
 ```
 
 ejecuta `htop` en una terminal y **dos o tres** copias de `./primos_cpu`
@@ -85,7 +85,7 @@ flowchart LR
 
 ```bash
 # C: fuente -> binario -> ejecución
-gcc -Wall -Wextra -o hola hola.c #crea hola binario nativo ELF
+gcc hola.c -Wall -Wextra -o hola #crea hola binario nativo ELF
 ./hola
 
 # Python: el intérprete lee el fuente y lo ejecuta

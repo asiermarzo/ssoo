@@ -69,7 +69,7 @@ Para volver m√°s tarde: [github.com/codespaces](https://github.com/codespaces) ‚
 
 ```bash
 cd PRACTICA/00-shell-y-herramientas
-gcc -Wall -Wextra -o hola hola.c
+gcc hola.c -Wall -Wextra -o hola
 ./hola
 ```
 

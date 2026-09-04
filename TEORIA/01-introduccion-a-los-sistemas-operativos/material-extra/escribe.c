@@ -3,7 +3,7 @@
  * acaba en la instruccion 'syscall': una interrupcion software que pasa la
  * CPU a modo nucleo para que el SO haga la E/S.
  *
- *   gcc -Wall -Wextra -O2 -static -S escribe.c -o escribe.s
+ *   gcc escribe.c -Wall -Wextra -O2 -static -S -o escribe.s
  *   objdump -d ./escribe | less     # buscar 'syscall'
  */
 #include <unistd.h>

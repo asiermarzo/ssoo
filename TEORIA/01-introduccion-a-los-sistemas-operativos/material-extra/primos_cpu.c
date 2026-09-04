@@ -6,7 +6,7 @@
  * procesos que compiten por ella (y como al pulsar ENTER en uno, ese deja
  * de consumir y los demas aprovechan su hueco).
  *
- *   gcc -Wall -Wextra -O2 -o primos_cpu primos_cpu.c
+ *   gcc primos_cpu.c -Wall -Wextra -O2 -o primos_cpu
  *   ./primos_cpu
  */
 #include <stdio.h>

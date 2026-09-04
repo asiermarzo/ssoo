@@ -22,7 +22,7 @@ Levanta con una sola orden una sesión de tmux con tres paneles:
 
 ```bash
 cd PRACTICA/00-shell-y-herramientas/tmux-demo
-gcc -g -O0 -Wall -Wextra -o demo demo.c
+gcc demo.c -g -O0 -Wall -Wextra -o demo
 tmux kill-server 2>/dev/null      # cierra cualquier sesión anterior (2>/dev/null: calla el error si no había ninguna)
 tmux -f sesion.conf attach        # arranca tmux leyendo sesion.conf (que monta los paneles) y se conecta a la sesión
 ```

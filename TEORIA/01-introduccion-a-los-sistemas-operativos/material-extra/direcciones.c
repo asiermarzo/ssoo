@@ -8,7 +8,7 @@
  *     malloc() devuelve una direccion MAYOR que el anterior;
  *   pila y heap parten de extremos opuestos y crecen una hacia la otra.
  *
- *   gcc -Wall -Wextra -O0 -o direcciones direcciones.c
+ *   gcc direcciones.c -Wall -Wextra -O0 -o direcciones
  *   ./direcciones
  */
 #include <stdio.h>

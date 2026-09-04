@@ -1,6 +1,6 @@
 /* saluda.c — saluda al nombre recibido como argumento de linea de comandos.
  *
- *   gcc -Wall -Wextra -o saluda saluda.c
+ *   gcc saluda.c -Wall -Wextra -o saluda
  *   ./saluda Ana        ->  Hola, Ana
  *   ./saluda            ->  mensaje de uso y codigo de salida 1
  */

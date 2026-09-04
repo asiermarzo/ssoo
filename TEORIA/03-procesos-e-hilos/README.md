@@ -482,7 +482,7 @@ main() {
 ```
 
 ```bash
-gcc -o prog prog.c -lpthread
+gcc prog.c -lpthread -o prog
 ```
 
 ### Herramientas de gestión de procesos

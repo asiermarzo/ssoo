@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```bash
-$ gcc -Wall -Wextra -o saluda saluda.c
+$ gcc saluda.c -Wall -Wextra -o saluda
 $ ./saluda Ana
 Hola, Ana
 $ ./saluda
@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```bash
-$ gcc -g -Wall -Wextra -o depura depura.c     # compila sin avisos...
+$ gcc depura.c -g -Wall -Wextra -o depura     # compila sin avisos...
 $ ./depura 5
 Suma 1..5 = 21855                             # ...pero el resultado es erróneo (debería ser 15)
 $ ./depura 500
@@ -451,7 +451,7 @@ Se puede enganchar `gdb` al proceso mientras sigue vivo y ver qué está haciend
 Fichero de ejemplo: [`primos.c`](primos.c). Debería imprimir los 5 primeros primos y terminar, pero se cuelga:
 
 ```bash
-$ gcc -g -Wall -Wextra -o primos primos.c
+$ gcc primos.c -g -Wall -Wextra -o primos
 $ ./primos
 2
 3
@@ -530,7 +530,7 @@ while (encontrados < 5) {
 
 ```bash
 cd PRACTICA/00-shell-y-herramientas/tmux-demo
-gcc -g -O0 -Wall -Wextra -o demo demo.c
+gcc demo.c -g -O0 -Wall -Wextra -o demo
 tmux kill-server 2>/dev/null        # cierra las sesiones anteriores, sin mostrar errores
 tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta los paneles) y se conecta a la sesión
 ```

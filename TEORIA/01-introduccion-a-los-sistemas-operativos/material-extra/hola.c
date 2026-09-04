@@ -1,5 +1,5 @@
 /* hola.c — fuente C: se compila a un binario nativo antes de ejecutarse.
- *   gcc -Wall -Wextra -o hola hola.c
+ *   gcc hola.c -Wall -Wextra -o hola
  *   ./hola
  */
 #include <stdio.h>

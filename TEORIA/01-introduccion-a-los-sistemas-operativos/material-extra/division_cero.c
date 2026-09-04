@@ -3,7 +3,7 @@
  * la senal SIGFPE y termina SOLO este proceso. La maquina sigue funcionando
  * con normalidad: es una interrupcion de la clase "programa" del Tema 1.
  *
- *   gcc -Wall -Wextra -O0 -o division_cero division_cero.c
+ *   gcc division_cero.c -Wall -Wextra -O0 -o division_cero
  *   ./division_cero        -> "Floating point exception (core dumped)"  (SIGFPE)
  */
 #include <stdio.h>
