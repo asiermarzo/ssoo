@@ -507,3 +507,9 @@ timeline
 ## Material gráfico
 
 Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (no reproducible), a criterio del profesor: retratos y fotos históricas (Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I) y las cronologías (*timelines*) de familias de sistemas operativos, enlazadas a Wikipedia en la sección «Cronologías».
+
+---
+
+## Material extra
+
+Tres demostraciones para ejecutar en una máquina Linux y ver en vivo los conceptos del tema (varios procesos en ejecución y aislamiento de memoria, ciclo de compilación y código máquina): [`material-extra/material_extra.md`](material-extra/material_extra.md).
