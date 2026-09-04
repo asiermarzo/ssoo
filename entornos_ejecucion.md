@@ -73,28 +73,12 @@ gcc -Wall -Wextra -o hola hola.c
 ./hola
 ```
 
-#### Programar desde VS Code en tu escritorio
-
-1. Instala la extensión **GitHub Codespaces** (`GitHub.codespaces`).
-2. `F1` → **Codespaces: Connect to Codespace…** → elige el del repo.
-3. VS Code se conecta al contenedor remoto; el código y los binarios viven en la nube, no en tu equipo.
-
-#### Programar desde una terminal por SSH
-
-Con la [GitHub CLI](https://cli.github.com/):
-
-```bash
-gh auth login                       # una sola vez
-gh codespace list                   # ver los codespaces
-gh codespace ssh                    # abre shell en el codespace (elige si hay varios)
-gh codespace ssh -- -t tmux         # abre directamente en tmux
-gh codespace cp archivo.c remote:/workspaces/ssoo/   # copiar ficheros
-```
+También se puede programar desde tu visual code (con el plugin github codespaces) o por terminal, pero no lo cubriremos en la asigantura.
 
 #### Detener y borrar
 
-- La cuota gratuita es limitada (núcleo-horas + almacenamiento). **Detén el codespace al terminar**: en <https://github.com/codespaces>, `···` → **Stop codespace** (o `gh codespace stop`).
-- Un codespace parado sigue ocupando almacenamiento: si no lo vas a usar en días, **bórralo** (el código está en git) con `···` → **Delete** o `gh codespace delete`.
+- La cuota gratuita es limitada. **Detén el codespace al terminar**: en <https://github.com/codespaces>, `···` → **Stop codespace** (o `gh codespace stop`).
+- Un codespace parado sigue ocupando almacenamiento: si no lo vas a usar ya más puedes borrarlo con `···` → **Delete** o `gh codespace delete`.
 
 ## Ordenador propio
 
