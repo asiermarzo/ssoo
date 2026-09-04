@@ -28,7 +28,7 @@ usuario@equipo:~$
 | `~` | directorio de trabajo actual; `~` es tu carpeta personal, `/home/usuario` |
 | `$` | shell lista, usuario sin privilegios (`#` si fueras `root`) |
 
-## Moverse y mirar ficheros
+## Moverse por directorios y mirar ficheros
 
 Primeros comandos para orientarse en el sistema de ficheros:
 
@@ -182,20 +182,20 @@ El compilador `gcc` transforma el `.c` en un binario ejecutable.
 gcc hola.c
 
 # 2. Estricta: nombra el binario y activa todos los avisos
-gcc -Wall -Wextra -o hola hola.c
+gcc hola.c -Wall -Wextra -o hola
 
 # 3. Para depurar: añade símbolos (-g) y desactiva optimizaciones (-O0)
-gcc -Wall -Wextra -g -O0 -o hola hola.c
+gcc hola.c -Wall -Wextra -g -O0 -o hola 
 ```
 
 - `-o hola`: nombre del binario de salida (sin `-o`, el binario se llama `a.out`).
-- `-Wall -Wextra`: activan **todos los avisos**; úsalos siempre y corrige lo que señalen.
+- `-Wall -Wextra`: activan **todos los avisos**
 - `-g`: incluye información (nombres de variables, números de línea) para el depurador (ver [Depurar](#depurar)).
 - `-O0`: sin optimizar; el código ejecutado se corresponde con el fuente, imprescindible para depurar paso a paso. `-O2` optimiza para producción pero reordena y elimina código.
 
 ## Ejecutar
 
-El binario está en el directorio actual; se lanza con `./` delante (la shell no busca ejecutables en `.` por seguridad):
+El binario se lanza con `./` delante (la shell no busca ejecutables en `.` por seguridad):
 
 ```bash
 $ ./hola
@@ -237,11 +237,19 @@ Uso: ./saluda <nombre>
 ```
 
 ```bash
-./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, muy útil para no tener que escribir por teclado las entradas todo el rato
+./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, útil para no escribir por teclado las entradas de prueba
 ./saluda Ana > salida.txt     # salida estándar (stdout) a un fichero
 ./programa 2> errores.txt     # salida de error (stderr) a un fichero
 ./programa  | less            # tubería: la salida va a la stdin a otro comando
 ```
+
+
+## Herramientas del curso
+
+- **gdb** — depurador de C/C++ (sección anterior). VS Code y `ddd` son interfaces gráficas sobre él.
+- **valgrind** — instrumenta el binario para detectar errores de memoria (lecturas/escrituras fuera de rango, uso de memoria sin inicializar, fugas de `malloc`).
+- **strace** — muestra la secuencia de llamadas al sistema (`open`, `read`, `write`, `fork`…) que ejecuta un programa; imprescindible en los temas de procesos y ficheros.
+- **tmux** — multiplexor de terminales: varias terminales (paneles y ventanas) en una sola sesión, que sigue viva aunque se cierre la conexión. Útil para tener a la vez el editor, la compilación y la ejecución.
 
 ## Depurar
 
@@ -250,11 +258,12 @@ Depurar es ejecutar el programa de forma controlada (p.ej paso a paso) para ver 
 Hay dos formas de hacerlo con `gdb`:
 
 - **En vivo**: se lanza el programa desde `gdb` y se controla su ejecución (`Caso 1` a `Caso 3`).
-- **Post-mortem (autopsia)**: el programa ya se ha caído y ha dejado un **coredump** —un fichero con la foto de toda su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina el estado final sin necesidad de reproducir el fallo (`Caso 4`).
+- **Post-mortem (autopsia)**: el programa ya se ha caído y ha dejado un **coredump** —un fichero con la foto de toda su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina  (`Caso 4`).
+- **Adjuntándose a un proceso en marcha**: el programa se está ejecutando ahora mismo (típicamente colgado) y se engancha `gdb` a él sin reiniciarlo (`Caso 5`).
 
 ### Fichero de ejemplo: [`depura.c`](depura.c)
 
-Debería sumar los enteros `1..N`, pero tiene un fallo: con `N` pequeño da un resultado absurdo y con `N` grande el programa se cae.
+Debería sumar los enteros `1..N`, pero tiene fallos: con `N` pequeño da un resultado absurdo y con `N` grande el programa se cae.
 
 ```c
 #include <stdio.h>
@@ -294,17 +303,20 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 | Comando (abreviatura) | Acción |
 |-----------------------|--------|
 | `run [args]` (`r`) | inicia el programa con esos argumentos; corre hasta un `break` o el final |
-| `start [args]` | como `run` pero para nada más entrar en `main` (breakpoint temporal) |
+| `start [args]` | como `run` pero parará en el `main` |
 | `next` (`n`) | ejecuta la línea actual **sin entrar** en las funciones |
 | `step` (`s`) | ejecuta la línea actual **entrando** en las funciones |
-| `continue` (`c`) | reanuda hasta el próximo `break` o el final |
+| `continue` (`c`) | continua hasta el próximo `break` o el final |
 | `print <expr>` (`p`) | muestra el valor de una variable o expresión: `print i`, `print valores[0]` |
 | `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break depura.c:18` |
 | `info breakpoints` (`i b`) | lista los puntos de ruptura y su número |
 | `delete [N]` (`d`) | borra el punto de ruptura `N`; sin número, borra todos. `disable`/`enable N` lo desactiva sin borrarlo |
 | `list` (`l`) | muestra el código fuente alrededor de la línea actual |
-| `backtrace` (`bt`) | pila de llamadas: qué función llamó a cuál hasta el punto actual |
+| `backtrace` (`bt`) | pila de llamadas |
 | `info locals` | valor de todas las variables locales |
+| `frame <N>` (`f`) | cambia al marco `N` de la pila (para inspeccionar sus variables) |
+| `attach <pid>` | engancha gdb a un proceso que ya está corriendo; equivale a lanzar `gdb -p <pid>` |
+| `detach` | suelta el proceso adjuntado; sigue ejecutándose por su cuenta |
 | `quit` (`q`) | salir de gdb |
 
 ### Caso 1 — localizar la caída (segfault)
@@ -432,6 +444,99 @@ No se puede `continue` ni `next`: el proceso ya no existe, solo su "cadáver". S
 
 > A veces los coredumps los recoge `systemd` en vez de dejar un fichero `core`. Se listan con `coredumpctl list` y se abren con `coredumpctl gdb depura`.
 
+### Caso 5 — depurar un proceso en marcha
+
+Se puede enganchar `gdb` al proceso mientras sigue vivo y ver qué está haciendo.
+
+Fichero de ejemplo: [`primos.c`](primos.c). Debería imprimir los 5 primeros primos y terminar, pero se cuelga:
+
+```bash
+$ gcc -g -Wall -Wextra -o primos primos.c
+$ ./primos
+2
+3
+                               # ...y aquí se queda para siempre
+```
+
+En **otra terminal** se busca el PID y se adjunta el depurador:
+
+```bash
+$ pgrep primos                 # averigua el PID del proceso
+4242
+$ gdb -p 4242                  # engancha gdb al proceso 4242 (puede requerir sudo, ver nota)
+...
+es_primo (n=4) at primos.c:15
+15              if (n % d == 0)     # gdb congela el proceso justo donde estaba
+(gdb) backtrace                # ¿dónde está atascado?
+#0  es_primo (n=4) at primos.c:15
+#1  main () at primos.c:25
+(gdb) frame 1                  # sube al marco de main
+#1  main () at primos.c:25
+25              if (es_primo(candidato)) {
+(gdb) print candidato          # ¿qué candidato está probando?
+$1 = 4
+(gdb) print encontrados        # ya encontró 2 y 3
+$2 = 2
+(gdb) continue                 # deja correr un poco...
+^C                             # Ctrl+C devuelve el control a gdb
+(gdb) frame 1
+(gdb) print candidato          # sigue en 4: el candidato no avanza
+$3 = 4
+(gdb) detach                   # suelta el proceso (sigue colgado, pero ya libre de gdb)
+(gdb) quit
+$ kill 4242                    # y se mata desde fuera
+```
+
+**Diagnóstico:** `candidato++` está **dentro** del `if (es_primo(...))`, así que solo avanza cuando el candidato es primo. Al llegar a `candidato = 4` (no primo) nunca se incrementa y el `while` itera eternamente.
+
+**Corrección:** sacar el incremento fuera del `if`, para que se pruebe cada número una vez.
+
+```c
+while (encontrados < 5) {
+    if (es_primo(candidato)) {
+        printf("%d\n", candidato);
+        encontrados++;
+    }
+    candidato++;
+}
+```
+
+> **`Operation not permitted` al adjuntar.** Si `gdb -p` falla, usa `sudo gdb -p <pid>` o baja la protección en la sesión actual: `echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope`.
+
+> Mientras `gdb` está adjuntado, el proceso queda **detenido**: no consume CPU ni avanza hasta que se hace `continue` o `detach`.
+
+
+### tmux — varios paneles en una terminal
+
+`tmux` (*terminal multiplexer*) parte una sola terminal en varios **paneles** dentro de una **sesión**, que sigue viva aunque cierres la terminal. Por ejemplo sirve para tener a la vez el código en `gdb`, un panel que lo teledirige y otro para dar órdenes; no necesita entorno gráfico y funciona incluso desde SSH.
+
+**No hace falta aprender a usar `tmux`**: algunas prácticas traen sesiones ya montadas en un fichero `sesion.conf`,
+
+#### Ejemplo: [`tmux-demo/`](tmux-demo/)
+
+`sesion.conf` tiene esta distribución:
+
+```
++--------------------+--------------+
+|                    |  auto 'n'    |  manda 'n' a gdb cada segundo
+|    gdb -tui        +--------------+
+|    (paso a paso)   |  killall demo|  escrito, SIN ejecutar
++--------------------+--------------+
+```
+
+- **Panel grande:** `gdb -tui ./demo`, parado en `main`. Recibe una `n` (*next*) cada segundo, así que el TUI avanza línea a línea solo.
+- **Panel arriba-derecha:** el bucle que envía esa `n` al panel de `gdb`.
+- **Panel abajo-derecha:** queda escrito `killall demo` **sin pulsar Enter**; lo ejecutas tú para cortar la demo.
+
+```bash
+cd PRACTICA/00-shell-y-herramientas/tmux-demo
+gcc -g -O0 -Wall -Wextra -o demo demo.c
+tmux kill-server 2>/dev/null        # cierra las sesiones anteriores, sin mostrar errores
+tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta los paneles) y se conecta a la sesión
+```
+
+**Para salir:** pulsa `Ctrl-b` y luego `d` para desconectarte y después `tmux kill-server`.
+
 ### Otras herramientas de diagnóstico
 
 ```bash
@@ -441,12 +546,8 @@ strace ./hola                 # traza las llamadas al sistema que hace el progra
 
 `valgrind` sobre el `depura.c` original señala directamente `Invalid write of size 4` en la línea 22 y `Use of uninitialised value` en la suma.
 
-## Herramientas del curso
+`strace` mostrará las llamadas al sistema que hace un programa durante su ejecución, se pueden filtrar por tipo, se verá más detalladamente en temas siguientes.
 
-- **gdb** — depurador de C/C++ (sección anterior). VS Code y `ddd` son interfaces gráficas sobre él.
-- **valgrind** — instrumenta el binario para detectar errores de memoria (lecturas/escrituras fuera de rango, uso de memoria sin inicializar, fugas de `malloc`).
-- **tmux** — multiplexor de terminales: varias terminales (paneles y ventanas) en una sola sesión, que sigue viva aunque se cierre la conexión. Útil para tener a la vez el editor, la compilación y la ejecución.
-- **strace** — muestra la secuencia de llamadas al sistema (`open`, `read`, `write`, `fork`…) que ejecuta un programa; imprescindible en los temas de procesos y ficheros.
 
 ## Ejercicios propuestos
 

@@ -11,7 +11,7 @@
 - **Silberschatz‑Peterson‑Galvin**: el programa más fundamental de todo el sistema es el sistema operativo, que controla todos los recursos del computador.
 - **A. Tanenbaum**: un sistema operativo es un programa que actúa como intermediario entre el usuario y el hardware del computador.
 
-**Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona de forma eficiente, segura e intuitiva el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus procesos: compiladores, editores, navegadores, reproductor multimedia o videojuegos. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos los recursos para sí mismos, facilitando su programación, depuración y distribución.
+**Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus procesos (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para sí mismos, facilitando su programación, depuración y distribución.
 
 
 El sistema operativo se ocupa de:
@@ -30,9 +30,9 @@ flowchart TD
     CP --- CP3[Manejo de interbloqueos]
 
     CR --- CR1[Asignar y liberar memoria]
-    CR --- CR2[Protección y aislamiento entre procesos]
-    CR --- CR3[Memoria virtual y paginación]
-
+    CR --- CR2[Memoria virtual y paginación]
+    CR --- CR3[Protección y aislamiento entre procesos]
+    
     PL --- PL1[Reparto de la CPU entre procesos]
     PL --- PL2[Políticas de planificación]
     PL --- PL3[Cambio de contexto]

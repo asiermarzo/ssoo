@@ -30,13 +30,13 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | Memoria compartida y mutex | [`TEORIA/10`](TEORIA/10-memoria-compartida-y-mutex/) |
 | Dispositivos de E/S | [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) |
 | Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
-| GUI (ampliación) | [`TEORIA/13`](TEORIA/13-gui/) |
+| GUI | [`TEORIA/13`](TEORIA/13-gui/) |
 
 ## Prácticas
 
 | Práctica | Carpeta |
 |----------|---------|
-| P0 — Shell y herramientas (`.c` → `.o` → binario, `tmux`, `gdb`, `strace`) | [`PRACTICA/00`](PRACTICA/00-shell-y-herramientas/) |
+| P0 — Shell y herramientas | [`PRACTICA/00`](PRACTICA/00-shell-y-herramientas/) |
 | P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
 | P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos-e-hilos/) |
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
@@ -47,7 +47,7 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
 | P9 — Sistema concurrente | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
 
-El `README.md` de cada práctica es autocontenido: incluye la descripción del tema, los comandos y llamadas al sistema utilizadas (prototipo, parámetros, valor devuelto, errores, `#include` y ejemplos) y los ejercicios propuestos.
+El `README.md` de cada práctica incluye la descripción del tema, los comandos, llamadas al sistema utilizadas, ejercicios propuestos y ejercicios extra con soluciones.
 
 ## Guía de estilo
 
@@ -55,9 +55,9 @@ Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. Ta
 
 Para prácticas, se utilizan archivos Markdown, archivos `.c`, Makefiles, scripts bash y configuraciones tmux de terminales.
 
-Se prefieren explicaciones concisas frente a detalladas y verbosas.
+Se prefieren explicaciones concisas y resumidas.
 
-En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. Quizás sea necesario `malloc` para mostrar diferencias entre pila (*stack*) y montículo (*heap*), y para el tema de gestión de memoria.
+En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. 
 
 Se evitarán programas con varios archivos C: cada proceso o grupo de procesos será un `.c` que acabará compilado en un binario. Esto hace el uso de make opcional. Se pueden utilizar `.h` para compartir constantes y estructuras comunes.
 
