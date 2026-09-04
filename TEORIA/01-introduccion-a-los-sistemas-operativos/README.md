@@ -20,29 +20,29 @@ El sistema operativo se ocupa de:
 flowchart TD
     SO((Sistema operativo))
 
-    CP[Control de procesos] --> SO
-    CR[Gestión de memoria] --> SO
-    PL[Planificación] --> SO
-    SV[Servicios] --> SO
+    SO --> CP[Control de procesos]
+    SO --> CR[Gestión de memoria]
+    SO --> PL[Planificación]
+    SO --> SV[Servicios]
 
     CP --- CP1[Crear y terminar procesos]
-    CP --- CP2[Sincronización y comunicación entre procesos]
-    CP --- CP3[Manejo de interbloqueos]
+    CP1 --- CP2[Sincronización y comunicación entre procesos]
+    CP2 --- CP3[Manejo de interbloqueos]
 
     CR --- CR1[Asignar y liberar memoria]
-    CR --- CR2[Memoria virtual y paginación]
-    CR --- CR3[Protección y aislamiento entre procesos]
-    
+    CR1 --- CR2[Memoria virtual y paginación]
+    CR2 --- CR3[Protección y aislamiento entre procesos]
+
     PL --- PL1[Reparto de la CPU entre procesos]
-    PL --- PL2[Políticas de planificación]
-    PL --- PL3[Cambio de contexto]
+    PL1 --- PL2[Políticas de planificación]
+    PL2 --- PL3[Cambio de contexto]
 
     SV --- SV1[Llamadas al sistema]
-    SV --- SV2[Sistema de archivos]
-    SV --- SV3[Gestión de E/S y controladores]
-    SV --- SV4[Red y comunicaciones]
-    SV --- SV5[Seguridad y protección]
-    SV --- SV6[Interfaz de usuario: shell y GUI]
+    SV1 --- SV2[Sistema de archivos]
+    SV2 --- SV3[Gestión de E/S y controladores]
+    SV3 --- SV4[Red y comunicaciones]
+    SV4 --- SV5[Seguridad y protección]
+    SV5 --- SV6[Interfaz de usuario: shell y GUI]
 
     classDef core fill:#cfe2f3,stroke:#2b6f99,color:#000;
     classDef func fill:#eef2f7,stroke:#555,color:#000;
