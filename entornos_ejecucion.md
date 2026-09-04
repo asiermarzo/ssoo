@@ -45,13 +45,13 @@ Contenedor Linux que se ejecuta en la nube **servidores de GitHub** (Microsoft A
 
 El repo trae un **dev container** (`.devcontainer/`) que específica que la máquina arranca con `gcc`, `gdb`, `strace`, `ltrace`, `tmux` y `valgrind` listos.
 
-#### Requisitos
+**Requisitos**
 
 - **Cuenta de GitHub** y sesión iniciada ([github.com/signup](https://github.com/signup)). Sin estar logeado no aparece la pestaña *Codespaces*.
 - El plan gratuito incluye 120 núcleo-hora y 15 GB de almacenamiento al mes (suficiente para el curso).
 - Con **GitHub Education** (verificando que eres estudiante de la UPNA) el límite sube y tienes otras ventajas: [education.github.com](https://education.github.com/) → *Get benefits* / [GitHub Student Developer Pack](https://education.github.com/pack).
 
-#### Crear el codespace
+**Crear el codespace**
 
 1. Inicia sesión en GitHub. En la página del repositorio: botón verde **Code → pestaña Codespaces → Create codespace on main**.
 2. La primera vez tarda 1–2 min en construir la imagen (las siguientes arrancan en segundos).
@@ -61,7 +61,7 @@ El repo trae un **dev container** (`.devcontainer/`) que específica que la máq
    gcc --version && gdb --version | head -1 && strace --version && tmux -V && valgrind --version
    ```
 
-#### Programar desde el navegador
+**Programar desde el navegador**
 
 Al crear el codespace, GitHub **abre solo** una pestaña nueva con VS Code para la Web (URL `https://<nombre>.github.dev`) ya conectado a la máquina.
 
@@ -75,7 +75,7 @@ gcc -Wall -Wextra -o hola hola.c
 
 También se puede programar desde tu visual code (con el plugin github codespaces) o por terminal, pero no lo cubriremos en la asigantura.
 
-#### Detener y borrar
+**Detener y borrar**
 
 - La cuota gratuita es limitada. **Detén el codespace al terminar**: en <https://github.com/codespaces>, `···` → **Stop codespace** (o `gh codespace stop`).
 - Un codespace parado sigue ocupando almacenamiento: si no lo vas a usar ya más puedes borrarlo con `···` → **Delete** o `gh codespace delete`.
@@ -86,7 +86,7 @@ También se puede programar desde tu visual code (con el plugin github codespace
 
 Cualquier distribución reciente sirve, pero se **recomienda [Ubuntu LTS](https://ubuntu.com/download/desktop)** (o Xubuntu, la misma base con un escritorio más ligero): es la que usan las aulas y la VDI.
 
-#### Instalación más sencilla: USB de arranque
+**Instalación más sencilla: USB de arranque**
 
 1. **Descarga la ISO** de Ubuntu LTS desde [ubuntu.com/download/desktop](https://ubuntu.com/download/desktop) (~5 GB).
 2. **Graba la ISO en un USB** de al menos 8 GB con una herramienta gráfica:
@@ -98,7 +98,7 @@ Cualquier distribución reciente sirve, pero se **recomienda [Ubuntu LTS](https:
 
 > Antes de un dual-boot: haz copia de tus datos y, en portátiles con Windows, desactiva *Fast Startup* y *BitLocker*. El *Secure Boot* puede quedarse activado, Ubuntu lo soporta.
 
-#### Instalar las herramientas del curso
+**Instalar las herramientas del curso**
 
 ```bash
 # Debian / Ubuntu

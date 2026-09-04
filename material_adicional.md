@@ -100,10 +100,6 @@ No forman parte del temario; están aquí como material de curiosidad y contexto
 | [Triumph of the Nerds](https://www.imdb.com/title/tt0115398/) | 1996 | Documental (3 ep.) | ~8.2 | Historia del PC: CP/M, DOS, Mac, Windows. | [Internet Archive](https://archive.org/details/triumph_of_the_nerds) |
 | [The Machine That Changed the World](https://www.imdb.com/title/tt1245829/) | 1992 | Documental (5 ep.) | ~8.6 | Historia de la computación, del hardware al software de sistema. | [Internet Archive](https://archive.org/search?query=title%3A%22The+Machine+That+Changed+The+World%22) (fuera de catálogo, un ítem por episodio) |
 | [Micro Men](https://www.imdb.com/title/tt1459467/) | 2009 | Película TV | ~7.4 | Sinclair vs Acorn (origen de ARM, el SO de los micros británicos). | Sin edición gratuita legal (BBC) |
-| [Silicon Cowboys](https://www.imdb.com/title/tt4938484/) | 2016 | Documental | ~6.9 | Compaq clona la BIOS del IBM PC (compatibilidad y firmware). | [Tubi](https://tubitv.com/movies/559438/silicon-cowboys), Pluto TV, Kanopy/Hoopla (con carné de biblioteca) |
-| [The KGB, the Computer and Me](https://www.imdb.com/title/tt0308449/) | 1990 | Docudrama (NOVA) | ~7.9 | Un admin de Unix rastrea a un intruso por contabilidad del sistema (*The Cuckoo's Egg*). | [Internet Archive](https://archive.org/details/The_KGB_The_Computer_and_Me_1990) |
-| [BBS: The Documentary](https://www.imdb.com/title/tt0460402/) | 2005 | Documental (8 ep.) | ~8.2 | Módems, BBS, primeras redes; cultura de sistemas pre-Internet. | [Internet Archive](https://archive.org/details/bbs_the_documentary) (licencia Creative Commons) |
-| [Code Rush](https://www.imdb.com/title/tt0499004/) | 2000 | Documental | ~7.1 | Netscape libera Mozilla. | [Internet Archive](https://archive.org/details/code-rush-2000) / [YouTube](https://www.youtube.com/watch?v=Fg-NYYDHbjA) (licencia Creative Commons) |
 
 ### Series sobre programación y desarrollo
 

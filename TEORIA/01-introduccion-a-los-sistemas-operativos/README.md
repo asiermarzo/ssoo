@@ -1,17 +1,15 @@
 # Tema 1: Introducción a los sistemas operativos y conceptos básicos
 
-1.1 Definición de sistema operativo · 1.2 Componentes del sistema operativo · 1.3 Conceptos básicos de los sistemas operativos · 1.4 Características de los sistemas operativos · 1.5 Estructuras de los sistemas operativos · 1.6 Clases de sistemas operativos.
-
----
-
 ## 1.1 Definición de sistema operativo
 
-- **H. M. Deitel**: el sistema operativo es un programa que controla la ejecución de los programas de aplicación.
-- **W. Stallings**: los sistemas operativos son, ante todo, administradores de recursos.
-- **Silberschatz‑Peterson‑Galvin**: el programa más fundamental de todo el sistema es el sistema operativo, que controla todos los recursos del computador.
-- **A. Tanenbaum**: un sistema operativo es un programa que actúa como intermediario entre el usuario y el hardware del computador.
+- **H. M. Deitel**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre el usuario de un ordenador y el hardware del mismo *(Deitel, Deitel y Choffnes,* Operating Systems*, 3.ª ed., 2004, §1.2)*.
+- **W. Stallings**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre las aplicaciones y el hardware del ordenador *(Stallings,* Operating Systems: Internals and Design Principles*, 8.ª ed., 2015, cap. 2)*.
+- **Silberschatz, Galvin y Gagne**: un programa que gestiona el hardware del ordenador; sirve de base a los programas de aplicación y actúa como intermediario entre el usuario y el hardware *(*Operating System Concepts*, 10.ª ed., 2018, cap. 1)*.
+- **A. Tanenbaum** — como máquina extendida: el sistema operativo presenta al usuario el equivalente de una máquina extendida (o virtual), más fácil de programar que el hardware subyacente *(Tanenbaum y Bos,* Modern Operating Systems*, 4.ª ed., 2014, §1.1.1)*.
+- **A. Tanenbaum** — como administrador de recursos: su tarea es proporcionar una asignación ordenada y controlada de los procesadores, la memoria y los dispositivos de E/S entre los programas que compiten por ellos *(ibid., §1.1.2)*.
+- **Arpaci-Dusseau** *(OSTEP)*: los sistemas operativos cogen un recurso físico (el procesador, la memoria, un disco) y lo transforman en una versión virtual de sí mismo — más general, potente y fácil de usar *(*Operating Systems: Three Easy Pieces*, cap. "Introduction", ostep.org, gratuito)*.
 
-**Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus procesos (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para sí mismos, facilitando su programación, depuración y distribución.
+**Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus programas (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para ellos, facilitando su programación, depuración y distribución.
 
 
 El sistema operativo se ocupa de:
@@ -25,31 +23,30 @@ flowchart TD
     SO --> PL[Planificación]
     SO --> SV[Servicios]
 
-    CP --- CP1[Crear y terminar procesos]
-    CP1 --- CP2[Sincronización y comunicación entre procesos]
-    CP2 --- CP3[Manejo de interbloqueos]
+    CP --- CP1[Crear y terminar]
+    CP1 --- CP2[Comunicación  IPCs]
+    CP2 --- CP3[Sincronización]
 
-    CR --- CR1[Asignar y liberar memoria]
+    CR --- CR1[Asignar y liberar]
     CR1 --- CR2[Memoria virtual y paginación]
-    CR2 --- CR3[Protección y aislamiento entre procesos]
 
     PL --- PL1[Reparto de la CPU entre procesos]
-    PL1 --- PL2[Políticas de planificación]
+    PL1 --- PL2[Planificación]
     PL2 --- PL3[Cambio de contexto]
 
     SV --- SV1[Llamadas al sistema]
-    SV1 --- SV2[Sistema de archivos]
-    SV2 --- SV3[Gestión de E/S y controladores]
-    SV3 --- SV4[Red y comunicaciones]
+    SV1 --- SV2[Archivos]
+    SV2 --- SV3[Periféricos]
+    SV3 --- SV4[Red]
     SV4 --- SV5[Seguridad y protección]
-    SV5 --- SV6[Interfaz de usuario: shell y GUI]
+    SV5 --- SV6[UI: Shell y GUI]
 
     classDef core fill:#cfe2f3,stroke:#2b6f99,color:#000;
     classDef func fill:#eef2f7,stroke:#555,color:#000;
     classDef leaf fill:#f7f7f7,stroke:#999,color:#000;
     class SO core;
     class CP,CR,PL,SV func;
-    class CP1,CP2,CP3,CR1,CR2,CR3,PL1,PL2,PL3,SV1,SV2,SV3,SV4,SV5,SV6 leaf;
+    class CP1,CP2,CP3,CR1,CR2,PL1,PL2,PL3,SV1,SV2,SV3,SV4,SV5,SV6 leaf;
 ```
 
 Aunque tengan tamaño físico y función diferentes, un smartwatch, un móvil, un servidor, un automóvil, un robot industrial, un avión o un satélite son dispositivos que tienen un software base para que administre sus recursos y conecte las aplicaciones con el hardware. Tienen un Sistema Operativo.
@@ -115,12 +112,6 @@ Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilado
 - Los ordenadores actuales tienen longitudes de palabra de 64 bits, frente a los más antiguos de 8, 16 o 32 bits.
 
 
-### Objetivos de un sistema operativo
-
-- **Comodidad**: hace más fácil y seguro utilizar los recursos de un ordenador.
-- **Eficiencia**: aprovecha los recursos del ordenador, sin desperdiciar CPU, memoria ni dispositivos.
-- **Capacidad de evolución**: su construcción debe permitir el desarrollo e introducción de nuevas funciones del sistema sin interferir en su mantenimiento.
-
 ### Dispositivos de E/S
 
 - **Operación de entrada**: transfieren información de entrada, a través del bus de datos, a los registros de la CPU, para que ésta la almacene en la memoria principal.
@@ -132,31 +123,6 @@ Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilado
 
 ## 1.3 Conceptos básicos de los sistemas operativos
 
-### Ejecución de instrucciones
-
-La ejecución de instrucciones consiste en repetir el proceso:
-
-1. Leer instrucciones de la memoria principal (una cada vez).
-2. Ejecutar la instrucción.
-
-El **ciclo de instrucción** esta formado por el ciclo de búsqueda, el ciclo de decodificación y el ciclo de ejecución:
-
-```mermaid
-flowchart LR
-    S((Start)) --> C[Carga de la nueva instrucción]
-    C --> E[Ejecución de la instrucción]
-    E --> C
-    E --> H((Halt))
-
-    classDef inicio fill:#d9ead3,stroke:#4d7a33,color:#000;
-    classDef fin fill:#fbe0e0,stroke:#b33,color:#000;
-    classDef paso fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    class S inicio;
-    class H fin;
-    class C,E paso;
-```
-
-Las instrucciones máquina son de unos pocos tipos: **transferencia** (copian datos entre memoria y registros, `load`/`store`), **aritmético‑lógicas** (operan sobre registros, `add`, `subtract`, `and`), **saltos incondicionales** (cambian el `PC` para continuar en otra dirección, `jump`) y **saltos condicionales** (saltan solo si se cumple una condición sobre los registros de estado, `jump if zero`). Con estos bloques —mover datos, calcular y bifurcar— se construyen los bucles y condicionales de cualquier programa.
 
 ### Interrupciones
 
@@ -186,27 +152,6 @@ Las interrupciones permiten **detener el orden normal de ejecución** para atend
 7. Se recupera el contexto del programa desde la pila.
 8. Se retoma la ejecución del programa en el punto en el que se había detenido.
 
-El ciclo de instrucción con comprobación de interrupciones queda así:
-
-```mermaid
-flowchart TD
-    S((Start)) --> B[Ciclo de búsqueda: carga de la nueva instrucción]
-    B --> E[Ciclo de ejecución: ejecución de la instrucción]
-    E -->|interrupción deshabilitada| H((Halt))
-    E -->|interrupción habilitada| I[Ciclo de interrupción: espera de interrupciones / interrupción del proceso]
-    I --> B
-    E --> B
-
-    classDef inicio fill:#d9ead3,stroke:#4d7a33,color:#000;
-    classDef fin fill:#fbe0e0,stroke:#b33,color:#000;
-    classDef paso fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef interrupcion fill:#fce5a8,stroke:#a67c00,color:#000;
-    class S inicio;
-    class H fin;
-    class B,E paso;
-    class I interrupcion;
-```
-
 Las interrupciones permiten que un proceso inicie una operación en un dispositivo, el sistema operativo ponga en ejecución otro trabajo mientras el primero espera, y vuelva al primero cuando el dispositivo anuncia que ha terminado:
 
 ```mermaid
@@ -229,7 +174,7 @@ sequenceDiagram
 - **Deshabilitar interrupciones**: se manejan una detrás de otra. Puede no ser suficiente para sistemas que requieran tiempo real (RTOS).
 - **Niveles de prioridad**: permiten el procesamiento anidado de interrupciones.
 
-### Jerarquía de memoria
+### Jerarquía de memoria y Cachés
 
 De más rápida y pequeña (arriba) a más lenta y grande (abajo):
 
@@ -246,32 +191,16 @@ Esta pirámide existe por **coste**: la memoria rápida (SRAM de registros y cac
 | Caché L2 | ~3–5 ns (~12–15 ciclos) | 256 KB–2 MB por núcleo | ~1000 €/GB (estimado, SRAM) |
 | RAM DDR4 | ~60–90 ns (~200–300 ciclos) | 8–128 GB | ~2–4 €/GB |
 
-
-
-## 1.4 Características de los sistemas operativos
-
-### Funciones y servicios de un sistema operativo
-
-- **Herramientas de desarrollo**: editores, compiladores, depuradores de código.
-- **Ejecución de código**: carga de instrucciones y datos en memoria, inicialización de los dispositivos de E/S y ficheros…
-- **Acceso a los dispositivos de E/S**: el sistema operativo hace transparentes al usuario las peculiaridades de cada dispositivo y transforma las órdenes `read`/`write` del usuario en las instrucciones particulares de cada dispositivo.
-- **Acceso controlado a los ficheros**: apertura y cierre de ficheros en el dispositivo de almacenamiento y operaciones de lectura y escritura sobre ellos.
-- **Acceso al sistema**: resuelve los conflictos de uso de los recursos y protege el acceso a datos o ficheros no autorizados.
-- **Detección de errores y respuesta**: informa al usuario de los errores producidos (de memoria, de fallo en un dispositivo…) minimizando su impacto sobre el usuario y sobre los programas en ejecución.
-- **Monitorización y estadísticas de uso**: recoge información sobre el consumo de recursos, la disponibilidad del sistema, etc.
-
 ## 1.5 Estructuras de los sistemas operativos
 
-Visión general: en su forma más básica, el sistema operativo es un **conjunto de funciones** (en C, procedimientos) que implementan sus tareas: `fork()` para crear un proceso, `read()` para leer de un fichero, `kmalloc()` para reservar memoria del núcleo, `schedule()` para elegir el siguiente proceso, etc.
+En su forma más básica, el sistema operativo es un **conjunto de funciones** que implementan sus tareas: `fork()` para crear un proceso, `read()` para leer de un fichero, `kmalloc()` para reservar memoria del núcleo, `schedule()` para elegir el siguiente proceso, etc.
 
-- Cada función tiene una **cabecera fija** con sus parámetros y su valor de retorno (por ejemplo, `read(fd, buffer, n)` devuelve el número de bytes leídos).
 - Una función del núcleo puede llamar directamente a cualquier otra: `sys_read` llama al gestor del sistema de archivos, que a su vez llama al *driver* del disco.
-- Cada archivo `.c` del núcleo se compila por separado y el enlazador une todos los `.o` en un único binario (`vmlinux` en Linux).
-- Los programas de usuario no llaman a esas funciones del sistema operativo directamente: usan **llamadas al sistema**, que colocan los parámetros en registros o en la pila y provocan una interrupción software para entrar al núcleo. Al terminar, el control vuelve al programa del usuario. Así el sistema operativo puede controlar cada llamada al sistema y hace imposible (en teoría) que un proceso de usuario rompa el sistema operativo.
+- Los programas de usuario no llaman a esas funciones del sistema operativo directamente: usan **llamadas al sistema**, primero colocan los parámetros en registros o en la pila y provocan una interrupción software para entrar al núcleo. La CPU pasa a **modo privilegiado** y ejecuta el gestor de interrupciones (que es código del propio sistema operativo), el gestor consulta el número de llamada en una tabla y salta a la función del núcleo correspondiente, que la ejecuta. Al terminar, se vuelve a modo usuario y el control regresa al programa. Así el sistema operativo puede controlar cada llamada al sistema y hace imposible (en teoría) que un proceso de usuario acceda a recursos de forma incorrecta.
 
 Comparativa de estructuras (usuario / núcleo):
 
-<img src="img/estructuras-so.svg" width="620" alt="Comparativa de estructuras: monolítico, microkernel e híbrido, con espacio de usuario y espacio de núcleo">
+<img src="img/estructuras-so.svg" width="440" alt="Comparativa de estructuras: monolítico y microkernel, con espacio de usuario y espacio de núcleo">
 
 ### Sistemas monolíticos
 
@@ -297,138 +226,70 @@ Ejemplos: AIX, AmigaOS, Amoeba, Minix, Hurd, L4, Netkernel, RaOS, RadiOS, Chorus
 
 ### Sistemas híbridos
 
-Son microkernels que mantienen algo de código **no esencial** en espacio de núcleo para que se ejecute más rápido de lo que lo haría en espacio de usuario. El paso de mensajes entre un proceso de usuario y un servidor que vive en otro proceso obliga a cambiar de contexto y copiar datos varias veces; si ese servidor está muy solicitado (gráficos, red, sistema de archivos), moverlo dentro del núcleo elimina ese coste a cambio de perder parte del aislamiento.
+Hay microkernels que meten código **no esencial** en espacio de núcleo para que se ejecute más rápido. Por ejemplo, meter los gráficos en espacio kernel para tener siempre una respuesta fluida al usuario.
 
-- **Windows NT** (y sus descendientes 2000, XP, 10, 11): el diseño original de NT era casi un microkernel, pero desde NT 4.0 el subsistema gráfico (GDI, gestor de ventanas) se movió al núcleo (`win32k.sys`) por rendimiento. También ejecutan en modo núcleo el sistema de archivos y la pila de red.
-- **XNU** (macOS, iOS): combina el microkernel **Mach** (gestión de tareas, memoria y mensajes) con un componente **BSD** monolítico (procesos POSIX, red, VFS) y los *drivers* de **I/O Kit**, todo en el mismo espacio de núcleo.
-
-Ejemplos: Microsoft Windows NT, XNU/Darwin (usado en macOS), DragonFlyBSD, ReactOS.
-
-
+Linux, aunque es monolítico, soporta **módulos cargables** (`insmod`/`rmmod`, `modprobe`) que añaden o quitan código al núcleo en caliente; así se instala el *driver* de una tarjeta wifi nueva sin tener que reconstruir el resto del kernel.
 
 ## 1.6 Clases de sistemas operativos
 
-Tipos: primeros sistemas · sistemas por lotes · multiprogramación · sistemas de tiempo compartido · sistemas de ordenadores personales · sistemas paralelos‑multiprocesadores · sistemas distribuidos · sistemas de tiempo real · sistemas empotrados · máquinas virtuales.
+Dos bloques: primero una **evolución histórica**, cada paso resolviendo el desperdicio de CPU del anterior; luego una **clasificación** de los sistemas actuales según su arquitectura y su uso.
 
-### Primeros sistemas
+### Evolución: del operador manual al tiempo compartido
 
-Antes de los sistemas operativos, preparar un programa para su ejecución podía implicar configurar físicamente la máquina. En la imagen, Jean Bartik y Frances Spence preparan ENIAC para una demostración en 1946.
+1. **Primeros sistemas**: un operador prepara y carga cada programa a mano, instrucción a instrucción. La CPU pasa la mayor parte del tiempo parada esperando a que el humano monte cintas, cargue tarjetas o retire resultados; un solo error obliga a repetir toda la preparación.
 
-<img src="img/programadoras-eniac.jpg" width="460" alt="Jean Bartik y Frances Spence preparando ENIAC para una demostración en 1946">
+   <img src="img/programadoras-eniac.jpg" width="380" alt="Jean Bartik y Frances Spence preparando ENIAC para una demostración en 1946">
 
-<sub>Fuente: fotografía del U.S. Army, 1946; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg).</sub>
+   <sub>Jean Bartik y Frances Spence preparan ENIAC, 1946. Fuente: U.S. Army, dominio público. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg).</sub>
 
-- **Caracterización**: gran tamaño; ejecución desde el panel de control.
-- **Organización del trabajo**: programador = operador del sistema; un solo usuario en cada momento (tiempo asignado, reserva); operaciones de carga manual del programa en memoria (instrucción tras instrucción), establecer inicio, activar ejecución y vigilar ejecución.
-- **Mejoras**: físicas (lectores de tarjetas, impresoras, cintas magnéticas); reutilización de código (bibliotecas de funciones comunes); ensambladores, compiladores y cargadores; *drivers* o subrutinas especiales para cada dispositivo de E/S.
-- **Desventajas**: la CPU pasa parada la mayor parte del tiempo. Solo trabaja durante la ejecución del programa; el resto del turno se va en tareas manuales en las que la máquina espera: montar las cintas o tarjetas, poner los interruptores del panel, cargar el programa en memoria instrucción a instrucción y retirar los resultados. Además, un solo error (una instrucción mal tecleada, una tarjeta descolocada) obliga a repetir toda la preparación desde el principio. Si un programa termina antes de lo esperado, la máquina no hace nada (no carga el siguiente).
+2. **Sistemas por lotes**: se agrupan trabajos en un mazo de tarjetas que un pequeño **monitor residente** (siempre en memoria) va encadenando autónomamente programas, sin operador de por medio. Sigue habiendo cuello de botella: leer una tarjeta o imprimir una línea es miles de veces más lento que ejecutar instrucciones. Se alivia con **búferes** (leer por adelantado) y ***spooling*** (usar el disco como búfer enorme para solapar la E/S de unos trabajos con el cálculo de otros) — el mismo principio que usa hoy una cola de impresión.
 
-### Sistemas por lotes
+   <img src="img/operadora-tarjetas-perforadas.jpg" width="380" alt="Operadora del censo estadounidense trabajando con una perforadora de tarjetas IBM 016 en la década de 1950">
 
-- **Organización del trabajo**: agrupando trabajos en **lotes**; secuenciado automático de trabajos mediante transferencia automática de control de un trabajo al siguiente ⇒ **monitor residente**.
-- **Monitor residente**: un pequeño programa que **está siempre en memoria** (de ahí "residente") y actúa como sistema operativo mínimo. Cuando un trabajo termina o falla, retoma el control, lo anota y carga el siguiente trabajo sin intervención del operador. Ejemplos: FMS (*Fortran Monitor System*) e IBSYS en los IBM 7090/7094.
-- **Tarjetas de control**: dentro del mazo de tarjetas, además de tarjetas de programas y de datos, van unas tarjetas especiales (empiezan por `$` o `//`) que le dicen al monitor qué hacer. 
-  Este "lenguaje de tarjetas de control" es el antepasado de los *scripts* de shell actuales; IBM lo llamó **JCL** (*Job Control Language*).
-- **Organización de la memoria**: la memoria se parte en dos. En la zona baja vive el monitor  (el intérprete de tarjetas de control, el cargador, el secuenciador de trabajos y los *drivers* de la lectora de tarjetas y la impresora); el resto queda para el programa de usuario en ejecución.
-- **Ventaja**: eliminación del tiempo de preparación y del secuenciado manual de trabajos.
+   <sub>Perforadora de tarjetas, censo de EE.UU., años 1950. Fuente: U.S. Census Bureau, dominio público. [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg).</sub>
 
-En los sistemas de procesamiento por lotes, los trabajos y sus datos se preparaban en tarjetas perforadas y se entregaban para su ejecución; el usuario no interactuaba con el programa mientras la computadora procesaba el lote.
+3. **Sistemas multiprogramados**: en vez de esperar a que un trabajo termine su E/S, el sistema operativo mantiene varios trabajos en memoria y ejecuta otro mientras el primero espera. La CPU casi nunca queda ociosa, a cambio de más complejidad (planificación, gestión de memoria, interbloqueos).
 
-<img src="img/operadora-tarjetas-perforadas.jpg" width="460" alt="Operadora del censo estadounidense trabajando con una perforadora de tarjetas IBM 016 en la década de 1950">
+   <img src="img/mono-vs-multiprogramacion.svg" width="520" alt="Cronograma comparando el uso de CPU y E/S en un sistema monoprogramado y en uno multiprogramado">
 
-<sub>Fuente: U.S. Census Bureau, década de 1950; dominio público. [Ficha y licencia en Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg).</sub>
+4. **Sistemas de tiempo compartido**: además, el usuario interactúa con su trabajo mientras se ejecuta — antes había que anticipar todo el flujo en el mazo de tarjetas y esperar horas para ver el primer error. El sistema operativo reparte la CPU en turnos muy cortos entre varios usuarios a la vez, dando a cada uno la sensación de tener el ordenador para sí, a costa de bajar el rendimiento bruto de la CPU.
 
-#### El problema de la lentitud de la E/S
+### Según su arquitectura: uno, varios o muchos procesadores
 
-Aun con el monitor residente, la CPU seguía desaprovechada: leer una tarjeta o imprimir una línea es **miles de veces más lento** que ejecutar instrucciones, así que la CPU pasaba la mayor parte del tiempo esperando a la lectora o a la impresora. Se abordó de tres formas:
+- **Paralelos** — varios procesadores **fuertemente acoplados**: comparten memoria y reloj dentro de la misma máquina (cualquier PC o móvil actual, un servidor con varios zócalos, una GPU). Más rendimiento y tolerancia a fallos, a cambio de sincronizar los accesos a los mismos datos. Lo normal hoy es **SMP**: todos los procesadores son iguales y ejecutan la misma copia del sistema operativo.
+- **Distribuidos** — varios ordenadores **débilmente acoplados**: cada uno con su memoria y su reloj, comunicados solo por red (un clúster, la nube, una red *peer-to-peer*, internet). Escalan mucho y toleran que caiga un nodo, a cambio de que la red puede fallar o ir lenta y no hay memoria común para coordinarse.
 
-- **Operaciones *off‑line***: en lugar de que el ordenador central leyera las tarjetas directamente, una máquina auxiliar barata (un IBM 1401) copiaba el mazo de tarjetas a una **cinta magnética**; el ordenador central (un IBM 7094) leía de la cinta, mucho más rápida, y escribía los resultados en otra cinta que luego otra máquina auxiliar volcaba a la impresora. El ordenador central solo dialoga con dispositivos rápidos.
-- **Búferes** (*buffering*): mientras la CPU procesa el registro actual, el controlador va leyendo por adelantado el siguiente a una zona de memoria intermedia (el búfer). Cuando la CPU lo pide, ya está ahí. Solapa E/S de un trabajo con el cálculo de ese mismo trabajo.
-- ***Spooling*** (*Simultaneous Peripheral Operations On-Line*): el disco actúa como un búfer enorme. Mientras se ejecuta el trabajo A, el sistema ya está leyendo del lector las tarjetas del trabajo B al disco y enviando a la impresora los resultados del trabajo Z. Como el disco permite acceso directo, además habilita **elegir** qué trabajo del disco ejecutar a continuación (planificación de trabajos). Es el mismo mecanismo que hoy usa la **cola de impresión**  - puedes mandar documentos a imprimir desde varios ordenadores, pero no necesitas esperar a que se impriman, la impresora ira procesando la cola independientemente a su ritmo; puedes consultar la cola, la posición de tus documentos y cancelarlos.
+### Según su uso: tiempo real, empotrados, virtualizados
 
-### Sistemas multiprogramados
+- **Tiempo real**: el resultado tiene que llegar **antes de un plazo**, no basta con que sea correcto — un airbag debe dispararse en 15–30 ms, el control de un dron recalcula cada 1–2 ms. Según la exigencia se construyen sin sistema operativo (*bare metal*, lo más simple y predecible), con un RTOS ligero (FreeRTOS) o con un RTOS certificado (QNX) para aviónica o automoción.
 
-- **Planificación de trabajos**: el sistema operativo escoge el siguiente trabajo a ejecutar para mejorar el aprovechamiento de la CPU.
-- La multiprogramación aumenta el aprovechamiento de la CPU: siempre hay varios trabajos en memoria y el sistema operativo escoge cuál se ejecuta, de forma que siempre haya un trabajo en ejecución.
-- **Características**: si un proceso se bloquea esperando por la E/S, la CPU ejecuta instrucciones de otro proceso; ejecución entrelazada de procesos (**concurrencia**); mayor rendimiento, se finalizan más trabajos en menos tiempo.
-- **Mayor complejidad**: planificación de la CPU (qué proceso elegir al quedar libre); planificación de dispositivos (conflictos por acceso simultáneo a la E/S); gestión de memoria (decisiones de carga entre varios trabajos listos); situaciones de **interbloqueo** entre procesos por los recursos; protección.
+  <img src="img/sistemas-tiempo-real.png" width="440" alt="Robot industrial, sensor de frenado y aviónica como ejemplos de sistemas con plazos de respuesta">
 
-**Monoprogramado vs multiprogramado** (uso de CPU y E/S a lo largo del tiempo): en el sistema monoprogramado la CPU queda ociosa mientras la Tarea 1 hace E/S; en el multiprogramado, la Tarea 2 aprovecha la CPU mientras la Tarea 1 está en E/S, y viceversa.
+- **Empotrados**: un ordenador escondido dentro de un aparato, dedicado a una única tarea fija grabada de fábrica (el termostato de una caldera, la centralita de un motor, un router doméstico). Prioriza precio y consumo mínimo — pasa casi todo el tiempo dormido y solo despierta ante un evento.
 
-<img src="img/mono-vs-multiprogramacion.svg" width="600" alt="Cronograma comparando el uso de CPU y E/S en un sistema monoprogramado y en uno multiprogramado">
+- **Máquinas virtuales y contenedores**: varios entornos aislados sobre una misma máquina física. Las máquinas virtuales emulan un ordenador completo, cada una con su propio SO invitado sobre un hipervisor; los contenedores comparten el núcleo del anfitrión y solo aíslan la aplicación y sus dependencias.
 
-### Sistemas de tiempo compartido
+  <img src="img/vm-vs-contenedores.svg" width="480" alt="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
 
-- El usuario no puede interactuar con el trabajo durante su ejecución; la depuración de programas es estática.
-- **Solución**: sistemas multitarea (interactivos), más apropiados para trabajos de muchas acciones cortas en los que **cada orden depende del resultado de la anterior**, así que el usuario tiene que ver la respuesta antes de decidir el siguiente paso ⇒ interesa un tiempo de respuesta corto. En un sistema por lotes habría que anticipar todo el flujo en el mazo de tarjetas y esperar horas para ver el primer error.
-- **Desventaja**: baja la productividad de la CPU.
-- **Ventajas**: interacción usuario‑sistema; sensación de que cada usuario tiene su ordenador particular.
-- **Mayor complejidad**: gestión y protección de memoria (varios trabajos simultáneos); memoria virtual (intercambio entre memoria y disco); sistema de archivos en línea; planificación de CPU (ejecución concurrente); mecanismos de sincronización y comunicación (evitando interbloqueos).
+### Resumen
 
-### Sistemas con varios procesadores
+| Tipo | Qué resuelve o distingue | Ejemplo |
+|---|---|---|
+| Primeros sistemas | Automatiza lo que hacía un operador a mano | ENIAC |
+| Por lotes | Encadena trabajos sin esperar al operador | FMS, IBSYS |
+| Multiprogramado | La CPU no espera a la E/S de un solo trabajo | Unix temprano |
+| Tiempo compartido | El usuario interactúa mientras el trabajo corre | Unix con terminales |
+| Paralelo | Varios procesadores, memoria compartida | PC multinúcleo, GPU |
+| Distribuido | Varios ordenadores, comunicados por red | Clúster, internet |
+| Tiempo real | El plazo importa tanto como el resultado | Airbag, dron |
+| Empotrado | Una sola tarea fija, consumo mínimo | Termostato, router |
+| VM / contenedor | Varios entornos aislados en una máquina | Hipervisor, Docker |
 
-Los dos tipos siguientes usan varios procesadores, y se distinguen por cómo de **acoplados** están:
+---
 
-- **Fuertemente acoplados** (sistemas paralelos): los procesadores comparten memoria y reloj; se comunican leyendo y escribiendo las mismas posiciones de memoria, que es muy rápido. Están dentro de la misma máquina.
-- **Débilmente acoplados** (sistemas distribuidos): cada procesador es un ordenador completo con su propia memoria y su propio reloj; solo se comunican enviándose mensajes por la red, mucho más lento y sujeto a fallos.
+## Material extra
 
-### Sistemas paralelos
-
-- Varios procesadores **dentro de un mismo computador**, compartiendo el bus, el reloj, la memoria y los periféricos (fuertemente acoplados).
-- Ejemplos: cualquier PC o móvil actual (CPU de varios núcleos), un servidor con dos zócalos de procesador, una GPU (miles de núcleos para el mismo cálculo).
-- **Ventajas**: ejecución simultánea de varias instrucciones; más rendimiento; se comparten periféricos y alimentación; tolerancia a fallos (si un procesador falla, el sistema sigue más despacio en vez de pararse).
-- **Desventaja**: sincronización entre procesos que tocan los mismos datos.
-- **Tipos de multiprocesamiento**: **simétrico** (SMP: todos los procesadores son iguales y ejecutan la misma copia del sistema operativo; lo normal hoy) y **asimétrico** (a cada procesador se le asigna una tarea fija).
-
-### Sistemas distribuidos
-
-- **Características**: el cómputo se reparte entre varios ordenadores conectados por una red; cada uno tiene su memoria y su reloj (**débilmente acoplados**); pueden ser de distinto tipo (heterogéneos); escala hasta millones de nodos (internet).
-- Ejemplos: un clúster de cálculo, la infraestructura de Google o Amazon, una red *peer-to-peer* (BitTorrent), una cadena de bloques, el propio internet.
-- **Ventajas**: recursos compartidos (archivos, impresoras, bases de datos remotas); reparto de la carga de trabajo; fiabilidad por redundancia (si cae un nodo, otros siguen); comunicación entre usuarios.
-- **Desventajas**: programar la comunicación es complejo al no haber memoria común; la red puede fallar, perder mensajes o ser lenta; nodos heterogéneos.
-
-### Sistemas de tiempo real
-
-Para ejecución de tareas que han de completarse en un plazo prefijado (control industrial, robótica…). En un sistema de tiempo real no basta con obtener el resultado correcto: debe obtenerse antes de que venza su plazo. Dos ejemplos concretos:
-
-- **Airbag de un coche**: el acelerómetro detecta una deceleración brusca y la centralita tiene que decidir y disparar el inflado en unos **15–30 ms**. Un resultado correcto pero 50 ms tarde es inútil: el ocupante ya ha golpeado el volante.
-- **Control de vuelo de un dron**: el lazo de estabilización lee la unidad inercial (giróscopo + acelerómetro) y recalcula la potencia de cada motor **cada 1–2 ms** (500–1000 Hz). Si una iteración se retrasa, el dron se desestabiliza y cae.
-
-<img src="img/sistemas-tiempo-real.png" width="520" alt="Robot industrial, sensor de frenado y aviónica como ejemplos de sistemas con plazos de respuesta">
-
-*En un sistema de tiempo real no basta con obtener el resultado correcto: debe obtenerse antes de que venza su plazo. Ilustración generada para estos apuntes.*
-
-**¿Con qué software se construyen?** Según lo exigente que sea el sistema:
-
-- **Sin sistema operativo** (*bare metal*): el programa se ejecuta directamente sobre el microcontrolador, normalmente como un bucle infinito que lee sensores y actúa, más rutinas de interrupción para los eventos urgentes. Es lo más habitual en dispositivos sencillos (un mando a distancia, el airbag, un termostato): sin planificador ni capas intermedias, el comportamiento es totalmente predecible y el código cabe en pocos KB. A cambio, todo el trabajo de coordinar tareas recae en el programador y cuando las cosas fallan, hay pocas utilidades para depurar.
-- **RTOS ligero**: cuando hay varias tareas concurrentes con plazos distintos, se usa un *kernel* de tiempo real mínimo. **FreeRTOS** (open source, de Amazon) es el más extendido: ocupa unos pocos KB y aporta solo lo esencial —planificador expulsivo por prioridades, semáforos, colas y temporizadores—, sin sistema de archivos ni protección de memoria. Se usa en electrodomésticos, *wearables* y dispositivos IoT.
-- **RTOS certificado**: para aviónica, automoción o sistemas militares donde un fallo cuesta vidas se emplean RTOS con garantías formales y certificación (DO‑178C, etc.). **QNX** (microkernel, hoy de BlackBerry) domina la electrónica del automóvil y se ha usado en aviónica y en sistemas de defensa. En aviones de combate se usan RTOS de esta familia.
-
-### Sistemas empotrados
-
-Un sistema empotrado es un ordenador que forma parte de un aparato y se dedica a controlarlo, sin que el usuario lo perciba como "un ordenador". A diferencia de un PC o un móvil (que ejecutan cualquier programa que instale el usuario), un sistema empotrado ejecuta **un único programa fijo**, grabado de fábrica.
-
-- **Funciones dedicadas**: hace una sola tarea (regular una temperatura, leer un mando, mover un motor), no es de propósito general.
-- **Precio y consumo de energía reducidos**: se fabrican por millones y muchos funcionan con pila o batería durante años, así que llevan el microcontrolador más pequeño y barato que sirva (a veces de céntimos y unos pocos KB de memoria). Para ahorrar, el micro pasa casi todo el tiempo en **modo reposo** (*sleep*), con el reloj de la CPU parado y consumos de microamperios; una interrupción externa (*wake-up*: pulsar un botón, un temporizador, la llegada de un dato por radio) lo **despierta**, atiende el evento en unos milisegundos y vuelve a dormir. Al dormir se pierde el contenido de casi todo, pero una pequeña zona de RAM *retenida* y los registros de reloj de tiempo real siguen alimentados, de modo que al despertar el programa sabe qué hora es y en qué estado se quedó.
-- **Fiabilidad y autonomía**: deben funcionar sin mantenimiento ni reinicios, a menudo en sitios inaccesibles.
-
-Ejemplos: el termostato de una caldera, la centralita que controla la inyección de un motor, el controlador de una lavadora, un router doméstico, un satélite pequeño (CubeSat), el mando de un garaje.
-
-### Máquinas virtuales / contenedores
-
-- Se emula un ordenador, pudiendo ejecutar programas como si fuese una máquina real.
-- Los procesos que ejecutan están limitados por los recursos y abstracciones que la máquina virtual proporciona, y están **confinados** en ella.
-- Permiten la convivencia de múltiples sistemas operativos sobre otros sistemas operativos.
-
-Las máquinas virtuales reproducen un sistema completo (cada una con su propio SO invitado sobre un hipervisor); los contenedores comparten el núcleo del anfitrión y solo aíslan la aplicación y sus dependencias.
-
-<img src="img/vm-vs-contenedores.svg" width="560" alt="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
-
-*La virtualización permite ejecutar varios entornos aislados sobre una misma máquina física. Las máquinas virtuales reproducen un sistema completo; los contenedores comparten el núcleo.*
-
-### Cronologías (timelines)
-
-Diagramas históricos de familias de sistemas operativos: Windows ([timeline de Microsoft](https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions)), Macintosh, Android e [iOS](https://www.lifewire.com/ios-versions-4147730).
+Tres demostraciones para ejecutar en una máquina Linux y ver en vivo varios procesos en ejecución y aislamiento de memoria, ciclo de compilación y código máquina: [`material-extra/material_extra.md`](material-extra/material_extra.md).
 
 ---
 
@@ -482,15 +343,9 @@ timeline
 | **1990‑2000** | Ordenador personal y software libre | GUI de uso masivo; redes domésticas; **Linux** (Torvalds, 1991) = núcleo tipo Unix + herramientas **GNU** (Stallman, 1983): código abierto, portable, sin dependencia de un fabricante | Fragmentación y problemas de compatibilidad de controladores; curva de aprendizaje | **Windows 3.x/9x/NT**, **Mac OS**, **Linux**, distintos UNIX comerciales (Solaris, AIX, HP‑UX) |
 | **2000‑** | Dispositivos móviles y computación ubicua | Diseño para batería y conectividad inalámbrica; pantalla táctil; tiendas de aplicaciones; organización en capas (**kernel**, ***middleware***, entorno de ejecución con APIs, interfaz de usuario) | Autonomía de la batería, seguridad y privacidad, diversidad de dispositivos | **Android** (núcleo Linux), **iOS** (núcleo Darwin/XNU); antes Symbian, BlackBerry OS, Windows Phone |
 
-
 ---
 
 ## Material gráfico
 
 Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (no reproducible), a criterio del profesor: retratos y fotos históricas (Charles Babbage, ENIAC, Colossus, John von Neumann, UNIVAC I) y las cronologías (*timelines*) de familias de sistemas operativos, enlazadas a Wikipedia en la sección «Cronologías».
 
----
-
-## Material extra
-
-Tres demostraciones para ejecutar en una máquina Linux y ver en vivo los conceptos del tema (varios procesos en ejecución y aislamiento de memoria, ciclo de compilación y código máquina): [`material-extra/material_extra.md`](material-extra/material_extra.md).
