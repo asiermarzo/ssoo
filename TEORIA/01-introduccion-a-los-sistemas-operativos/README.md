@@ -74,65 +74,46 @@ La alternativa es la **arquitectura Harvard**, que separa físicamente la memori
 
 <img src="img/arquitectura-von-neumann.svg" width="560" alt="Arquitectura de Von Neumann: CPU conectada por bus de direcciones y de datos a la memoria principal y a los dispositivos de E/S">
 
-### Unidad de Control (CU)
+### Unidad Central de Proceso (CPU)
 
-Se encarga de obtener y ejecutar las instrucciones de la memoria principal. Está constituida por:
+Es el componente que **ejecuta las instrucciones** de un programa cargado en la memoria principal. Dentro de ella se distinguen:
 
-- unidad de obtención,
-- unidad de decodificación,
-- unidad funcional,
-- contador de programa (**PC**),
-- registro de instrucción (**IR**).
+- **Unidad de control (CU)**: dirige la ejecución. En cada paso *obtiene* (fetch) la siguiente instrucción de memoria, la *decodifica* y activa al resto de unidades para *ejecutarla*. Se apoya en dos registros propios:
+  - **contador de programa (PC)**: dirección de la siguiente instrucción a ejecutar;
+  - **registro de instrucción (IR)**: instrucción que se está ejecutando en este momento.
+- **Unidad funcional o aritmético‑lógica (ALU)**: realiza las operaciones (sumar, restar, comparar, AND, OR…).
+- **Registros de propósito general** (`R1`, `R2`, …, `Rn`): almacenamiento muy rápido dentro de la CPU donde se colocan los operandos y los resultados.
+- **Registros de estado** (*flags*): bits estado de la última operación de la ALU (*cero*, *acarreo*, *signo*, *desbordamiento*) las instrucciones de salto condicional los consultan.
 
-<img src="img/unidad-de-control.svg" width="560" alt="Componentes de la Unidad de Control: unidad de obtención, de decodificación, funcional, PC e IR">
+<img src="img/unidad-de-control.svg" width="560" alt="Componentes de la CPU: unidad de obtención, de decodificación, unidad funcional, PC e IR">
 
-La ejecución de un fragmento de código de alto nivel se traduce a instrucciones máquina que operan sobre registros (`R1`, `R2`, …, `Rn`), la unidad funcional y los registros de estado, intercambiando datos con la memoria primaria:
+Un fragmento de código de alto nivel se traduce a una secuencia de instrucciones máquina de unos pocos tipos —transferencia, aritmético‑lógicas y de salto— que mueven datos entre la memoria y los registros y operan sobre ellos:
 
 ```asm
-; Código en lenguaje ensamblador para  a = b + c;
-load     R3, b        ; Copiar el valor de b desde la memoria a R3
-load     R4, c        ; Copiar el valor de c desde la memoria a R4
-add      R3, R4       ; Colocar la suma en R3
-store    R3, a        ; Almacenar la suma en la celda de memoria a
+; a = b + c;
+load  R1, b      ; transferencia:  R1 <- memoria[b]
+load  R2, c      ; transferencia:  R2 <- memoria[c]
+add   R1, R2     ; aritmética:     R1 <- R1 + R2   (y actualiza los flags)
+store R1, a      ; transferencia:  memoria[a] <- R1
 
-; Código en lenguaje ensamblador para  d = a - 100
-load     R4, =100     ; Cargar el valor 100 en R4
-subtract R3, R4       ; Colocar la resta en R3
-store    R3, d        ; Almacenar el resultado en la celda de memoria d
+; d = a - 100;
+load  R2, =100   ; carga la constante 100 en R2
+sub   R1, R2     ; R1 <- R1 - 100
+store R1, d      ; memoria[d] <- R1
 ```
 
-Ruta de datos: los registros aportan el operando izquierdo y derecho a la unidad funcional, que deja el resultado en los registros de estado; los registros intercambian datos con la memoria primaria.
+Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilador real genera instrucciones equivalentes para una CPU concreta, ver en Compiler Explorer, está en el [material extra](material-extra/material_extra.md#3-del-código-c-al-código-máquina).
 
-```mermaid
-flowchart LR
-    MP["Memoria primaria"]
-    subgraph CU["Unidad de Control"]
-        direction TB
-        REG["Registros<br/>R1, R2, …, Rn"]
-        UF["Unidad funcional"]
-        RE["Registros de estado"]
-    end
-    MP <-->|"a / desde la memoria"| REG
-    REG -->|"operando izquierdo"| UF
-    REG -->|"operando derecho"| UF
-    UF -->|"resultado"| RE
+**Ruta de datos**: los registros aportan a la unidad funcional el operando izquierdo y el derecho; ésta calcula el resultado, lo deja en un registro y actualiza los registros de estado. Los registros intercambian datos con la memoria primaria.
 
-    classDef memoria fill:#d9ead3,stroke:#4d7a33,color:#000;
-    classDef cpu fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    class MP memoria;
-    class REG,UF,RE cpu;
-```
+**Saltos**: las instrucciones de salto cargan en el PC la dirección de otra instrucción de la memoria para seguir la ejecución ahí, en lugar de continuar con la siguiente. El salto condicional solo salta si se cumple una condición sobre los flags (p. ej. que el resultado anterior fuera cero); es la base de los `if` y de los bucles.
 
 ### Memoria Principal (PM)
 
 - Contiene los programas (conjuntos de instrucciones) y sus datos (variables) que la CPU manipula.
 - La unidad de acceso es la **palabra**, formada por celdas de 8 bits (**bytes**).
 - Los ordenadores actuales tienen longitudes de palabra de 64 bits, frente a los más antiguos de 8, 16 o 32 bits.
-- El acceso a la memoria se realiza mediante tres registros especiales (no son visibles para el programa, a diferencia de `R1`, `R2`…). Cada uno se conecta a un bus:
-  - **MAR** — registro de direcciones de memoria (*memory address register*): guarda la dirección de la celda a la que se accede. Va por el bus de direcciones (CPU → memoria).
-  - **MDR** — registro de datos de memoria (*memory data register*): guarda el dato leído de la memoria o el que se va a escribir en ella. Va por el bus de datos (bidireccional).
-  - **CMD** — registro de órdenes (*command register*): indica la operación (lectura o escritura) y las señales de sincronización. Va por el bus de control.
-- Así, una lectura consiste en poner la dirección en MAR y «lectura» en CMD; la memoria deja el contenido de esa celda en MDR. Una escritura pone dirección en MAR, dato en MDR y «escritura» en CMD.
+
 
 ### Objetivos de un sistema operativo
 
