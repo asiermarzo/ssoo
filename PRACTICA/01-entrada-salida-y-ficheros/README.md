@@ -20,10 +20,10 @@ Solo hace falta cerrar el de más alto nivel. Si tienes un `FILE *`, cierra con 
 | Operación | Consola (`stdio`) | Fichero con `FILE *` | Fichero con descriptor |
 |-----------|-------------------|----------------------|------------------------|
 | Escribir con formato | `printf(fmt, ...)` | `fprintf(fp, fmt, ...)` | `dprintf(fd, fmt, ...)` |
+| Leer con formato | `scanf(fmt, ...)` | `fscanf(fp, fmt, ...)` | — (parsear con sscanf tras `read`) |
 | Abrir | ya abierto (`stdin`, `stdout`, `stderr`) | `fopen(ruta, modo)` | `open(ruta, flags[, mode])` / `creat` |
 | Cerrar | — (se cierran al terminar proceso) | `fclose(fp)` | `close(fd)` |
 | Leer línea / bloque | `fgets(buf, n, stdin)` | `fgets(buf, n, fp)` / `fread` | `read(fd, buf, n)` |
-| Leer con formato | `scanf(fmt, ...)` | `fscanf(fp, fmt, ...)` | — (parsear con sscanf tras `read`) |
 | Escribir cadena / bloque | `puts(s)` | `fputs(s, fp)` / `fwrite` | `write(fd, buf, n)` |
 | Fin de fichero / error | `feof` / `ferror` | `feof` / `ferror` | `read` devuelve `0` / `-1` |
 | Vaciar el búfer | `fflush(stdout)` | `fflush(fp)` | — (no hay búfer de usuario) |
