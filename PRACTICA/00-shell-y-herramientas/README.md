@@ -40,7 +40,7 @@ Primeros comandos para orientarse en el sistema de ficheros:
 | `cat <fichero>` | vuelca el contenido completo de un fichero en la terminal |
 | `more <fichero>` | muestra el fichero **página a página**: `Espacio` avanza, `Enter` una línea, `q` sale |
 | `less <fichero>` | como `more` pero también permite retroceder y buscar (`/patrón`); `q` sale |
-| `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece |
+<!-- | `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece | -->
 | `clear` | limpia la pantalla (`Ctrl+L` hace lo mismo) |
 | `man <comando>` | manual del comando; se navega como `less`. También `<comando> --help` |
 
@@ -63,10 +63,11 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 | `top` / `htop` | procesos ordenados por consumo de CPU y memoria, en tiempo real; `q` sale |
 | `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine, y este puede capturarla para limpiar antes de salir. `kill -9 <pid>` manda `SIGKILL` (9), que el núcleo aplica directamente: no se puede capturar ni ignorar |
 | `killall <nombre>` | como `kill` pero por nombre de programa en vez de pid|
-| `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |
+<!--| `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |-->
 
 ## Referencia rápida de comandos
 
+<!--
 ### Ficheros y directorios
 
 | Comando | Uso |
@@ -109,13 +110,14 @@ diff hola.c hola_v2.c        # qué cambió entre dos versiones
 Cada fichero tiene tres ternas de permisos (usuario, grupo, otros), cada una con lectura (`r`), escritura (`w`) y ejecución (`x`). En notación octal cada terna es un dígito: `rw- r-- ---` → `110 100 000` → `640`.
 
 Forma simbólica: `chmod <u|g|o> <+|-> <r|w|x> <fichero>`, p. ej. `chmod g+r fichero.o`. El bit de ejecución (`x`) es el que permite lanzar un binario con `./programa`.
+-->
 
 ## Editar archivos de código
 
 Un programa en C es texto plano en un fichero `.c`. Se puede escribir con cualquier editor.
 
 ### Editores en la terminal
-
+<!-- 
 **`nano`** — el más sencillo; muestra los atajos en pantalla (`^` significa `Ctrl`):
 
 ```bash
@@ -128,6 +130,8 @@ nano hola.c
 | `Ctrl+X` | salir |
 | `Ctrl+K` / `Ctrl+U` | cortar / pegar línea |
 | `Ctrl+W` | buscar |
+
+-->
 
 **`vim`** — más potente y presente en cualquier máquina, pero tiene *modos*. Supervivencia mínima:
 
@@ -225,8 +229,17 @@ $ ./saluda
 Uso: ./saluda <nombre>
 ```
 
-### Código de salida y redirección
+### Redirección
 
+
+```bash
+./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, útil para no escribir por teclado las entradas de prueba
+./saluda Ana > salida.txt     # salida estándar (stdout) a un fichero
+./programa 2> errores.txt     # salida de error (stderr) a un fichero
+./programa  | less            # tubería: la salida va a la stdin a otro comando
+```
+<!-- 
+### Código de salida
 ```bash
 $ ./saluda Ana ; echo $?      # $? = código de salida del último comando (0 = éxito)
 Hola, Ana
@@ -235,21 +248,17 @@ $ ./saluda ; echo $?
 Uso: ./saluda <nombre>
 1
 ```
+-->
 
-```bash
-./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, útil para no escribir por teclado las entradas de prueba
-./saluda Ana > salida.txt     # salida estándar (stdout) a un fichero
-./programa 2> errores.txt     # salida de error (stderr) a un fichero
-./programa  | less            # tubería: la salida va a la stdin a otro comando
-```
-
-
+<!-- 
 ## Herramientas del curso
 
 - **gdb** — depurador de C/C++ (sección anterior). VS Code y `ddd` son interfaces gráficas sobre él.
 - **valgrind** — instrumenta el binario para detectar errores de memoria (lecturas/escrituras fuera de rango, uso de memoria sin inicializar, fugas de `malloc`).
 - **strace** — muestra la secuencia de llamadas al sistema (`open`, `read`, `write`, `fork`…) que ejecuta un programa; imprescindible en los temas de procesos y ficheros.
+
 - **tmux** — multiplexor de terminales: varias terminales (paneles y ventanas) en una sola sesión, que sigue viva aunque se cierre la conexión. Útil para tener a la vez el editor, la compilación y la ejecución.
+-->
 
 ## Depurar
 
@@ -270,11 +279,6 @@ Debería sumar los enteros `1..N`, pero tiene fallos: con `N` pequeño da un res
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Uso: %s <N>\n", argv[0]);
-        return 1;
-    }
-
     int n = atoi(argv[1]);
     int valores[100];
 
@@ -308,15 +312,15 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 | `step` (`s`) | ejecuta la línea actual **entrando** en las funciones |
 | `continue` (`c`) | continua hasta el próximo `break` o el final |
 | `print <expr>` (`p`) | muestra el valor de una variable o expresión: `print i`, `print valores[0]` |
-| `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break depura.c:18` |
-| `info breakpoints` (`i b`) | lista los puntos de ruptura y su número |
-| `delete [N]` (`d`) | borra el punto de ruptura `N`; sin número, borra todos. `disable`/`enable N` lo desactiva sin borrarlo |
 | `list` (`l`) | muestra el código fuente alrededor de la línea actual |
 | `backtrace` (`bt`) | pila de llamadas |
-| `info locals` | valor de todas las variables locales |
 | `frame <N>` (`f`) | cambia al marco `N` de la pila (para inspeccionar sus variables) |
 | `attach <pid>` | engancha gdb a un proceso que ya está corriendo; equivale a lanzar `gdb -p <pid>` |
 | `detach` | suelta el proceso adjuntado; sigue ejecutándose por su cuenta |
+| `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break depura.c:18` |
+| `info breakpoints` (`i b`) | lista los puntos de ruptura y su número |
+| `delete [N]` (`d`) | borra el punto de ruptura `N`; sin número, borra todos. `disable`/`enable N` lo desactiva sin borrarlo |
+| `info locals` | valor de todas las variables locales |
 | `quit` (`q`) | salir de gdb |
 
 ### Caso 1 — localizar la caída (segfault)
@@ -470,21 +474,21 @@ es_primo (n=4) at primos.c:15
 (gdb) backtrace                # ¿dónde está atascado?
 #0  es_primo (n=4) at primos.c:15
 #1  main () at primos.c:25
-(gdb) frame 1                  # sube al marco de main
+(gdb) frame 1                  # sube del marco de es_primo al main
 #1  main () at primos.c:25
 25              if (es_primo(candidato)) {
 (gdb) print candidato          # ¿qué candidato está probando?
 $1 = 4
-(gdb) print encontrados        # ya encontró 2 y 3
-$2 = 2
-(gdb) continue                 # deja correr un poco...
+(gdb) print encontrados        #¿cuántos ha encontrado?
+$2 = 2                         # ya encontró 2 (número 2 y 3)
+(gdb) continue                 # deja correr durante un rato más...
 ^C                             # Ctrl+C devuelve el control a gdb
 (gdb) frame 1
 (gdb) print candidato          # sigue en 4: el candidato no avanza
 $3 = 4
 (gdb) detach                   # suelta el proceso (sigue colgado, pero ya libre de gdb)
 (gdb) quit
-$ kill 4242                    # y se mata desde fuera
+$ kill 4242                    # y se mata el proceso desde fuera
 ```
 
 **Diagnóstico:** `candidato++` está **dentro** del `if (es_primo(...))`, así que solo avanza cuando el candidato es primo. Al llegar a `candidato = 4` (no primo) nunca se incrementa y el `while` itera eternamente.
@@ -505,8 +509,8 @@ while (encontrados < 5) {
 
 > Mientras `gdb` está adjuntado, el proceso queda **detenido**: no consume CPU ni avanza hasta que se hace `continue` o `detach`.
 
-
-### tmux — varios paneles en una terminal
+<!-- 
+## tmux — varios paneles en una terminal
 
 `tmux` (*terminal multiplexer*) parte una sola terminal en varios **paneles** dentro de una **sesión**, que sigue viva aunque cierres la terminal. Por ejemplo sirve para tener a la vez el código en `gdb`, un panel que lo teledirige y otro para dar órdenes; no necesita entorno gráfico y funciona incluso desde SSH.
 
@@ -536,8 +540,9 @@ tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta lo
 ```
 
 **Para salir:** pulsa `Ctrl-b` y luego `d` para desconectarte y después `tmux kill-server`.
+-->
 
-### Otras herramientas de diagnóstico
+## Otras herramientas de diagnóstico
 
 ```bash
 valgrind ./depura 5           # detecta accesos a memoria inválidos y fugas

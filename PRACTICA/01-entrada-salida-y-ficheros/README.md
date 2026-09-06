@@ -4,15 +4,14 @@
 
 C ofrece dos niveles para trabajar con ficheros:
 
-- **`FILE*`**: funciones que empiezan por `f` y trabajan con el tipo `FILE *` (un puntero a una estructura opaca). Secuencia habitual: declarar un `FILE *` y abrir con `fopen`, operar (lectura/escritura), cerrar con `fclose`. Internamente usa un *file descriptor*  + un buffer en espacio de usuario, el buffer acumula datos y hace menos llamadas al sistema (más optimizado), pero lo escrito no llega al fichero hasta `fflush`/`fclose` o hasta que el búfer se llena.
-- **file descriptors (`int`)**: Es más bajo nivel, los file descriptors (enteros no negativos) representan archivos, directorios, tuberías o sockets. La ventaja es que un programa que usa `read`/`write` tiene el mismo código tanto si escribe/lee de la consola, de archivos, de sockets o de tuberías. 
+- **`FILE*`**: funciones que empiezan por `f` y trabajan con el tipo `FILE *`. Secuencia habitual: declarar un `FILE *` y abrir con `fopen`, operar (lectura/escritura), cerrar con `fclose`.
+- **file descriptors o fds (`int`)**: Es más bajo nivel, los file descriptors (enteros no negativos) representan archivos, directorios, tuberías o sockets. La ventaja es que un programa que usa `read`/`write` tiene el mismo código tanto si escribe/lee de la consola, de archivos, de sockets o de tuberías. 
 
-Cada proceso arranca con tres descriptores abiertos: `0` = `STDIN_FILENO` (entrada), `1` = `STDOUT_FILENO` (salida), `2` = `STDERR_FILENO` (error). A nivel `stdio` esos tres descriptores están envueltos por los `FILE *` `stdin`, `stdout` y `stderr` (declarados en `<stdio.h>`)
+Cada proceso arranca con tres fds abiertos: `0` = `STDIN_FILENO` (entrada - normalmente teclado), `1` = `STDOUT_FILENO` (salida - normalmente consola), `2` = `STDERR_FILENO` (error). A nivel `FILE*` son `stdin`, `stdout` y `stderr` (declarados en `<stdio.h>`)
 
 Se puede pasar de un nivel a otro:
-
-- de `FILE *` a descriptor: `int fd = fileno(fp);`
-- de descriptor a `FILE *`: `FILE *fp = fdopen(fd, "r");` (el `mode` debe ser compatible con cómo se abrió el descriptor).
+- de `FILE *fp` a descriptor: `int fd = fileno(fp);`
+- de descriptor (fd) a `FILE *`: `FILE *fp = fdopen(fd, "r");` (el `mode` debe ser compatible con cómo se abrió el descriptor).
 
 Solo hace falta cerrar el de más alto nivel. Si tienes un `FILE *`, cierra con `fclose(fp)` (que ya cierra el descriptor interno).
 
@@ -38,17 +37,17 @@ Las tres construyen el mismo texto a partir de una cadena de formato; solo cambi
 
 ```c
 #include <stdio.h>
-int printf (const char *fmt, ...);            /* a stdout */
+int printf (const char *fmt, ...);            /* a stdout - consola*/
 int fprintf(FILE *fp, const char *fmt, ...);  /* a un FILE * (fichero, stdout, stderr...) */
 int dprintf(int fd,   const char *fmt, ...);  /* a un fd: fichero, socket, pipe...*/
 ```
 
 - `printf(fmt, ...)` es equivalente a `fprintf(stdout, fmt, ...)`.
-- `dprintf` (POSIX.1-2008) útil cuando solo tienes un `fd` (una tubería, un socket) y no quieres envolverlo en un `FILE *`.
+- `dprintf` útil cuando solo tienes un `fd` (una tubería, un socket) y no quieres envolverlo en un `FILE *`.
 - **Devuelven** el número de caracteres escritos, o un valor negativo si hay error.
-- Para escribir a una cadena en memoria: `snprintf(buf, sizeof buf, fmt, ...)` (preferible a `sprintf`, que no comprueba el tamaño).
+- Para escribir a una cadena en memoria: `snprintf(buf, sizeof buf, fmt, ...)`.
 
-### Anatomía de un especificador
+### Anatomía de un especificador de formato
 
 ```
 %[flags][anchura][.precisión][longitud]conversión
@@ -68,12 +67,14 @@ int dprintf(int fd,   const char *fmt, ...);  /* a un fd: fichero, socket, pipe.
 | `%s` | `char *` | cadena terminada en `'\0'` |
 | `%f` | `double` | decimal en punto fijo (`3.140000`) |
 | `%p` | `void *` | dirección de memoria (hex) |
+<!-- 
 | `%e` / `%E` | `double` | notación científica (`3.14e+00`) |
 | `%g` | `double` | `%e` o `%f`, el más corto |
 | `%u` | `unsigned int` | entero decimal sin signo |
 | `%o` | `unsigned int` | entero en octal |
 | `%x` / `%X` | `unsigned int` | entero en hexadecimal (minúsculas / mayúsculas) |
 | `%c` | `int` | un carácter |
+-->
 | `%%` | — | un `%` literal |
 
 ### Conversiones básicas
@@ -99,7 +100,6 @@ printf("|%05d|\n",  42);          /* |00042|   */
 printf("%.2f\n",    3.14159);     /* 3.14      */
 printf("%8.2f\n",   3.14159);     /* |    3.14| */
 printf("%s\n",    "abcdef");    /* abcdef       */
-printf("%zu\n",     sizeof(int)); /* 4         */
 ```
 
 ### Varios especificadores en una llamada
@@ -120,8 +120,9 @@ printf("%c. media %.1f\n", inicial, media);     /* A. media 7.5 */
 #include <stdio.h>
 int main(void) {
     int numero = 42;
+    int *puntero_a_numero = &numero;
     printf("valor     = %d\n", numero);          /* valor     = 42 */
-    printf("dirección  = %p\n", (void *)&numero); /* dirección  = 0x7ffca3b4c8ec (varía en cada ejecución) */
+    printf("dirección  = %p\n", (void *)puntero_a_numero); /* dirección  = 0x7ffca3b4c8ec (varía en cada ejecución) */
 }
 ```
 
@@ -136,7 +137,7 @@ int fscanf(FILE *fp, const char *fmt, ...);    /* desde un FILE * */
 int sscanf(const char *str, const char *fmt, ...); /* desde una cadena en memoria */
 ```
 
-- Los argumentos son **punteros** a donde poner los valores parseados: `scanf("%d", &n)`. Para `%s` se pasa el array (ya es un puntero).
+- Los argumentos son **punteros** en donde poner los valores parseados: `scanf("%d", &n)`. 
 - **Devuelve** el número de asignaciones realizadas con éxito, o `EOF` si se llega al final del fichero / hay error antes de la primera asignación.
 - Antes de `%d`, `%f`, `%s`... `scanf` **salta** los espacios en blanco (incluidos `'\n'` y tabuladores). `%c` y `%[...]` no los saltan.
 
@@ -321,7 +322,7 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-### Operaciones opcionales
+## Operaciones opcionales
 
 Con `FILE *`:
 
