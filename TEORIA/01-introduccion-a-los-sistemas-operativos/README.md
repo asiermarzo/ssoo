@@ -18,20 +18,20 @@ flowchart TD
     SO((Sistema operativo))
 
     SO --> CP[Control de procesos]
-    SO --> CR[Gestión de memoria]
     SO --> PL[Planificación]
+    SO --> CR[Gestión de memoria]
     SO --> SV[Servicios]
 
     CP --- CP1[Crear y terminar]
     CP1 --- CP2[Comunicación  IPCs]
     CP2 --- CP3[Sincronización]
 
+    PL --- PL1[Reparto de la CPU]
+    PL1 --- PL2[Cambios de contexto]
+
     CR --- CR1[Asignar y liberar]
     CR1 --- CR2[Paginación]
     CR2 --- CR3[Virtual]
-
-    PL --- PL1[Reparto de la CPU]
-    PL1 --- PL2[Cambios de contexto]
 
     SV --- SV1[Llamadas al sistema]
     SV1 --- SV2[Archivos]
@@ -41,7 +41,7 @@ flowchart TD
     SV5 --- SV6[UI: Shell y GUI]
 
     classDef core fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef func fill:#eef2f7,stroke:#555,color:#000;
+    classDef func fill:#eef2f7,stroke:#555,color:#000,font-weight:bold;
     classDef leaf fill:#f7f7f7,stroke:#999,color:#000;
     class SO core;
     class CP,CR,PL,SV func;
