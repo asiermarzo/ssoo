@@ -27,11 +27,11 @@ flowchart TD
     CP2 --- CP3[Sincronización]
 
     CR --- CR1[Asignar y liberar]
-    CR1 --- CR2[Memoria virtual y paginación]
+    CR1 --- CR2[Paginación]
+    CR2 --- CR3[Virtual]
 
-    PL --- PL1[Reparto de la CPU entre procesos]
-    PL1 --- PL2[Planificación]
-    PL2 --- PL3[Cambio de contexto]
+    PL --- PL1[Reparto de la CPU]
+    PL1 --- PL2[Cambios de contexto]
 
     SV --- SV1[Llamadas al sistema]
     SV1 --- SV2[Archivos]
@@ -45,7 +45,7 @@ flowchart TD
     classDef leaf fill:#f7f7f7,stroke:#999,color:#000;
     class SO core;
     class CP,CR,PL,SV func;
-    class CP1,CP2,CP3,CR1,CR2,PL1,PL2,PL3,SV1,SV2,SV3,SV4,SV5,SV6 leaf;
+    class CP1,CP2,CP3,CR1,CR2,CR3,PL1,PL2,SV1,SV2,SV3,SV4,SV5,SV6 leaf;
 ```
 
 Aunque tengan tamaño físico y función diferentes, un smartwatch, un móvil, un servidor, un automóvil, un robot industrial, un avión o un satélite son dispositivos que tienen un software base para que administre sus recursos y conecte las aplicaciones con el hardware. Tienen un Sistema Operativo.
@@ -152,7 +152,7 @@ sequenceDiagram
     participant D as Dispositivo de E/S
     CPU->>D: inicia una operación
     CPU->>CPU: ejecuta otro proceso
-    rect rgb(253, 238, 242)
+    rect rgb(43, 41, 42)
         D-->>CPU: interrupción: operación terminada
         CPU->>CPU: guarda contexto y atiende el evento
         CPU-->>CPU: reanuda el trabajo interrumpido
@@ -192,7 +192,7 @@ En su forma más básica, el sistema operativo es un **conjunto de funciones** q
 
 Comparativa de estructuras (usuario / núcleo):
 
-<img src="img/estructuras-so.svg" width="440" alt="Comparativa de estructuras: monolítico y microkernel, con espacio de usuario y espacio de núcleo">
+<img src="img/estructuras-so.svg" width="680" alt="Comparativa de estructuras: monolítico y microkernel, con espacio de usuario y espacio de núcleo">
 
 ### Sistemas monolíticos
 
@@ -261,7 +261,7 @@ Dos bloques: primero una **evolución histórica**, cada paso resolviendo el des
 
 - **Máquinas virtuales y contenedores**: varios entornos aislados sobre una misma máquina física. Las máquinas virtuales emulan un ordenador completo, cada una con su propio SO invitado sobre un hipervisor; los contenedores comparten el núcleo del anfitrión y solo aíslan la aplicación y sus dependencias.
 
-  <img src="img/vm-vs-contenedores.svg" width="480" alt="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
+  <img src="img/vm-vs-contenedores.svg" width="640" alt="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
 
 ### Resumen
 
