@@ -42,8 +42,8 @@ flowchart TB
     class A1,A2,A3 usuario;
     class MEM,CPU,DEV,FS kernel;
     class G gate;
-    style U fill:#eef8ee,stroke:#4d7a33,stroke-width:1px;
-    style K fill:#eaf2fb,stroke:#1f3f66,stroke-width:1px;
+    style U fill:#eef8ee,stroke:#4d7a33,stroke-width:1px,color:#000;
+    style K fill:#eaf2fb,stroke:#1f3f66,stroke-width:1px,color:#000;
 ```
 
 *Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos deben solicitar un servicio al núcleo.*

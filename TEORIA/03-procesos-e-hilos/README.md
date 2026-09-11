@@ -15,23 +15,7 @@ Un **proceso** es la ejecución de una aplicación o programa sobre un computado
 
 Un **programa por sí mismo NO es un proceso**: un programa es una entidad **pasiva** y un proceso es una entidad **activa**.
 
-```mermaid
-flowchart LR
-    P["Receta guardada<br/>PROGRAMA<br/>código pasivo"] -->|cargar y ejecutar| X
-    D["Ingredientes<br/>datos"] --> X
-    R["Herramientas abiertas<br/>ficheros y recursos"] --> X
-    C["Punto de trabajo<br/>PC · registros · pila"] --> X
-    X(("Cocinero trabajando<br/>PROCESO<br/>entidad activa"))
-
-    classDef pasivo fill:#d9d9d9,stroke:#555,color:#000;
-    classDef insumo fill:#eef2f7,stroke:#555,color:#000;
-    classDef activo fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    class P pasivo;
-    class D,R,C insumo;
-    class X activo;
-```
-
-*Un programa es código almacenado. Un proceso aparece cuando ese código se ejecuta junto con sus datos, pila, recursos y contexto del procesador.*
+*Un programa es código almacenado. Un proceso aparece este código se pone ejecución junto con sus datos, pila, recursos y contexto del procesador.*
 
 ### Multiprogramación y máquina virtual
 

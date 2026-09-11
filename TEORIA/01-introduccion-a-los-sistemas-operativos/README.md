@@ -2,11 +2,11 @@
 
 ## Definición de sistema operativo
 
-- **H. M. Deitel**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre el usuario de un ordenador y el hardware del mismo *(Deitel, Deitel y Choffnes,* Operating Systems*, 3.ª ed., 2004, §1.2)*.
-- **W. Stallings**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre las aplicaciones y el hardware del ordenador *(Stallings,* Operating Systems: Internals and Design Principles*, 8.ª ed., 2015, cap. 2)*.
-- **Silberschatz, Galvin y Gagne**: un programa que gestiona el hardware del ordenador; sirve de base a los programas de aplicación y actúa como intermediario entre el usuario y el hardware *(*Operating System Concepts*, 10.ª ed., 2018, cap. 1)*.
-- **A. Tanenbaum** — como máquina extendida: el sistema operativo presenta al usuario el equivalente de una máquina extendida (o virtual), más fácil de programar que el hardware subyacente *(Tanenbaum y Bos,* Modern Operating Systems*, 4.ª ed., 2014, §1.1.1)*.
-- **A. Tanenbaum** — como administrador de recursos: su tarea es proporcionar una asignación ordenada y controlada de los procesadores, la memoria y los dispositivos de E/S entre los programas que compiten por ellos *(ibid., §1.1.2)*.
+- **<abbr title="Deitel, Deitel y Choffnes, Operating Systems, 3.ª ed., 2004, §1.2">H. M. Deitel</abbr>**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre el usuario de un ordenador y el hardware del mismo.
+- **<abbr title="Stallings, Operating Systems: Internals and Design Principles, 8.ª ed., 2015, cap. 2">W. Stallings</abbr>**: un programa que controla la ejecución de los programas de aplicación y actúa como interfaz entre las aplicaciones y el hardware del ordenador.
+- **<abbr title="Operating System Concepts, 10.ª ed., 2018, cap. 1">Silberschatz, Galvin y Gagne</abbr>**: un programa que gestiona el hardware del ordenador; sirve de base a los programas de aplicación y actúa como intermediario entre el usuario y el hardware.
+- **<abbr title="Tanenbaum y Bos, Modern Operating Systems, 4.ª ed., 2014, §1.1.1">A. Tanenbaum</abbr>** — como máquina extendida: el sistema operativo presenta al usuario el equivalente de una máquina extendida (o virtual), más fácil de programar que el hardware subyacente.
+- **<abbr title="Tanenbaum y Bos, Modern Operating Systems, 4.ª ed., 2014, §1.1.2">A. Tanenbaum</abbr>** — como administrador de recursos: su tarea es proporcionar una asignación ordenada y controlada de los procesadores, la memoria y los dispositivos de E/S entre los programas que compiten por ellos.
 
 **Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus programas (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para ellos, facilitando su programación, depuración y distribución.
 
