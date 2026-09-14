@@ -26,6 +26,7 @@ Una cola conserva mensajes completos hasta que un receptor los recoge, y puede o
 El emisor y el receptor no necesitan ejecutarse simultáneamente: la cola actúa como almacenamiento intermedio persistente.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Productores
     participant Q as Cola persistente
@@ -45,6 +46,7 @@ sequenceDiagram
 Las colas POSIX son objetos administrados por el sistema operativo, con límites de tamaño, persistencia y operaciones bloqueantes o no bloqueantes. En Linux son visibles bajo `/dev/mqueue`.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     C1["mq_open('/pedidos')"] --> M[["/dev/mqueue/pedidos"]]
     C2["mq_send()<br/>prioridad · longitud"] --> M

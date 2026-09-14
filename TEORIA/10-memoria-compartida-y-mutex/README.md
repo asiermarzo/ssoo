@@ -15,6 +15,7 @@ Práctica asociada: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaf
 La memoria compartida evita copiar datos entre procesos, pero obliga a sincronizar los accesos para impedir escrituras simultáneas. Un testigo único (el mutex) decide quién puede tocar la pizarra común en cada momento.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     A["Proceso A<br/>espacio privado"] --> LA[lock]
     B["Proceso B<br/>espacio privado"] --> LB[lock]
@@ -45,6 +46,7 @@ flowchart LR
 Sin mutex, dos procesos pueden leer el mismo valor y escribir encima el uno del otro, perdiendo una actualización. Con mutex, los accesos se ordenan y el resultado es coherente.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     subgraph MAL["Sin mutex · carrera"]
         A1[Proceso A lee 10] --> A2[escribe 11]
@@ -57,7 +59,7 @@ flowchart TB
     end
 
     classDef procA fill:#cfe2f3,stroke:#2b6f99,color:#000;
-    classDef procB fill:#6ba3d6,stroke:#2b6f99,color:#fff;
+    classDef procB fill:#6ba3d6,stroke:#2b6f99,color:#0d2a3f;
     classDef error fill:#fbe0e0,stroke:#333,color:#000;
     classDef ok fill:#d9ead3,stroke:#333,color:#000;
     class A1,A2,C1 procA;

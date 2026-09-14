@@ -20,6 +20,7 @@ Construir una shell (intérprete de comandos) usando las llamadas al sistema de 
 Tubería `more kk.txt | grep hola` — cada comando es un hijo; `dup2` conecta sus descriptores estándar a la pipe:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     subgraph h1["hijo 1: more kk.txt"]
         M["stdout redirigido a la pipe con dup2"]
@@ -43,6 +44,7 @@ flowchart LR
 Redirección `orden < entrada > salida` — se abre el fichero y se duplica sobre el descriptor 0 ó 1 antes del `execvp`:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     IN["fichero de entrada"] -->|"open + dup2(fd, 0)"| CMD(("comando"))
     CMD -->|"open + dup2(fd, 1)"| OUT["fichero de salida"]

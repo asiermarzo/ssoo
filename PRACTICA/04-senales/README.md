@@ -9,6 +9,7 @@ Ejemplos conocidos: `Ctrl-C` en la shell envía `SIGINT` (termina el proceso), `
 Las señales `SIGKILL` y `SIGSTOP` **no** pueden capturarse, bloquearse ni ignorarse. Como son asíncronas, puede llegar otra señal mientras se ejecuta un manejador; las funciones usadas dentro de un manejador deben ser **reentrantes / async-signal-safe** (`malloc` y `free` no lo son).
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TD
     K["otro proceso: kill(pid, sig)<br/>o evento del núcleo"] --> D{"¿hay manejador<br/>instalado para sig?"}
     D -->|"SIG_IGN"| I["se descarta"]
@@ -131,6 +132,7 @@ En variables compartidas con el manejador, usar `volatile sig_atomic_t`.
 1. Programa que cree dos procesos que se comuniquen por señales intercambiando diez mensajes: el primero envía `SIGUSR1` al segundo y este le devuelve `SIGUSR2`. Al completar los diez mensajes (diez señales) ambos procesos concluyen ordenadamente imprimiendo un mensaje de despedida.
 
    ```mermaid
+   %%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
    sequenceDiagram
        participant P1 as Proceso 1
        participant P2 as Proceso 2
@@ -144,6 +146,7 @@ En variables compartidas con el manejador, usar `volatile sig_atomic_t`.
 2. Programa que cree dos procesos. Uno simula un **contador** que incrementa una variable cada segundo; se pone en marcha y se para cada vez que recibe `SIGUSR1` (e imprime el valor del contador), y lo reinicia al recibir `SIGUSR2`. El otro proceso (**gestor**) envía `SIGUSR1` al contador cuando se teclea `1` y `SIGUSR2` cuando se teclea `2`. La ejecución concluye ordenadamente al finalizar el gestor (`Ctrl-C` o `0` por teclado), lo que implica terminar primero el contador y después el gestor.
 
    ```mermaid
+   %%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
    sequenceDiagram
        actor U as Teclado
        participant G as Gestor

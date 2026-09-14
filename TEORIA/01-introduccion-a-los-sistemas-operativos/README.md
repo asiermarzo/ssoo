@@ -14,6 +14,7 @@
 El sistema operativo se ocupa de:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TD
     SO((Sistema operativo))
 
@@ -147,6 +148,7 @@ Las interrupciones permiten **detener el orden normal de ejecución** para atend
 Las interrupciones permiten que un proceso inicie una operación en un dispositivo, el sistema operativo ponga en ejecución otro trabajo mientras el primero espera, y vuelva al primero cuando el dispositivo anuncia que ha terminado:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant CPU as CPU trabajando
     participant D as Dispositivo de E/S
@@ -311,6 +313,7 @@ Muchos historiadores consideran a Babbage y a su socia, la matemática británic
 - **Cuarta generación** (actual): sustitución de las memorias de núcleos magnéticos por chips de silicio; microminiaturización de los circuitos; el tamaño reducido del microprocesador hizo posible el **ordenador personal (PC)**; integración del ordenador en las telecomunicaciones.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 timeline
     title Evolución física del computador
     1830 : Máquina analítica : mecánica y programa mediante tarjetas

@@ -30,6 +30,7 @@ Convierte una ruta de fichero existente y un entero en una `key_t` (un `long`). 
 Varios procesos vinculan (`shmat`) el mismo segmento y obtienen un puntero a la misma zona física; a partir de ahí trabajan con memoria normal, sin llamadas al sistema:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TD
     SEG[["segmento de memoria compartida<br/>(núcleo, clave común vía ftok)"]]
     A["proceso A<br/>shmget → shmat → puntero"] <--> SEG
@@ -111,6 +112,7 @@ if (shmctl(shmid, IPC_RMID, NULL) == -1) perror("shmctl IPC_RMID");
 Un semáforo binario protege la sección crítica (p. ej. la escritura en la memoria compartida): `semop(-1)` para entrar, `semop(+1)` para salir.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TD
     W["semop(sem, -1)  ·  WAIT / P"] --> Q{"¿semáforo ≥ 0?"}
     Q -->|sí| CS["SECCIÓN CRÍTICA<br/>(acceso exclusivo a la memoria compartida)"]

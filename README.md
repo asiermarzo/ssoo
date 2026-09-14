@@ -22,6 +22,8 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | Espacio usuario y espacio kernel. Llamadas al sistema | [`TEORIA/02`](TEORIA/02-espacio-usuario-espacio-kernel/) |
 | Procesos e hilos | [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) |
 | Planificación de procesos | [`TEORIA/04`](TEORIA/04-planificacion-de-procesos/) |
+Se irán añadiendo temas conforme se avance en la asignatura
+<!-- 
 | Concurrencia y sincronización | [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) |
 | Gestión de memoria | [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) |
 | IPC: pipes y fifos | [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/) |
@@ -31,6 +33,7 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | Dispositivos de E/S | [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) |
 | Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
 | GUI | [`TEORIA/13`](TEORIA/13-gui/) |
+-->
 
 ## Prácticas
 
@@ -38,6 +41,8 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 |----------|---------|
 | P0 — Shell y herramientas | [`PRACTICA/00`](PRACTICA/00-shell-y-herramientas/) |
 | P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
+Se irán añadiendo temas conforme se avance en la asignatura
+<!-- 
 | P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos-e-hilos/) |
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
 | P4 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/04`](PRACTICA/04-senales/) |
@@ -46,16 +51,20 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | P7 — Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`PRACTICA/07`](PRACTICA/07-colas-de-mensajes/) |
 | P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
 | P9 — Sistema concurrente | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
+-->
 
 El `README.md` de cada práctica incluye la descripción del tema, los comandos, llamadas al sistema utilizadas, ejercicios propuestos y ejercicios extra con soluciones.
 
 ## Guía de estilo
 
+### Estilo presentaciones
 Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También se pueden dar simulaciones interactivas embebidas, normalmente en HTML + JS. Se utilizará un markdown mínimo y el texto estará siempre en una línea.
+
+Se prefieren explicaciones concisas y resumidas.
 
 Para prácticas, se utilizan archivos Markdown, archivos `.c`, Makefiles, scripts bash y configuraciones tmux de terminales.
 
-Se prefieren explicaciones concisas y resumidas.
+### Código
 
 En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. 
 

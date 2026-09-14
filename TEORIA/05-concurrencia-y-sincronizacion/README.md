@@ -62,6 +62,7 @@ Los procesos cooperantes pueden compartir espacios de direcciones o datos a trav
 Una condición de carrera aparece cuando el resultado depende del orden imprevisible en que varias ejecuciones acceden a un dato compartido: si dos cajeros leen el mismo saldo de 100 € y cada uno autoriza una retirada, pueden llegar a autorizarse 150 € partiendo de 100 €.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant A as Cajero A
     participant S as Saldo compartido = 100 €
@@ -82,6 +83,7 @@ Cuando un proceso ejecuta la sección crítica, **ningún otro** proceso puede e
 - Hacer cumplir la exclusión mutua puede provocar **interbloqueo** o **inanición**. Si tres procesos P₁, P₂ y P₃ necesitan un recurso R y el SO concede el acceso alternativamente a P₁ y P₂, puede **negar indefinidamente** el acceso a P₃.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     P1(("P1")) -->|accede alternativamente| R[(Recurso R)]
     P2(("P2")) -->|accede alternativamente| R
@@ -460,6 +462,7 @@ Necesarias (aunque no suficientes) para que se produzca interbloqueo; deben cump
 | **Espera circular** | `P₀` espera un recurso adquirido por `P₁`, que espera uno adquirido por `P₂`, …, que espera uno adquirido por `P₀`. Implica la condición de retención y espera. |
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     P1(("P1")) -->|espera SemA| P2(("P2"))
     P2 -->|espera SemB| P3(("P3"))

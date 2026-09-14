@@ -84,6 +84,7 @@ Como plazas de aparcamiento: la asignación **contigua** ocupa plazas consecutiv
 El sistema de ficheros funciona como una biblioteca: el nombre se busca en un catálogo (el directorio), que remite a una ficha (el inodo) con los metadatos y las referencias a los estantes (los bloques) donde están los datos.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     N(["Nombre solicitado<br/>/apuntes/tema.pdf"]) --> C["Catálogo · directorio<br/>tema.pdf → inodo 481"]
     C --> I["Ficha · inodo 481<br/>tipo · permisos · tamaño · punteros"]
@@ -138,6 +139,7 @@ flowchart LR
 Los permisos actúan como llaves diferenciadas: cada categoría de usuario (propietario, grupo, otros) recibe su propio juego de derechos de lectura, escritura y ejecución, que `chmod` modifica.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     F["fichero<br/>rwx rw- r--"] --> U["propietario<br/>leer · escribir · ejecutar"]
     F --> G["grupo<br/>leer · escribir"]
