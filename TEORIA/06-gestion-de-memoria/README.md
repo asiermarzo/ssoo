@@ -19,7 +19,6 @@
 | Memoria de acceso aleatorio (RAM) | |
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     CPU((CPU)) <-->|trabaja directamente| RAM["Mesa de trabajo · RAM<br/>rápida, volátil y limitada"]
     RAM <-->|cargar / guardar| SSD["Archivador · SSD o disco<br/>grande, persistente y más lento"]
@@ -142,7 +141,6 @@ La dirección se parte en dos campos. El **número de página / marco** se tradu
 El SO mantiene **una tabla de páginas por proceso**, que relaciona cada página con el marco en el que se encuentra.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     subgraph L["Documento lógico · proceso"]
         P0[Página 0]
@@ -298,7 +296,6 @@ La **memoria virtual** es una técnica que permite **ejecutar procesos que no ca
 Correspondencia de espacios (programa fuente → programa absoluto → imagen ejecutable):
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     PF[Programa fuente] --> EN[Espacio de nombres]
     PA[Programa absoluto] --> EV["Espacio de direcciones virtuales de Pᵢ"]
@@ -361,7 +358,6 @@ Dos estructuras de datos: la **tabla de páginas** (una entrada por página, con
   - En ambos casos, una vez cargada, se activa el **bit de presencia** y se guarda la dirección del marco.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     VA["dirección lógica: nº de página + desplazamiento"] --> MMU
     MMU -->|"nº de página"| TLB{"¿en la TLB?"}
@@ -407,7 +403,6 @@ El **intercambio** usa un disco o parte de un disco (**dispositivo de swap**) co
   3. **Reinicio del proceso**: se comunica a la CPU que la página ya está en MP y el proceso continuará cuando el *dispatcher* lo estime oportuno.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Proceso · mesa
     participant SO as Sistema operativo
@@ -485,7 +480,6 @@ Si se produce un fallo, la MMU **no tiene traducción** para la dirección: inte
 - Obtener la página desde otro lugar.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Proceso
     participant MMU as MMU
@@ -511,7 +505,6 @@ Ver la tabla de la sección de paginación (Tema 5): **FIFO**, **LRU**, **NRU**,
 Cuando el número de marcos asignados a los procesos activos es insuficiente para su conjunto de trabajo, cada pocas instrucciones provocan un fallo de página que expulsa otra página aún necesaria. El sistema entra en un ciclo en el que invierte más tiempo intercambiando páginas con el disco que ejecutando instrucciones útiles.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     A[Ejecutar unas pocas instrucciones] --> F[Fallo de página]
     F --> O[Expulsar otra página]

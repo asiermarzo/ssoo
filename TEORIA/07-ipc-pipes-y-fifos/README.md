@@ -14,7 +14,6 @@ Práctica asociada: [`PRACTICA/03`](../../PRACTICA/03-pipes-y-fifos/).
 ## Esquema de una pipe
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     W["proceso escritor<br/>write por el extremo de escritura"] ==> BUF[["búfer FIFO del núcleo"]]
     BUF ==> R["proceso lector<br/>read por el extremo de lectura"]
@@ -36,7 +35,6 @@ Una pipe funciona como un tubo neumático de sentido único administrado por el 
 La shell conecta la salida estándar de un programa con la entrada del siguiente (mediante `dup2` sobre los extremos de una pipe), formando herramientas complejas a partir de programas sencillos.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     A["cat registro.log"] -->|stdout| B["grep ERROR"]
     B -->|solo líneas coincidentes| C[sort]
@@ -56,7 +54,6 @@ flowchart LR
 Las pipes anónimas conectan procesos emparentados que heredan los descriptores. Una FIFO posee un nombre en el sistema de ficheros y permite conectar procesos que no comparten parentesco.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     subgraph A["Pipe anónima · conexión privada heredada"]
         PA[Proceso padre] --> P[[pipe]] --> PH[Proceso hijo]

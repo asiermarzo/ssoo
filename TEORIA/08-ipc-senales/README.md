@@ -16,7 +16,6 @@ Práctica asociada: [`PRACTICA/04`](../../PRACTICA/04-senales/).
 Una señal no transporta un flujo de datos: notifica de forma asíncrona que ha ocurrido un determinado evento. El proceso interrumpe lo que está haciendo, ejecuta una acción breve (el manejador) y continúa donde estaba.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Proceso concentrado en su trabajo
     participant K as Núcleo
@@ -35,7 +34,6 @@ sequenceDiagram
 ## Entrega de una señal
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TD
     SRC["origen: kill() / evento del núcleo / excepción"] --> PEND["señal pendiente en el proceso destino"]
     PEND --> M{"¿bloqueada por la máscara?"}
@@ -64,7 +62,6 @@ Detalle y tabla de señales: [`PRACTICA/04`](../../PRACTICA/04-senales/).
 Al pulsar `Ctrl+C`, el *driver* de terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     K["Teclado<br/>Ctrl+C"] --> T["driver de terminal"]
     T --> SO["núcleo genera SIGINT"]
@@ -92,7 +89,6 @@ flowchart LR
 Bloquear una señal no implica necesariamente descartarla: puede permanecer pendiente hasta que la máscara permita su entrega.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 stateDiagram-v2
     [*] --> Generada
     Generada --> Pendiente: la máscara la bloquea
@@ -116,7 +112,6 @@ stateDiagram-v2
 `SIGTERM` permite que el proceso responda y libere recursos. `SIGKILL` no puede capturarse ni ignorarse y provoca su terminación inmediata.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     TERM["SIGTERM<br/>petición de cierre"] --> P{"¿hay manejador?"}
     P -->|sí| L["guardar estado<br/>cerrar ficheros<br/>liberar recursos"]

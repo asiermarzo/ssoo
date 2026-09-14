@@ -48,7 +48,6 @@ Crea un nuevo proceso como copia casi exacta del padre (espacio de direcciones, 
 - **Herencia de descriptores**: padre e hijo comparten el mismo desplazamiento de fichero para los abiertos por el padre antes del `fork`.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TD
     U(["proceso único: pid = fork()"]) --> R{"valor devuelto por fork()"}
     R -->|"0"| H["rama del proceso HIJO"]
@@ -181,7 +180,6 @@ Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y te
 2. Programa que cree cuatro procesos A, B, C y D de forma que A sea padre de B, B de C y C de D.
 
    ```mermaid
-   %%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
    flowchart LR
        A((A)) --> B((B)) --> C((C)) --> D((D))
 
@@ -199,7 +197,6 @@ Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y te
 3. Programa que cree un árbol de procesos de tres niveles de profundidad, de modo que cada rama tenga dos procesos.
 
    ```mermaid
-   %%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
    flowchart TD
        N1((nivel 1)) --> N2a((nivel 2))
        N1 --> N2b((nivel 2))

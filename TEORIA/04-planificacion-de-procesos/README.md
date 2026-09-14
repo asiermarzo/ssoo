@@ -22,7 +22,6 @@ Las decisiones de planificación pueden producirse en las transiciones:
 La planificación se produce **siempre que un proceso abandona la CPU** o **se inserta un proceso en la cola de preparados**.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     NEW(["Nuevo hilo"]) --> LP[Lista de Preparados]
     LP --> PL{Planificador}
@@ -73,7 +72,6 @@ La selección del proceso a ejecutar se realiza en función de **prioridades**: 
 Visto como un relevo: el núcleo recibe la interrupción o cesión del proceso saliente, guarda su contexto en su PCB y carga el del proceso entrante para reanudarlo en su siguiente instrucción.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P1 as Proceso saliente
     participant SO as Núcleo · relevo
@@ -117,7 +115,6 @@ En los sistemas de tiempo compartido a veces es necesario desalojar procesos de 
 | **A largo plazo** (planificador de trabajos) | Selecciona nuevos procesos y los carga en MP para su ejecución. Controla el grado de multiprogramación, de modo que la tasa promedio de procesos entrantes sea igual a la de salientes (equilibrio en las colas). | Poco frecuente ⇒ puede ser más lento. |
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     CT[Cola de trabajo] -->|Planificador a largo plazo| CPL[Cola de procesos listos]
     CPS[Cola de procesos suspendidos] -->|Planificador a medio plazo| CPL
@@ -171,7 +168,6 @@ Las decisiones de planificación a corto plazo se deben a: (1) un proceso finali
 Como en la cola de una tienda: FCFS respeta el orden de llegada, SJF deja pasar primero al que lleva menos artículos y Round Robin atiende a todos por turnos breves.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     subgraph F["FCFS · orden de llegada"]
         F1["A · 8 artículos"] --> F2["B · 2 artículos"] --> F3["C · 5 artículos"]
@@ -228,7 +224,6 @@ flowchart TB
 - Se emplea para evitar latencias en aplicaciones de audio y vídeo y prevenir cortes de servicio (VoIP, sensores, grabación de CD). Se usan hilos/procesos en primer y segundo plano.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant S as Sensor
     participant P as Planificador de tiempo real
@@ -248,7 +243,6 @@ sequenceDiagram
 ### Round Robin (RR) o turno rotatorio
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     Q1["P1<br/>cuanto"] --> CPU((CPU))
     CPU -->|vence el cuanto| Q2["P2<br/>cuanto"]

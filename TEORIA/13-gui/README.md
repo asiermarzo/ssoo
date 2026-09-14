@@ -36,7 +36,6 @@ Las aplicaciones dibujan en superficies independientes. El compositor decide su 
 Un clic atraviesa varias capas del sistema antes de convertirse en una respuesta visual.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant M as Ratón
     participant K as Driver del núcleo
@@ -57,7 +56,6 @@ sequenceDiagram
 X11 distribuye el dibujo y los eventos mediante un servidor gráfico con funciones separadas. En Wayland, un compositor unificado coordina directamente clientes, entrada y presentación.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     subgraph X["X11 · funciones separadas"]
         XA[Clientes] --> XS[Servidor X]

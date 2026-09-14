@@ -178,7 +178,6 @@ Antes de leer la siguiente instrucción, el procesador **siempre comprueba si se
 El SO mantiene una colección de **colas, una por estado**, que representan el estado de todos los procesos del sistema. Cada PCB está encolado en la cola correspondiente a su estado actual; conforme un proceso cambia de estado, su PCB se retira de una cola y se encola en otra.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     NEW["programas nuevos"] --> JQ[Cola de Trabajos]
     JQ --> RQ[Cola de Preparados]
@@ -206,7 +205,6 @@ flowchart LR
 Diagrama de estados básico:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 stateDiagram-v2
     [*] --> listo: nuevo proceso
     listo --> en_ejecución
@@ -225,7 +223,6 @@ stateDiagram-v2
 Visto como un recorrido, un proceso pasa por estaciones: entra en *Listo*, obtiene el único vehículo disponible (la CPU) para pasar a *Ejecución*, y de ahí puede volver a la cola al vencer el cuanto, quedar en *Espera* si necesita E/S, o detenerse en *Parado* con `SIGSTOP`.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 stateDiagram-v2
     [*] --> Listo: entra en la estación
     Listo --> Ejecución: obtiene el único vehículo · CPU
@@ -264,7 +261,6 @@ stateDiagram-v2
 El diagrama completo de estados de un proceso en UNIX refleja las transiciones provocadas por `fork()`, `exit()`, las llamadas al sistema, las interrupciones, la expulsión y la carga/descarga (*swapping*) de memoria:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 stateDiagram-v2
     state "Ejecución en usuario" as EU
     state "Ejecución en núcleo" as EN
@@ -339,7 +335,6 @@ stateDiagram-v2
 Estados de un proceso/hilo en Linux (visión simplificada):
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 stateDiagram-v2
     [*] --> Listo
     Listo --> Ejecución: Despachar
@@ -366,7 +361,6 @@ stateDiagram-v2
 Y el modelo de estados con suspensión (carga/descarga de memoria):
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 stateDiagram-v2
     [*] --> listoSuspendido: Inicio
     listoSuspendido --> listoActivo: activar
@@ -395,7 +389,6 @@ stateDiagram-v2
 La llamada `fork()` crea un nuevo proceso a partir del actual; desde ese punto, padre e hijo continúan como ejecuciones independientes y pueden a su vez crear más hijos, formando un árbol de procesos.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     S["shell · PID 1200"] --> A["programa · PID 1240"]
     A -->|fork| B["hijo 1 · PID 1241"]

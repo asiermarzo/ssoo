@@ -23,7 +23,6 @@ Conceptos básicos · Funciones de entrada/salida · Almacenamiento intermedio �
 - **Utilidad**, **complejidad de control** y **representación de los datos**.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart TB
     IO[Dispositivos de E/S] --> B["BLOQUE<br/>unidades direccionables"]
     IO --> C["CARÁCTER<br/>secuencia continua"]
@@ -51,7 +50,6 @@ flowchart TB
 - Si el dispositivo dispone de **interrupciones**, el software no necesita recurrir a operaciones periódicas de **sondeo**.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant CPU as CPU
     participant DMA as Controlador DMA
@@ -76,7 +74,6 @@ sequenceDiagram
 El proceso solicita la lectura y **espera activamente** consultando el registro de estado del controlador hasta que el dato está disponible:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Proceso / función leer
     participant C as Controlador del dispositivo
@@ -96,7 +93,6 @@ sequenceDiagram
 El proceso se **bloquea** tras lanzar la operación; el controlador avisa con una interrupción al terminar:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Proceso
     participant D as Manejador (lectura/escritura)
@@ -120,7 +116,6 @@ sequenceDiagram
 En lugar de consultar continuamente al dispositivo, el procesador puede dedicarse a otro proceso y recibir una interrupción («timbre») cuando la operación de E/S ha concluido:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 sequenceDiagram
     participant P as Proceso
     participant CPU as CPU

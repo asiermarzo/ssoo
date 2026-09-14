@@ -76,7 +76,6 @@ Es la multiprogramación del Tema 1: la CPU nunca está ociosa si hay trabajo pe
 ## Tres formas de llegar a la ejecución
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     c["hola.c"] -->|compila: gcc| cb["binario nativo"] -->|lo ejecuta la CPU| run((ejecución))
     j["Hola.java"] -->|compila: javac| jb["bytecode .class"] -->|máquina virtual: JVM| run

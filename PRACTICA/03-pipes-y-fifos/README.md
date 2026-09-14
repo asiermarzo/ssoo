@@ -29,7 +29,6 @@ Crea la tubería: `filedescriptor[0]` es el extremo de **lectura** y `filedescri
 Tras `pipe` + `fork`, ambos procesos tienen los dos extremos abiertos; cada uno cierra el que no usa para que el flujo sea unidireccional y se detecte el EOF:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#ffffff', 'primaryColor': '#eef2f7', 'primaryTextColor': '#1a1a1a', 'primaryBorderColor': '#555555', 'lineColor': '#555555', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#ffffff'}}}%%
 flowchart LR
     subgraph Padre["proceso padre · lector"]
         direction TB
