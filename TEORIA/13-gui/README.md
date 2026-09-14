@@ -75,6 +75,8 @@ flowchart TB
     class XS,WC nucleo;
     class XA,XW,XC,WA cliente;
     class XH,WH hardware;
+    style X fill:none,stroke-dasharray: 5 5;
+    style W fill:none,stroke-dasharray: 5 5;
 ```
 
 *X11 distribuye el dibujo y los eventos mediante un servidor gráfico. En Wayland, el compositor coordina directamente clientes, entrada y presentación.*

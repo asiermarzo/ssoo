@@ -170,6 +170,8 @@ flowchart LR
     class P1,F1 par1;
     class P2,F7 par2;
     class P3,F3 par3;
+    style L fill:none,stroke-dasharray: 5 5;
+    style F fill:none,stroke-dasharray: 5 5;
 ```
 
 *La paginación divide la memoria lógica y física en bloques del mismo tamaño. Las páginas de un proceso pueden ocupar marcos no contiguos.*
@@ -409,10 +411,8 @@ sequenceDiagram
     participant D as Disco · archivo
     P->>SO: necesito la página 12
     SO->>SO: no está en RAM · elige un marco
-    rect rgb(238, 242, 247)
     SO->>D: trae la página 12
     D-->>SO: contenido de la página
-    end
     SO->>SO: actualiza la tabla de páginas
     SO-->>P: reejecuta la instrucción
 ```
@@ -488,10 +488,8 @@ sequenceDiagram
     P->>MMU: acceso a dirección virtual
     MMU->>SO: fallo de página (trap): no hay traducción
     SO->>SO: ¿referencia válida? elegir marco (reemplazo si no hay libre)
-    rect rgb(238, 242, 247)
     SO->>D: leer la página al marco (page in)
     D-->>SO: página cargada
-    end
     SO->>SO: actualizar tabla de páginas (bit de presencia = 1, dirección del marco)
     SO-->>P: reejecutar la instrucción
 ```

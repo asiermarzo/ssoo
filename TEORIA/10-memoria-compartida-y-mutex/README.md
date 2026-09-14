@@ -64,6 +64,8 @@ flowchart TB
     class B1,B2,C2 procB;
     class R1 error;
     class R2 ok;
+    style MAL fill:none,stroke-dasharray: 5 5;
+    style BIEN fill:none,stroke-dasharray: 5 5;
 ```
 
 *Compartir memoria aporta velocidad. El mutex aporta el orden necesario para que esa velocidad no produzca resultados incoherentes.*

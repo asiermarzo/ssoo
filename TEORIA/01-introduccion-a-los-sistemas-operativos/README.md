@@ -152,11 +152,9 @@ sequenceDiagram
     participant D as Dispositivo de E/S
     CPU->>D: inicia una operación
     CPU->>CPU: ejecuta otro proceso
-    rect rgb(43, 41, 42)
-        D-->>CPU: interrupción: operación terminada
-        CPU->>CPU: guarda contexto y atiende el evento
-        CPU-->>CPU: reanuda el trabajo interrumpido
-    end
+    D-->>CPU: interrupción: operación terminada
+    CPU->>CPU: guarda contexto y atiende el evento
+    CPU-->>CPU: reanuda el trabajo interrumpido
 ```
 
 *Una interrupción permite que el procesador haga otro trabajo mientras espera a un dispositivo y recupere la operación cuando este anuncia que ha terminado.*

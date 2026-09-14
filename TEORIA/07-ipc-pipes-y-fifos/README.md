@@ -66,6 +66,8 @@ flowchart TB
     classDef canal fill:#fce5a8,stroke:#333,color:#000;
     class PA,PH,X,Y proceso;
     class P,N canal;
+    style A fill:none,stroke-dasharray: 5 5;
+    style F fill:none,stroke-dasharray: 5 5;
 ```
 
 *Las pipes se usan normalmente entre procesos emparentados. Una FIFO posee un nombre y permite conectar procesos que no comparten parentesco.*

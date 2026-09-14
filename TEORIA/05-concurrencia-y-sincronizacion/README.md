@@ -68,10 +68,8 @@ sequenceDiagram
     participant B as Cajero B
     A->>S: lee 100 €
     B->>S: lee 100 €
-    rect rgb(251, 224, 224)
     A->>S: escribe 20 € tras retirar 80 €
     B->>S: escribe 30 € tras retirar 70 €
-    end
     Note over A,B: se autorizaron 150 € partiendo de 100 €
 ```
 

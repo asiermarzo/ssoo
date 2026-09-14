@@ -42,8 +42,8 @@ flowchart TB
     class A1,A2,A3 usuario;
     class MEM,CPU,DEV,FS kernel;
     class G gate;
-    style U fill:#eef8ee,stroke:#4d7a33,stroke-width:1px,color:#000;
-    style K fill:#eaf2fb,stroke:#1f3f66,stroke-width:1px,color:#000;
+    style U fill:none,stroke-dasharray: 5 5;
+    style K fill:none,stroke-dasharray: 5 5;
 ```
 
 *Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos deben solicitar un servicio al núcleo.*
@@ -57,11 +57,9 @@ sequenceDiagram
     participant K as Núcleo · modo kernel
     U->>W: read(fd, buf, n)
     W->>K: instrucción de trap · nº de syscall + parámetros
-    rect rgb(207, 226, 243)
-        Note over K: cambio a modo kernel
-        K->>K: valida parámetros y ejecuta el servicio
-        K-->>W: valor de retorno / -1 y errno
-    end
+    Note over K: cambio a modo kernel
+    K->>K: valida parámetros y ejecuta el servicio
+    K-->>W: valor de retorno / -1 y errno
     Note over U: vuelta a modo usuario
     W-->>U: resultado
 ```
@@ -76,13 +74,11 @@ sequenceDiagram
     participant H as Hardware
     A->>V: read(fd, búfer, tamaño)
     V->>K: número de servicio + parámetros
-    rect rgb(207, 226, 243)
-        Note over V,K: cambio controlado a modo kernel
-        K->>K: comprueba permisos y direcciones
-        K->>H: solicita los datos
-        H-->>K: datos disponibles
-        K-->>V: resultado o error
-    end
+    Note over V,K: cambio controlado a modo kernel
+    K->>K: comprueba permisos y direcciones
+    K->>H: solicita los datos
+    H-->>K: datos disponibles
+    K-->>V: resultado o error
     V-->>A: retorno a modo usuario
 ```
 

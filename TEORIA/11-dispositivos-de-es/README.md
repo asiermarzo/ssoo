@@ -57,10 +57,8 @@ sequenceDiagram
     participant M as Memoria RAM
     CPU->>DMA: origen, destino y tamaño
     DMA->>D: inicia transferencia
-    rect rgb(207, 226, 243)
-        loop bloque completo
-            D->>M: dato directo a memoria
-        end
+    loop bloque completo
+        D->>M: dato directo a memoria
     end
     DMA-->>CPU: interrupción de fin
 ```
@@ -79,11 +77,9 @@ sequenceDiagram
     participant C as Controlador del dispositivo
     P->>C: 1-2. leer(dispositivo, …): programa la operación
     P->>C: 3. escribe la orden en el registro «Operación»
-    rect rgb(253, 243, 208)
-        loop 4. sondeo
-            P->>C: consulta el registro «Estado»
-            C-->>P: ¿operación completada?
-        end
+    loop 4. sondeo
+        P->>C: consulta el registro «Estado»
+        C-->>P: ¿operación completada?
     end
     C-->>P: 5. lee el registro «Datos» y lo copia a memoria
 ```
@@ -102,14 +98,10 @@ sequenceDiagram
     P->>D: 1-3. leer(dispositivo, …)
     D->>T: 4. registra la operación pendiente
     D->>C: 5. programa Operación / Estado / Datos
-    rect rgb(251, 224, 224)
-        Note over P: el proceso queda BLOQUEADO, la CPU ejecuta otro proceso
-    end
-    rect rgb(207, 226, 243)
-        C-->>MI: 6. interrupción al completar
-        MI->>T: 7. actualiza la tabla de estado
-        MI->>D: 8a-8b. copia los datos
-    end
+    Note over P: el proceso queda BLOQUEADO, la CPU ejecuta otro proceso
+    C-->>MI: 6. interrupción al completar
+    MI->>T: 7. actualiza la tabla de estado
+    MI->>D: 8a-8b. copia los datos
     D-->>P: 9. proceso LISTO (datos disponibles)
 ```
 
@@ -122,9 +114,7 @@ sequenceDiagram
     participant D as Dispositivo
     P->>CPU: solicita E/S
     CPU->>D: encarga la operación
-    rect rgb(217, 234, 211)
-        CPU->>CPU: ejecuta otro proceso
-    end
+    CPU->>CPU: ejecuta otro proceso
     D-->>CPU: timbre · interrupción de fin
     CPU-->>P: datos disponibles · vuelve a listo
 ```

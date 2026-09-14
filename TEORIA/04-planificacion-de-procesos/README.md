@@ -79,13 +79,9 @@ sequenceDiagram
     participant PCB2 as PCB de P2
     participant P2 as Proceso entrante
     P1->>SO: interrupción o cesión
-    rect rgb(207, 226, 243)
     SO->>PCB1: guarda PC, registros y pila
-    end
-    rect rgb(217, 234, 211)
     SO->>PCB2: carga PC, registros y pila
     SO->>P2: reanuda en su siguiente instrucción
-    end
 ```
 
 *Para sustituir un proceso, el núcleo guarda su contexto y restaura el de otro. Durante ese tiempo la CPU administra la ejecución, pero no avanza en el trabajo de las aplicaciones.*
@@ -185,6 +181,9 @@ flowchart TB
     class F1,S3,R1 clienteA;
     class F2,S1,R2 clienteB;
     class F3,S2,R3 clienteC;
+    style F fill:none,stroke-dasharray: 5 5;
+    style S fill:none,stroke-dasharray: 5 5;
+    style R fill:none,stroke-dasharray: 5 5;
 ```
 
 *FCFS respeta el orden de llegada, SJF favorece los trabajos cortos y Round Robin reparte la CPU en cuantos de tiempo.*
@@ -229,12 +228,10 @@ sequenceDiagram
     participant P as Planificador de tiempo real
     participant T as Tarea de control
     participant A as Actuador
-    rect rgb(217, 234, 211)
     S->>P: evento en t = 0 ms
     P->>T: despacha con máxima prioridad
     T->>T: calcula respuesta
     T->>A: orden en t = 7 ms
-    end
     Note over S,A: plazo máximo = 10 ms · respuesta válida
 ```
 
@@ -278,6 +275,7 @@ flowchart LR
 - **Distribución de carga**: se reparte la carga entre CPUs para no tener ninguna ociosa.
 - **Equilibrio de carga**: se reparte uniformemente la carga entre las CPUs.
 
+<!-- 
 ### Métricas de planificación
 
 Máxima utilización · máxima productividad · mínimo tiempo de retorno · mínimo tiempo de respuesta · mínimo tiempo de espera.
@@ -341,6 +339,8 @@ El estado del sistema se puede observar con el **Administrador de tareas** (pest
 ## Planificación en macOS X
 
 Utiliza una **cola realimentada de múltiples niveles** con cuatro niveles de prioridad: *normal*, *system high priority*, *kernel mode only* y *real-time*.
+
+-->
 
 ---
 

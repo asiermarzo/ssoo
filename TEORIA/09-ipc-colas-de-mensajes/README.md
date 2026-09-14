@@ -31,9 +31,7 @@ sequenceDiagram
     participant Q as Cola persistente
     participant C as Consumidores
     P->>Q: envían a ritmos distintos
-    rect rgb(253, 243, 208)
-        Note over Q: los mensajes esperan almacenados
-    end
+    Note over Q: los mensajes esperan almacenados
     Q-->>C: entrega cuando un consumidor está listo
     Note over P,C: no necesitan ejecutarse simultáneamente
 ```

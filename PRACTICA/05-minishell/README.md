@@ -38,6 +38,8 @@ flowchart LR
     class G hijo2;
     class PIPE nucleo;
     class TTY terminal;
+    style h1 fill:none,stroke-dasharray: 5 5;
+    style h2 fill:none,stroke-dasharray: 5 5;
 ```
 
 Redirección `orden < entrada > salida` — se abre el fichero y se duplica sobre el descriptor 0 ó 1 antes del `execvp`:

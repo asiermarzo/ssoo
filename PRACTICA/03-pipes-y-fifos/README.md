@@ -50,6 +50,8 @@ flowchart LR
     class PR,PC lector;
     class HW,HC escritor;
     class BUF nucleo;
+    style Padre fill:none,stroke-dasharray: 5 5;
+    style Hijo fill:none,stroke-dasharray: 5 5;
 ```
 
 ```c

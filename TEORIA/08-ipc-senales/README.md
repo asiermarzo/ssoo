@@ -21,11 +21,9 @@ sequenceDiagram
     participant K as Núcleo
     participant H as Manejador
     K-->>P: señal · aviso inesperado
-    rect rgb(252, 229, 168)
-        P->>P: guarda el punto de reanudación
-        P->>H: ejecuta una acción breve
-        H-->>P: retorna
-    end
+    P->>P: guarda el punto de reanudación
+    P->>H: ejecuta una acción breve
+    H-->>P: retorna
     P->>P: continúa donde estaba
 ```
 
