@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Familiarizarse con el entorno de trabajo del curso: Linux, el intérprete de comandos (shell) y el ciclo de un programa C — **editar, compilar, ejecutar y depurar**.
+Familiarizarse con el intérprete de comandos (shell) y el ciclo de un programa C — **editar, compilar, ejecutar y depurar**.
 
 ## Cómo abrir una terminal
 
@@ -38,13 +38,14 @@ Primeros comandos para orientarse en el sistema de ficheros:
 | `ls` | lista el contenido del directorio. `ls -l` formato largo (permisos, tamaño, fecha), `ls -a` incluye ocultos, `ls -la` ambos |
 | `cd <dir>` | cambia de directorio. `cd ..` sube uno, `cd` o `cd ~` va a tu carpeta personal, `cd -` vuelve al anterior |
 | `cat <fichero>` | vuelca el contenido completo de un fichero en la terminal |
+<!-- 
 | `more <fichero>` | muestra el fichero **página a página**: `Espacio` avanza, `Enter` una línea, `q` sale |
 | `less <fichero>` | como `more` pero también permite retroceder y buscar (`/patrón`); `q` sale |
-<!-- | `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece | -->
+| `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece | -->
 | `clear` | limpia la pantalla (`Ctrl+L` hace lo mismo) |
 | `man <comando>` | manual del comando; se navega como `less`. También `<comando> --help` |
 
-Atajos de la shell que conviene usar desde el principio:
+Atajos importantes de la shell:
 
 - **`Tab`**: autocompleta nombres de comandos y de ficheros. Doble `Tab` lista las opciones posibles.
 - **`↑` / `↓`**: recorren los comandos anteriores. `history` los lista todos.
@@ -58,16 +59,16 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 
 | Comando | Uso |
 |---------|-----|
-| `ps` | lista procesos. Habitual: `ps axu \| less` (todos, con detalle) |
-| `pstree` | muestra los procesos como árbol, según quién creó a quién (`pstree -p` añade el pid) |
-| `top` / `htop` | procesos ordenados por consumo de CPU y memoria, en tiempo real; `q` sale |
-| `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine, y este puede capturarla para limpiar antes de salir. `kill -9 <pid>` manda `SIGKILL` (9), que el kernel aplica directamente: no se puede capturar ni ignorar |
-| `killall <nombre>` | como `kill` pero por nombre de programa en vez de pid|
+| `ps` | lista procesos. Habitual: `ps -u $USER` (solo los míos) |
+| `pstree` | muestra en árbol (`pstree -p` añade el pid) |
+| `top` | procesos en tiempo real; `q` sale |
+| `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine. `kill -9 <pid>` manda `SIGKILL` (9), termina el proceso |
+| `killall <nombre>` | como `kill` pero por nombre en vez de pid|
 <!--| `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |-->
+
 
 ## Referencia rápida de comandos
 
-<!--
 ### Ficheros y directorios
 
 | Comando | Uso |
@@ -151,7 +152,6 @@ vim hola.c
 
 ```bash
 geany hola.c &     # editor ligero con resaltado y compilación para C
-gedit hola.c &     # editor sencillo de GNOME
 kate  hola.c &     # editor de KDE
 ```
 
@@ -194,8 +194,8 @@ gcc hola.c -Wall -Wextra -g -O0 -o hola
 
 - `-o hola`: nombre del binario de salida (sin `-o`, el binario se llama `a.out`).
 - `-Wall -Wextra`: activan **todos los avisos**
-- `-g`: incluye información (nombres de variables, números de línea) para el depurador (ver [Depurar](#depurar)).
-- `-O0`: sin optimizar; el código ejecutado se corresponde con el fuente, imprescindible para depurar paso a paso. `-O2` optimiza para producción pero reordena y elimina código.
+- `-g`: incluye información  para el depurador (nombres de variables, números de línea) (ver [Depurar](#depurar)).
+- `-O0`: sin optimizar, imprescindible para depurar paso a paso. `-O2` optimiza para producción pero reordena y elimina código.
 
 ## Ejecutar
 
@@ -262,13 +262,13 @@ Uso: ./saluda <nombre>
 
 ## Depurar
 
-Depurar es ejecutar el programa de forma controlada (p.ej paso a paso) para ver **dónde y por qué** falla. Requiere compilar con `-g`.
+Depurar es ejecutar el programa  (p.ej paso a paso) para ver **dónde y por qué** falla. Requiere compilar con `-g`.
 
-Hay dos formas de hacerlo con `gdb`:
+Hay tres formas de hacerlo con `gdb`:
 
-- **En vivo**: se lanza el programa desde `gdb` y se controla su ejecución (`Caso 1` a `Caso 3`).
-- **Post-mortem (autopsia)**: el programa ya se ha caído y ha dejado un **coredump** —un fichero con la foto de toda su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina  (`Caso 4`).
-- **Adjuntándose a un proceso en marcha**: el programa se está ejecutando ahora mismo (típicamente colgado) y se engancha `gdb` a él sin reiniciarlo (`Caso 5`).
+- **En vivo**: se lanza el proceso desde `gdb` y se controla su ejecución (`Caso 1` a `Caso 3`).
+- **Post-mortem (autopsia)**: el proceso ya se ha caído y ha dejado un **coredump** —un fichero con su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina  (`Caso 4`).
+- **Adjuntándose a un proceso en marcha**: el programa se está ejecutando ahora mismo (típicamente colgado) y se engancha `gdb` (`Caso 5`).
 
 ### Fichero de ejemplo: [`depura.c`](depura.c)
 
@@ -335,8 +335,6 @@ Program received signal SIGSEGV, Segmentation fault.    # el programa casca
 $1 = 108                       # i = 108, fuera del array valores[100] (0..99)
 (gdb) print n                  # ¿y n?
 $2 = 500                       # el bucle llega hasta 500, mucho más allá del tamaño
-(gdb) backtrace                # pila de llamadas hasta el punto del fallo
-#0  main (argc=2, argv=0x7fffffffe2b8) at depura.c:22    # solo un marco: el fallo está en main
 (gdb) quit                     # salir del depurador
 ```
 
@@ -486,9 +484,9 @@ $2 = 2                         # ya encontró 2 (número 2 y 3)
 (gdb) frame 1
 (gdb) print candidato          # sigue en 4: el candidato no avanza
 $3 = 4
-(gdb) detach                   # suelta el proceso (sigue colgado, pero ya libre de gdb)
+(gdb) detach                   # suelta el proceso 
 (gdb) quit
-$ kill 4242                    # y se mata el proceso desde fuera
+$ kill 4242                    # terminamos el proceso desde fuera
 ```
 
 **Diagnóstico:** `candidato++` está **dentro** del `if (es_primo(...))`, así que solo avanza cuando el candidato es primo. Al llegar a `candidato = 4` (no primo) nunca se incrementa y el `while` itera eternamente.
@@ -544,16 +542,49 @@ tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta lo
 
 ## Otras herramientas de diagnóstico
 
+### valgrind — errores de memoria
+
 ```bash
 valgrind ./depura 5           # detecta accesos a memoria inválidos y fugas
-strace ./hola                 # traza las llamadas al sistema que hace el programa
 ```
 
-`valgrind` sobre el `depura.c` original señala directamente `Invalid write of size 4` en la línea 22 y `Use of uninitialised value` en la suma.
+`valgrind` sobre el `depura` original señala directamente `Invalid write of size 4` en la línea 22 y `Use of uninitialised value` en la suma.
 
-`strace` mostrará las llamadas al sistema que hace un programa durante su ejecución, se pueden filtrar por tipo, se verá más detalladamente en temas siguientes.
+### strace — mostrar llamadas al sistema
 
+`strace` muestra, llamada a llamada, lo que un proceso le pide al kernel; útil cuando el fallo está en una llamada al sistema (abrir un fichero, permisos, red...) y el código por sí solo no explica el porqué.
 
+```c
+#include <stdio.h>
+
+int main(void) {
+    FILE *f = fopen("datos.txt", "r");
+    int c = fgetc(f);
+    printf("Primer caracter: %c\n", c);
+    fclose(f);
+    return 0;
+}
+```
+
+`datos.txt` no existe, así que `fopen` devuelve `NULL`; el código no lo comprueba y usa ese puntero en `fgetc`, lo que provoca un segfault.
+
+```bash
+gcc lee.c -Wall -Wextra -o lee
+strace ./lee
+
+```
+Entre la salida (recortada), se ve el intento de apertura fallido y la señal que mata al proceso:
+
+```
+openat(AT_FDCWD, "datos.txt", O_RDONLY) = -1 ENOENT (No existe el fichero o el directorio)
+...
+--- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=0x18} ---
++++ killed by SIGSEGV +++
+```
+
+La línea de `openat` explica el origen del fallo (el fichero no existe). Se puede filtrar por tipo de llamada, por ejemplo `strace -e trace=open,openat,read ./lee`.
+
+<!-- 
 ## Ejercicios propuestos
 
 1. **Editar.** Crea con un editor (a tu elección) un fichero `datos.c` que imprima, con dos `printf` distintos, tu nombre y tu titulación. Compílalo y ejecútalo.
@@ -561,3 +592,4 @@ strace ./hola                 # traza las llamadas al sistema que hace el progra
 3. **Ejecutar.** Modifica `saluda.c` para que acepte **varios** nombres y salude a todos (recorre `argv` de `1` a `argc-1`). Pruébalo con 0, 1 y 3 argumentos y comprueba el valor de `echo $?` en cada caso.
 4. **Depurar.** Compila `depura.c` con `-g`, reproduce la caída con `./depura 500` bajo `gdb`, localiza la línea culpable con `backtrace` y `print i`, aplica la corrección y verifica que `./depura 5` imprime `15` y `./depura 500` imprime `125250`.
 5. **Depurar.** Escribe un programa corto que desreferencie un puntero `NULL` o divida entre cero. Observa cómo `gdb` detiene la ejecución en la instrucción exacta e identifica la línea con `list` y `backtrace`. Repite el análisis con `valgrind`.
+-->
