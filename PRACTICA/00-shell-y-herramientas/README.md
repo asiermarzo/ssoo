@@ -293,6 +293,7 @@ Uso: ./saluda <nombre>
 ./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, útil para no escribir por teclado las entradas de prueba
 ./saluda Ana > salida.txt     # salida estándar (stdout) a un fichero
 ./programa 2> errores.txt     # salida de error (stderr) a un fichero
+./saluda Ana > /dev/null      # descarta stdout, no sale nada por pantalla
 ```
 
 ### Ejemplo: [`dec2rom.c`](dec2rom.c) / [`rom2dec.c`](rom2dec.c) / [`gen_rand.c`](gen_rand.c)
@@ -313,7 +314,8 @@ $ ./dec2rom
 1994
 MCMXCIV
 ```
-`gen_rand` genera 1000 números y en vez de sacarlos por consola (stdou) los redirige al archivo `numeros.txt`. `dec2rom` convierte este archivo a `romanos.txt`, `rom2dec` los vuelve a convertir a decimal en `vuelta.txt`, y `diff` compara el fichero original con el de vuelta. Tras cada comando se puede inspeccionar el `.txt` correspondiente.
+
+A continuación: `gen_rand` genera 1000 números y en vez de sacarlos por consola (stdou) los redirige al archivo `numeros.txt`. `dec2rom` convierte este archivo a `romanos.txt`, `rom2dec` los vuelve a convertir a decimal en `vuelta.txt`, y `diff` compara el fichero original con el de vuelta. Tras cada comando se puede inspeccionar el `.txt` correspondiente.
 
 ```bash
 ./gen_rand 1000 > numeros.txt           # 1000 aleatorios a numeros.txt
@@ -322,7 +324,7 @@ MCMXCIV
 diff numeros.txt vuelta.txt             # compara el original con la vuelta
 ```
 
-Que `diff` no muestre nada significa que `numeros.txt` y `vuelta.txt` son idénticos: `dec2rom` y `rom2dec` funcionan.
+Que `diff` no muestre nada significa que `numeros.txt` y `vuelta.txt` son idénticos, por lo tanto `dec2rom` y `rom2dec` funcionan.
 
 ```mermaid
 flowchart LR
