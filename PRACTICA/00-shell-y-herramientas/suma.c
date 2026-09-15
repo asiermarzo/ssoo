@@ -2,7 +2,7 @@
  * con N pequeno da un resultado erroneo y con N grande termina abruptamente.
  * El objetivo es encontrarlo con gdb (y con valgrind).
  *
- *   gcc suma.c -g -Wall -Wextra -o suma
+ *   gcc suma.c -g -Wall -o suma
  *   ./suma 5        -> deberia imprimir 15
  *   ./suma 500      -> deberia imprimir 125250
  */

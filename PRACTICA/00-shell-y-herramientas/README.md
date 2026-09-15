@@ -124,14 +124,11 @@ diff hola.c saluda.c         # diferencias línea a línea entre dos ficheros
 
 ### Compresión
 
+<details> <summary> comandos: </summary>
+
 | Comando | Uso |
 |---------|-----|
 | `zip` / `unzip` | comprime / descomprime en formato ZIP |
-
-<details> <summary> otros: </summary>
-
-| Comando | Uso |
-|---------|-----|
 | `tar` | empaqueta y comprime: `tar czvf <destino>.tar.gz <origen>`; extrae: `tar xzvf <fichero>.tar.gz` |
 | `gzip` / `gunzip` | comprime / descomprime un fichero |
 </details>
@@ -139,6 +136,8 @@ diff hola.c saluda.c         # diferencias línea a línea entre dos ficheros
 ### Permisos de ficheros
 
 Cada fichero tiene tres permisos (usuario, grupo, otros), cada uno se puede fijar con lectura (`r`), escritura (`w`) y ejecución (`x`). Normalmente representado en octal, por ejemplo 777 es rwxrwxrwx lectura, escritura y ejecución para todos, 640 es rw-r----- el propietario lee y escribe, el grupo solo lee, el resto nada.
+
+Se pueden consultar con `ls -al`.
 
 - **usuario**: el propietario del fichero.
 - **grupo**: un grupo de usuarios. Se consulta con `ls -l` (columna del grupo) o `groups`.
@@ -166,6 +165,8 @@ El bit de ejecución (`x`) es el que permite lanzar un binario con `./programa`.
 chmod 777 script.sh   # rwxrwxrwx: lectura, escritura y ejecución para todos (úsalo con cuidado)
 chmod 640 datos.txt   # rw-r-----: el propietario lee y escribe, el grupo solo lee, el resto nada
 ```
+
+
 </details>
 
 
@@ -240,15 +241,16 @@ El compilador `gcc` transforma el `.c` en un binario ejecutable.
 # 1. Mínima: solo el fuente. El binario se llama a.out
 gcc hola.c
 
-# 2. Estricta: nombra el binario y activa todos los avisos
-gcc hola.c -Wall -Wextra -o hola
+# 2. Estricta: nombra el binario y activa los avisos habituales
+gcc hola.c -Wall -o hola
 
 # 3. Para depurar: añade símbolos (-g) y desactiva optimizaciones (-O0)
-gcc hola.c -Wall -Wextra -g -O0 -o hola 
+gcc hola.c -Wall -g -O0 -o hola 
 ```
 
 - `-o hola`: nombre del binario de salida (sin `-o`, el binario se llama `a.out`).
-- `-Wall -Wextra`: activan **todos los avisos**
+- `-Wall`: activa los avisos más habituales (variables sin usar, formatos de `printf`/`scanf` incorrectos, etc.).
+- `-Wextra`: se puede añadir junto a `-Wall` para mostrar avisos adicionales (parámetros sin usar, comparaciones signed/unsigned...) y detectar aún más fallos en compilación.
 - `-g`: incluye información  para el depurador (nombres de variables, números de línea) (ver [Depurar](#depurar)).
 - `-O0`: sin optimizar, imprescindible para depurar paso a paso. `-O2` optimiza para producción pero reordena y elimina código.
 
@@ -277,53 +279,60 @@ int main(int argc, char *argv[]) {
 ```
 
 ```bash
-$ gcc saluda.c -Wall -Wextra -o saluda
+$ gcc saluda.c -Wall -o saluda
 $ ./saluda Ana
 Hola, Ana
 $ ./saluda
 Uso: ./saluda <nombre>
 ```
 
-### Redirección
+### Redirección a (`>`) y de (`<`) ficheros
 
 
 ```bash
 ./programa  < datos.txt       # entrada estándar (stdin) desde un fichero, útil para no escribir por teclado las entradas de prueba
 ./saluda Ana > salida.txt     # salida estándar (stdout) a un fichero
 ./programa 2> errores.txt     # salida de error (stderr) a un fichero
-./programa  | less            # tubería: la salida va a la stdin a otro comando
 ```
 
 ### Ejemplo: [`dec2rom.c`](dec2rom.c) / [`rom2dec.c`](rom2dec.c) / [`gen_rand.c`](gen_rand.c)
 
 `dec2rom` lee un entero por consola y escribe su número romano; `rom2dec` hace lo contrario. `gen_rand` genera números aleatorios según `argv`: `[1]` cuántos (16 por defecto), `[2]` máximo (3999), `[3]` mínimo (1).
 
+Los compilamos:
 ```bash
-$ gcc dec2rom.c -o dec2rom
-$ gcc rom2dec.c -o rom2dec
-$ gcc gen_rand.c -o gen_rand
+gcc dec2rom.c -o dec2rom
+gcc rom2dec.c -o rom2dec
+gcc gen_rand.c -o gen_rand
+```
 
-# desde teclado (stdin); Ctrl+D termina la entrada
+Probamos `dec2rom` introduciendo el número por teclado (stdin): `Ctrl+D` termina la entrada, `Ctrl+C` cancela.
+
+```bash
 $ ./dec2rom
 1994
 MCMXCIV
-
-# números generados por gen_rand pasados por tuberia a dec2rom.
-# resultado: genera 16 números romanos al azar
-$ ./gen_rand | ./dec2rom
-
-# ida y vuelta y comprobación
-$ ./gen_rand 1000 > numeros.txt # 1000 números aleatorios a un fichero,
-$ ./dec2rom < numeros.txt | ./rom2dec > vuelta.txt # numeros.txt -> romano -> decimal -> vuelta.txt
-$ diff numeros.txt vuelta.txt   # sin salida -> son iguales; tanto rom2dec como dec2rom probablemente funcionen
 ```
+`gen_rand` genera 1000 números y en vez de sacarlos por consola (stdou) los redirige al archivo `numeros.txt`. `dec2rom` convierte este archivo a `romanos.txt`, `rom2dec` los vuelve a convertir a decimal en `vuelta.txt`, y `diff` compara el fichero original con el de vuelta. Tras cada comando se puede inspeccionar el `.txt` correspondiente.
+
+```bash
+./gen_rand 1000 > numeros.txt           # 1000 aleatorios a numeros.txt
+./dec2rom < numeros.txt > romanos.txt   # decimal -> romano
+./rom2dec < romanos.txt > vuelta.txt    # romano -> decimal
+diff numeros.txt vuelta.txt             # compara el original con la vuelta
+```
+
+Que `diff` no muestre nada significa que `numeros.txt` y `vuelta.txt` son idénticos: `dec2rom` y `rom2dec` funcionan.
 
 ```mermaid
 flowchart LR
-    A[numeros.txt] -->|stdin| B[dec2rom]
-    B -->|stdout - tubería - stdin| C[rom2dec]
-    C -->|stdout| D[vuelta.txt]
-    A -.->|diff| D
+    G([gen_rand]) -->|stdout| A[(numeros.txt)]
+    A -->|stdin| B([dec2rom])
+    B -->|stdout| R[(romanos.txt)]
+    R -->|stdin| C([rom2dec])
+    C -->|stdout| D[(vuelta.txt)]
+    A --> E([diff])
+    D --> E
 ```
 
 <!-- 
@@ -355,40 +364,8 @@ Depurar es ejecutar un programa  (p.ej paso a paso) para ver **dónde y por qué
 Hay tres formas de hacerlo con `gdb`:
 
 - **En vivo**: se lanza el proceso desde `gdb` y se controla su ejecución (`Caso 1` a `Caso 3`).
-- **Post-mortem (autopsia)**: el proceso ya se ha caído y ha dejado un **coredump** —un fichero con su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina  (`Caso 4`).
+- **Post-mortem (autopsia)**: el proceso ya se ha caído y ha dejado un **coredump** —un fichero con su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina. *(De momento sin ejemplo: en las máquinas del laboratorio no se consiguen generar coredumps sin privilegios de root.)*
 - **Adjuntándose a un proceso en marcha**: el programa se está ejecutando ahora mismo (típicamente colgado) y se engancha `gdb` (`Caso 5`).
-
-### Fichero de ejemplo: [`suma.c`](suma.c)
-
-Debería sumar los enteros `1..N`, pero tiene fallos: con `N` pequeño da un resultado absurdo y con `N` grande el programa casca.
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char *argv[]) {
-    int n = atoi(argv[1]);
-    int valores[100];
-
-    for (int i = 1; i <= n; i++)
-        valores[i] = i;
-
-    long suma = 0;
-    for (int i = 0; i < n; i++)
-        suma += valores[i];
-
-    printf("Suma 1..%d = %ld\n", n, suma);
-    return 0;
-}
-```
-
-```bash
-$ gcc suma.c -g -Wall -Wextra -o suma     # compila sin avisos...
-$ ./suma 5
-Suma 1..5 = 21855                             # ...pero el resultado es erróneo (debería ser 15)
-$ ./suma 500
-Segmentation fault (core dumped)              # y con N grande, se cae
-```
 
 ### gdb — el depurador
 
@@ -419,24 +396,86 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 Cada comando se puede escribir completo o con su abreviatura (`next` o `n`, `step` o `s`...). Pulsar `Enter` sin escribir nada repite el último comando: es habitual dar `n` una vez y luego solo `Enter` para ir avanzando línea a línea.
 
 
-### Caso 1 — localizar la caída (segfault)
+### Caso 1 — localizar la caída
+
+Cuando un proceso "casca", `gdb` permite ver en qué línea fue, la pila de llamadas (`backtrace`) y el valor de las variables en ese instante. Analizamos dos fallos típicos, cada uno en su propio fichero:
+
+#### División por cero: [`division_cero.c`](division_cero.c)
 
 ```bash
-$ gdb ./suma                 # abre el depurador para el programa suma
-(gdb) run 500                  # ejecuta con argv[1] = "500", como ./suma 500
-Program received signal SIGSEGV, Segmentation fault.    # el programa casca
-0x0000555555555199 in main (argc=2, argv=0x7fffffffe2b8) at suma.c:22    # dónde: función main, línea 22
-22              valores[i] = i;    # la instrucción exacta que provocó el fallo
-(gdb) print i                  # ¿cuánto valía i?
-$1 = 108                       # i = 108, fuera del array valores[100] (0..99)
-(gdb) print n                  # ¿y n?
-$2 = 500                       # el bucle llega hasta 500, mucho más allá del tamaño
-(gdb) quit                     # salir del depurador
+gcc division_cero.c -g -Wall -o division_cero
 ```
 
-`gdb` detiene el programa justo en la instrucción que provoca el fallo: la línea 22 escribe en `valores[i]` con `i = 108`, fuera del array `valores[100]` (índices válidos `0..99`).
+```bash
+$ gdb ./division_cero
+(gdb) run 10 0                 # ejecuta con argv = "10" "0"
+Program received signal SIGFPE, Arithmetic exception.
+0x0000555555555179 in main (argc=3, argv=0x7fffffffe2b8) at division_cero.c:17
+17          int cociente = a / b;    # la división que casca
+(gdb) backtrace
+#0  main (argc=3, argv=...) at division_cero.c:17
+(gdb) print a
+$1 = 10
+(gdb) print b
+$2 = 0                         # ahí está: divide por 0
+(gdb) quit
+```
 
-### Caso 2 — entender el resultado erróneo
+#### Puntero NULL: [`puntero_nulo.c`](puntero_nulo.c)
+
+```bash
+gcc puntero_nulo.c -g -Wall -o puntero_nulo
+```
+
+```bash
+$ gdb ./puntero_nulo
+(gdb) run
+escribiendo en *p...
+Program received signal SIGSEGV, Segmentation fault.
+0x0000555555555149 in main () at puntero_nulo.c:11
+11          *p = 42;            # escritura a través de un puntero NULL
+(gdb) backtrace
+#0  main () at puntero_nulo.c:11
+(gdb) print p
+$1 = (int *) 0x0                # p vale NULL
+(gdb) quit
+```
+
+
+### Caso 2 — inspeccionar variables para explicar un resultado erróneo
+
+### Fichero de ejemplo: [`suma.c`](suma.c)
+
+Debería sumar los enteros `1..N`, pero tiene fallos: con `N` pequeño da un resultado absurdo y con `N` grande el programa casca.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]) {
+    int n = atoi(argv[1]);
+    int valores[100];
+
+    for (int i = 1; i <= n; i++)
+        valores[i] = i;
+
+    long suma = 0;
+    for (int i = 0; i < n; i++)
+        suma += valores[i];
+
+    printf("Suma 1..%d = %ld\n", n, suma);
+    return 0;
+}
+```
+
+```bash
+$ gcc suma.c -g -Wall -o suma     # compila sin avisos...
+$ ./suma 5
+Suma 1..5 = 21855                             # ...pero el resultado es erróneo (debería ser 15)
+$ ./suma 500
+*** stack smashing detected ***: terminated
+Aborted (core dumped)                         # y con N grande, se cae
+```
 
 ```bash
 $ gdb ./suma                 # abre el depurador con el binario
@@ -466,50 +505,63 @@ for (int i = 0; i < n; i++)
     suma += valores[i];
 ```
 
-### Caso 3 — recorrer el programa paso a paso
+### Caso 3 — ejecutar paso a paso en Geany
 
-Sin buscar ningún fallo: ejecutar línea a línea y observar cómo cambian las variables.
+Sin buscar ningún fallo: ejecutar línea a línea y observar cómo cambian las variables. Aquí, en vez de `gdb` por terminal, se usa el depurador integrado en Geany (el modo gráfico de `gdb`, `-tui`, falla y duplica líneas).
 
-```bash
-$ gdb ./suma                 # abre el depurador con el binario
-(gdb) start 3                   # 'start' es como 'run' pero con un breakpoint automático en main
-Temporary breakpoint 1, main (argc=2, argv=...) at suma.c:18
-18          int n = atoi(argv[1]);         # detenido aquí, aún sin ejecutar
-(gdb) display n                # muestra n automáticamente tras cada paso
-(gdb) next                     # ejecuta la línea 18 y para en la siguiente
-21          for (int i = 1; i <= n; i++)
-1: n = 3                       # ya tiene valor tras el atoi
-(gdb) next                     # entra en el cuerpo del bucle
-22              valores[i] = i;
-(gdb) next                     # vuelve a la cabecera del for (i++)
-21          for (int i = 1; i <= n; i++)
-(gdb) print i                  # inspecciona i puntualmente
-$1 = 1
-(gdb) print valores[1]         # el bucle ya escribió esta posición
-$2 = 1
-(gdb) info locals              # todas las variables locales visibles ahora
-i = 1
-n = 3
-(gdb) continue                 # deja correr hasta el final (no hay más breakpoints)
-Suma 1..3 = 6
-[Inferior 1 (process 12345) exited normally]
-(gdb) quit                     # salir del depurador
-```
+**1. Activar el plugin** (una sola vez): `Herramientas` → `Administrador de complementos`, marcar **Depurador**.
 
-`next` pasa por encima de las llamadas a función; `step` entra en ellas. `display <expr>` fija una expresión para verla en cada parada; `undisplay <n>` la quita.
+![Herramientas → Administrador de complementos](img/geany-menu-complementos.png)
+![Marcar el complemento Depurador](img/geany-activar-depurador.png)
 
-Casi todo se abrevia: `n`, `s`, `c`, `p`, `b`… Y **`Enter` a secas repite el último comando**, así que se avanza dando solo a `Enter` tras el primer `next`.
+**2. Elegir el binario y los argumentos.** Con `suma.c` compilado con `-g` (`gcc suma.c -g -Wall -o suma`), en el panel inferior, pestaña **Depurar**: en **Objetivo** se selecciona el binario (icono de carpeta) y, opcionalmente, se rellenan los **Argumentos de línea de comando**.
 
-### Modo TUI (código y ejecución a la vez)
+![Panel Depurar vacío](img/geany-panel-vacio.png)
+![Objetivo y argumentos rellenos](img/geany-panel-configurado.png)
 
-`gdb -tui ./suma` —o, ya dentro, `tui enable` (o `Ctrl+X` `A`)— divide la pantalla: el código fuente arriba, con la línea actual resaltada y actualizándose en cada `next`/`step`, y la consola de gdb abajo.
+**3. Poner un punto de ruptura.** Clic en el margen gris a la derecha del número de línea: aparece un rombo rojo (aquí, en la línea 13).
 
-- `Ctrl+X` `2` — añade una segunda ventana (registros, o ensamblador); púlsalo de nuevo para rotarla.
-- `Ctrl+X` `O` — cambia el foco entre ventanas.
-- flechas `↑` `↓` — hacen scroll de la ventana con el foco.
-- `tui disable` — vuelve a la vista normal de solo texto.
+![Punto de ruptura en la línea 13](img/geany-breakpoint.png)
+
+**4. Ejecutar** con el botón ▶ de la columna de la derecha. El programa arranca y se detiene en el punto de ruptura: la línea queda resaltada en amarillo.
+
+![Parado en el punto de ruptura](img/geany-parado-breakpoint.png)
+
+**5. Inspeccionar variables sin escribir nada:** basta con dejar el cursor encima de una para ver su valor en un tooltip.
+
+![Tooltip con el valor de argc](img/geany-hover-variable.png)
+
+**6. Avanzar.** El botón **Saltar** ejecuta la línea actual sin entrar en funciones (equivale a `next`). Aquí `argc == 2`, así que el cuerpo del `if` no se ejecuta y la línea actual salta directa a la 18.
+
+![Tras pulsar Saltar, la ejecución está en la línea 18](img/geany-tras-saltar.png)
+
+El resto de botones de esa misma columna también tiene su propio tooltip (pasa el ratón por encima para verlo): **entrar en una función** (equivale a `step`), **detener**, **reiniciar**... El mismo botón ▶ que arrancó el programa, una vez parado en un punto de ruptura, sirve para **continuar** (equivale a `continue`).
+
+<img src="img/geany-botones.png" alt="Columna de botones del depurador: ▶ arriba, luego reiniciar/detener, y las variantes de avance, entre ellas Saltar" width="133">
+
+<details><summary>Equivalencia con gdb</summary>
+
+| En Geany | En gdb |
+|----------|--------|
+| Objetivo + Argumentos, luego ▶ (primera vez) | `run <args>` / `start <args>` |
+| clic en el margen de una línea | `break <línea>` |
+| ▶ estando parado en un punto de ruptura | `continue` |
+| **Saltar** | `next` |
+| **entrar en una función** | `step` |
+| dejar el cursor sobre una variable | `print <variable>` |
+
+</details>
+
+
 
 ### Caso 4 — autopsia de un coredump
+
+> **No se ve en esta sesión.** En las máquinas del laboratorio no se ha conseguido generar un coredump.
+
+<!--
+ TODO: no se consigue generar coredumps en las máquinas del laboratorio de ninguna forma
+(ni con ulimit -c unlimited); parece que hace falta privilegios de root o que IT cambie
+la configuración del sistema. Descomentar si se soluciona.
 
 Cuando el fallo ya ha ocurrido (por ejemplo, en la máquina de otra persona) se puede analizar el coredump que dejó, sin volver a ejecutar el programa.
 
@@ -541,15 +593,16 @@ $1 = 108
 No se puede `continue` ni `next`: el proceso ya no existe, solo su "cadáver". Sirve para `backtrace`, `print` e `info locals`.
 
 > A veces los coredumps los recoge `systemd` en vez de dejar un fichero `core`. Se listan con `coredumpctl list` y se abren con `coredumpctl gdb suma`.
+-->
 
-### Caso 5 — depurar un proceso en marcha
+### Caso 5 — depurar un proceso en marcha (necesita permiso root)
 
-Se puede enganchar `gdb` al proceso mientras sigue vivo y ver qué está haciendo.
+Se puede enganchar `gdb` al proceso mientras sigue vivo y ver qué está haciendo. Adjuntarse a un proceso ajeno requiere privilegios que no se dan por defecto; en un [GitHub Codespace](../../entornos_ejecucion.md#github-codespaces) tendrás permisos de root.
 
 Fichero de ejemplo: [`primos.c`](primos.c). Debería imprimir los 5 primeros primos y terminar, pero se cuelga:
 
 ```bash
-$ gcc primos.c -g -Wall -Wextra -o primos
+$ gcc primos.c -g -Wall -o primos
 $ ./primos
 2
 3
@@ -561,7 +614,7 @@ En **otra terminal** se busca el PID y se adjunta el depurador:
 ```bash
 $ pgrep primos                 # averigua el PID del proceso
 4242
-$ gdb -p 4242                  # engancha gdb al proceso 4242 (puede requerir sudo, ver nota)
+$ sudo gdb -p 4242                  # engancha gdb al proceso 4242 (suele requerir sudo, ver nota)
 ...
 es_primo (n=4) at primos.c:15
 15              if (n % d == 0)     # gdb congela el proceso justo donde estaba
@@ -599,9 +652,11 @@ while (encontrados < 5) {
 }
 ```
 
-> **`Operation not permitted` al adjuntar.** Si `gdb -p` falla, usa `sudo gdb -p <pid>` o baja la protección en la sesión actual: `echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope`.
+> **`Operation not permitted` al adjuntar.** Si `gdb -p` falla, usa `sudo gdb -p <pid>`
 
 > Mientras `gdb` está adjuntado, el proceso queda **detenido**: no consume CPU ni avanza hasta que se hace `continue` o `detach`.
+
+<!-- ToDo enseñar el gdb tui aquí, funciona muy bien. Averiguar por qué no funciona en bien el tui en clase, líneas duplicadas -->
 
 <!-- 
 ## tmux — varios paneles en una terminal
@@ -628,7 +683,7 @@ while (encontrados < 5) {
 
 ```bash
 cd PRACTICA/00-shell-y-herramientas/tmux-demo
-gcc demo.c -g -O0 -Wall -Wextra -o demo
+gcc demo.c -g -O0 -Wall -o demo
 tmux kill-server 2>/dev/null        # cierra las sesiones anteriores, sin mostrar errores
 tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta los paneles) y se conecta a la sesión
 ```
@@ -636,6 +691,7 @@ tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta lo
 **Para salir:** pulsa `Ctrl-b` y luego `d` para desconectarte y después `tmux kill-server`.
 -->
 
+<!--  Valgrind es más útil para mallocs 
 ##  valgrind — errores de memoria
 
 ```bash
@@ -643,6 +699,8 @@ valgrind ./suma 5           # detecta accesos a memoria inválidos y fugas
 ```
 
 `valgrind` sobre el `suma` original señala directamente `Invalid write of size 4` en la línea 22 y `Use of uninitialised value` en la suma.
+
+-->
 
 ## strace — mostrar llamadas al sistema
 
@@ -664,7 +722,7 @@ int main(void) {
 `datos.txt` no existe, así que `fopen` devuelve `NULL`; el código no lo comprueba y usa ese puntero en `fgetc`, lo que provoca un segfault.
 
 ```bash
-gcc lee.c -Wall -Wextra -o lee
+gcc lee.c -Wall -o lee
 strace ./lee
 
 ```
@@ -681,19 +739,51 @@ La línea de `openat` explica el origen del fallo (el fichero no existe). Se pue
 
 Muchas llamadas al sistema devuelven `-1` si fallan y guardan el motivo en la variable `errno`; `strace` traduce ese valor a un nombre descripción. 
 
-<details> <summary> Los códigos más habituales: </summary>
+## AddressSanitizer (`-fsanitize=address`)
 
-| Código | Significado | Ejemplo típico |
-|--------|-------------|-----------------|
-| `ENOENT` | No existe el fichero o directorio | abrir una ruta que no existe |
-| `EACCES` | Permiso denegado | abrir un fichero sin permiso de lectura/escritura |
-| `EEXIST` | Ya existe | crear un fichero que ya está ahí |
-| `EISDIR` | Es un directorio | abrir para escritura algo que en realidad es un directorio |
-| `ENOTDIR` | No es un directorio | usar como directorio algo que no lo es |
-| `EBADF` | Descriptor de fichero inválido | leer o escribir tras haber hecho `close()` |
-| `ENOSPC` | No queda espacio en el disco | escribir en un disco lleno |
-| `EINTR` | La llamada fue interrumpida por una señal | se verá con detalle en el tema de señales |
-</details> 
+Instrumenta el binario para detectar un acceso a memoria inválido: fuera de un array, tras un `free`, etc.
+
+Se añade solo al compilar, sin tocar el código:
+
+```bash
+gcc suma.c -g -Wall -fsanitize=address -o suma
+./suma 500
+```
+
+Salida (resumida):
+
+```
+==12345==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffd12345680
+WRITE of size 4 at 0x7ffd12345680 thread T0
+    #0 0x... in main suma.c:22
+
+Address 0x7ffd12345680 is located in stack of thread T0 at offset 432 in frame
+    #0 0x... in main suma.c:18
+
+  This frame has 1 object(s):
+    [32, 432) 'valores' (line 19) <== Memory access at offset 432 is outside this variable
+
+SUMMARY: AddressSanitizer: stack-buffer-overflow suma.c:22 in main
+```
+
+Señala directamente la línea 22 (`valores[i] = i`) y la variable `valores`, en el primer acceso fuera de rango. Se puede deducir la posición a la que se intenta acceder: `valores` ocupa el rango `[32, 432)` dentro del *frame* (400 bytes = 100 enteros de 4 bytes, cuadra con `valores[100]`), y el acceso que crea el error es en el offset `432` que es el índice 100 = (432 - 32) / 4 bytes por entero.
+
+<details> <summary> Otros sanitizers </summary>
+
+`-fsanitize=` acepta otros detectores; algunos se pueden combinar:
+
+| Sanitizer | Detecta | Se combina con |
+|-----------|---------|-----------------|
+| `address` (ASan) | accesos fuera de rango en pila, heap y globales; use-after-free, use-after-return | `undefined` |
+| `undefined` (UBSan) | comportamiento indefinido: división por cero, desbordamiento de enteros, desreferencia de NULL, desplazamientos inválidos... | `address` |
+| `leak` (LSan) | fugas de memoria (`malloc` sin `free`); en Linux se activa solo con `address` | `address` |
+| `thread` (TSan) | condiciones de carrera entre hilos | no combinable con `address` |
+
+Habitual al depurar: `gcc programa.c -g -Wall -fsanitize=address,undefined -o programa`. `thread` necesita compilarse aparte (`-fsanitize=thread`, sin `address`).
+
+Ralentizan la ejecución (ASan ~2x, TSan ~10-20x): bien para depurar y para las pruebas, no para la versión final.
+
+</details>
 
 <!-- 
 ## Ejercicios propuestos

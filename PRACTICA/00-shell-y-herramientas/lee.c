@@ -2,7 +2,7 @@
  * exito: si el fichero no existe, fopen devuelve NULL y el programa casca
  * al usar ese puntero. El objetivo es ver con strace por que falla.
  *
- *   gcc lee.c -Wall -Wextra -o lee
+ *   gcc lee.c -Wall -o lee
  *   ./lee
  */
 #include <stdio.h>

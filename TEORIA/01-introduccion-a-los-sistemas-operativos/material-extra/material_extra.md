@@ -31,7 +31,7 @@ El shell imprime el motivo: la señal con la que el SO ha matado al proceso. Los
 `direcciones.c` declara **tres variables locales** (pila) y hace **tres reservas con `malloc`** (heap), e imprime la dirección de todas y la de `main` (código).
 
 ```bash
-gcc direcciones.c -Wall -Wextra -O0 -o direcciones
+gcc direcciones.c -Wall -O0 -o direcciones
 ./direcciones
 ```
 
@@ -61,7 +61,7 @@ Todas son **direcciones virtuales**: el SO y la MMU dan a cada proceso su propio
 `primos_cpu.c` busca primos a tope durante ~3 s, imprime el último y espera un ENTER.
 
 ```bash
-gcc primos_cpu.c -Wall -Wextra -O2 -o primos_cpu
+gcc primos_cpu.c -Wall -O2 -o primos_cpu
 ```
 
 ejecuta `htop` en una terminal y **dos o tres** copias de `./primos_cpu`
@@ -85,7 +85,7 @@ flowchart LR
 
 ```bash
 # C: fuente -> binario -> ejecución
-gcc hola.c -Wall -Wextra -o hola #crea hola binario nativo ELF
+gcc hola.c -Wall -o hola #crea hola binario nativo ELF
 ./hola
 
 # Python: el intérprete lee el fuente y lo ejecuta

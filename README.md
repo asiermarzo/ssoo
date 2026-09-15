@@ -64,6 +64,10 @@ Se prefieren explicaciones concisas y resumidas.
 
 Para prácticas, se utilizan archivos Markdown, archivos `.c`, Makefiles, scripts bash y configuraciones tmux de terminales.
 
+<details> <summary> <- clickar en la flecha. Habrá texto expandible  </summary>
+Que contienen información que puede ser útil, pero que no es obligatorio su conocimiento.
+</details>
+
 ### Código
 
 En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. 
