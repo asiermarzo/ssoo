@@ -138,7 +138,14 @@ diff hola.c saluda.c         # diferencias línea a línea entre dos ficheros
 
 ### Permisos de ficheros
 
-Cada fichero tiene tres permisos (usuario, grupo, otros), cada un se puede fijar con lectura (`r`), escritura (`w`) y ejecución (`x`).
+Cada fichero tiene tres permisos (usuario, grupo, otros), cada uno se puede fijar con lectura (`r`), escritura (`w`) y ejecución (`x`). Normalmente representado en octal, por ejemplo 777 es rwxrwxrwx lectura, escritura y ejecución para todos, 640 es rw-r----- el propietario lee y escribe, el grupo solo lee, el resto nada.
+
+- **usuario**: el propietario del fichero.
+- **grupo**: un grupo de usuarios. Se consulta con `ls -l` (columna del grupo) o `groups`.
+- **otros**: cualquier usuario .
+
+
+<details> <summary> chmod para cambiar permisos </summary>
 
 `chmod` se utiliza para cambiar los permisos de los ficheros `chmod <quién><operador><permiso> <fichero>`.
 
@@ -159,6 +166,8 @@ El bit de ejecución (`x`) es el que permite lanzar un binario con `./programa`.
 chmod 777 script.sh   # rwxrwxrwx: lectura, escritura y ejecución para todos (úsalo con cuidado)
 chmod 640 datos.txt   # rw-r-----: el propietario lee y escribe, el grupo solo lee, el resto nada
 ```
+</details>
+
 
 Este sistema de permisos también se usa para directorios, tuberías con nombre ([`mkfifo`](../03-pipes-y-fifos/README.md)) o memoria compartida ([`shm_open`](../06-memoria-compartida-y-semaforos/README.md)). Se verá en esas prácticas.
 
@@ -205,18 +214,12 @@ vim hola.c
 ```bash
 geany hola.c &     # editor ligero con resaltado y compilación para C
 kate  hola.c &     # editor de KDE
+code hola.c &        # visual code en un fichero
+code . &            #visual code, carpeta actual es el proyecto
 ```
 
 El `&` final lanza el editor en segundo plano para no bloquear la terminal.
 
-### VS Code
-
-```bash
-code hola.c        # abre un fichero
-code .             # abre la carpeta actual como proyecto
-```
-
-Trae terminal integrada (`` Ctrl+` ``) y depurador gráfico sobre `gdb`.
 
 ### Fichero de ejemplo: [`hola.c`](hola.c)
 
@@ -290,6 +293,39 @@ Uso: ./saluda <nombre>
 ./programa 2> errores.txt     # salida de error (stderr) a un fichero
 ./programa  | less            # tubería: la salida va a la stdin a otro comando
 ```
+
+### Ejemplo: [`dec2rom.c`](dec2rom.c) / [`rom2dec.c`](rom2dec.c) / [`gen_rand.c`](gen_rand.c)
+
+`dec2rom` lee un entero por consola y escribe su número romano; `rom2dec` hace lo contrario. `gen_rand` genera números aleatorios según `argv`: `[1]` cuántos (16 por defecto), `[2]` máximo (3999), `[3]` mínimo (1).
+
+```bash
+$ gcc dec2rom.c -o dec2rom
+$ gcc rom2dec.c -o rom2dec
+$ gcc gen_rand.c -o gen_rand
+
+# desde teclado (stdin); Ctrl+D termina la entrada
+$ ./dec2rom
+1994
+MCMXCIV
+
+# números generados por gen_rand pasados por tuberia a dec2rom.
+# resultado: genera 16 números romanos al azar
+$ ./gen_rand | ./dec2rom
+
+# ida y vuelta y comprobación
+$ ./gen_rand 1000 > numeros.txt # 1000 números aleatorios a un fichero,
+$ ./dec2rom < numeros.txt | ./rom2dec > vuelta.txt # numeros.txt -> romano -> decimal -> vuelta.txt
+$ diff numeros.txt vuelta.txt   # sin salida -> son iguales; tanto rom2dec como dec2rom probablemente funcionen
+```
+
+```mermaid
+flowchart LR
+    A[numeros.txt] -->|stdin| B[dec2rom]
+    B -->|stdout - tubería - stdin| C[rom2dec]
+    C -->|stdout| D[vuelta.txt]
+    A -.->|diff| D
+```
+
 <!-- 
 ### Código de salida
 ```bash
