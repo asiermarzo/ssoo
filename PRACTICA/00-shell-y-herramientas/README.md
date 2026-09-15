@@ -33,24 +33,26 @@ usuario@equipo:~$
 
 ## Moverse por directorios y mirar ficheros
 
-<details><summary> Comandos para navegar y mostrar: </summary>
-
 | Comando | Uso |
 |---------|-----|
 | `pwd` | imprime el directorio de trabajo actual (*print working directory*) |
 | `ls` | lista el contenido del directorio. `ls -l` formato largo (permisos, tamaño, fecha), `ls -a` incluye ocultos, `ls -la` ambos |
 | `cd <dir>` | cambia de directorio. `cd ..` sube uno, `cd` o `cd ~` va a tu carpeta personal, `cd -` vuelve al anterior |
 | `cat <fichero>` | vuelca el contenido completo de un fichero en la terminal |
+
+<details><summary> Otros comandos: </summary>
+
+| Comando | Uso |
+|---------|-----|
+| `man <comando/funcion>` | manual del comando o función |
 | `more <fichero>` | muestra el fichero **página a página**: `Espacio` avanza, `Enter` una línea, `q` sale |
 | `less <fichero>` | como `more` pero también permite retroceder y buscar (`/patrón`); `q` sale |
 | `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece |
 | `clear` | limpia la pantalla (`Ctrl+L` hace lo mismo) |
-| `man <comando>` | manual del comando; se navega como `less`. También `<comando> --help` |
-
 </details>
 
 
-Atajos importantes de la shell:
+**Atajos** importantes de la **shell**:
 
 - **`Tab`**: autocompleta nombres de comandos y de ficheros. Doble `Tab` lista las opciones posibles.
 - **`↑` / `↓`**: recorren los comandos anteriores. `history` los lista todos.
@@ -99,16 +101,24 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 ### Texto y búsqueda
 
 <details> <summary> Comandos: </summary>
-`file` (tipo de fichero), `wc` (cuenta líneas/palabras/caracteres), `sort` (ordena líneas), `grep <patrón>` (líneas que casan un patrón), `find` (busca ficheros), `diff` (diferencias entre dos ficheros).
+
+| Comando | Uso |
+|---------|-----|
+| `file <fichero>` | tipo de fichero |
+| `wc` | cuenta líneas/palabras/caracteres |
+| `sort` | ordena líneas |
+| `grep <patrón>` | líneas que casan un patrón |
+| `find` | busca ficheros |
+| `diff` | diferencias entre dos ficheros |
 
 ```bash
-file hola          # -> "ELF 64-bit ... executable"
-wc -l hola.c       # número de líneas del fichero
-grep printf hola.c            # líneas que contienen "printf"
+file hola                    # -> "ELF 64-bit ... executable" (tras compilar hola.c, ver sección Compilar)
+wc -l hola.c                 # número de líneas del fichero
+grep printf hola.c           # líneas que contienen "printf"
 grep -rn "int main" .        # búsqueda recursiva, con número de línea
 find . -name "*.c"           # todos los .c bajo el directorio actual
-sort nombres.txt             # ordena alfabéticamente por líneas
-diff hola.c hola_v2.c        # qué cambió entre dos versiones
+sort primos.c                # ordena alfabéticamente las líneas del fichero
+diff hola.c saluda.c         # diferencias línea a línea entre dos ficheros
 ```
 </details>
 
