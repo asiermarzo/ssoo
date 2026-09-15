@@ -21,17 +21,19 @@ Al abrirla aparece una línea, el *prompt*, que indica que la shell espera un co
 usuario@equipo:~$
 ```
 
+<details> <summary> significado del prompt </summary>
+
 | Parte | Significado |
 |-------|-------------|
 | `usuario` | tu nombre de usuario (el mismo que devuelve el comando `whoami`) |
 | `equipo` | nombre de la máquina o *hostname* (el de `hostname`) |
 | `~` | directorio de trabajo actual; `~` es tu carpeta personal, `/home/usuario` |
 | `$` | shell lista, usuario sin privilegios (`#` si fueras `root`) |
+</details>
 
 ## Moverse por directorios y mirar ficheros
 
-<details>
-<summary> Comandos para orientarse, navegar y mostrar: </summary>
+<details><summary> Comandos para navegar y mostrar: </summary>
 
 | Comando | Uso |
 |---------|-----|
@@ -39,12 +41,12 @@ usuario@equipo:~$
 | `ls` | lista el contenido del directorio. `ls -l` formato largo (permisos, tamaño, fecha), `ls -a` incluye ocultos, `ls -la` ambos |
 | `cd <dir>` | cambia de directorio. `cd ..` sube uno, `cd` o `cd ~` va a tu carpeta personal, `cd -` vuelve al anterior |
 | `cat <fichero>` | vuelca el contenido completo de un fichero en la terminal |
-<!-- 
 | `more <fichero>` | muestra el fichero **página a página**: `Espacio` avanza, `Enter` una línea, `q` sale |
 | `less <fichero>` | como `more` pero también permite retroceder y buscar (`/patrón`); `q` sale |
-| `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece | -->
+| `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece |
 | `clear` | limpia la pantalla (`Ctrl+L` hace lo mismo) |
 | `man <comando>` | manual del comando; se navega como `less`. También `<comando> --help` |
+
 </details>
 
 
@@ -53,8 +55,11 @@ Atajos importantes de la shell:
 - **`Tab`**: autocompleta nombres de comandos y de ficheros. Doble `Tab` lista las opciones posibles.
 - **`↑` / `↓`**: recorren los comandos anteriores. `history` los lista todos.
 - **`Ctrl+C`**: interrumpe el programa en ejecución (le manda la señal `SIGINT`).
+<details><summary> otros: </summary>
+
 - **`Ctrl+Z`**: suspende el programa en ejecución (`SIGTSTP`) y devuelve el prompt; luego comandos `fg` lo reanuda en primer plano y `bg` en segundo plano.
 - **`Ctrl+\`**: como `Ctrl+C` pero con `SIGQUIT`, que además genera un *coredump* para depurar.
+</details>
 
 ## Procesos
 
@@ -145,7 +150,9 @@ chmod 777 script.sh   # rwxrwxrwx: lectura, escritura y ejecución para todos (�
 chmod 640 datos.txt   # rw-r-----: el propietario lee y escribe, el grupo solo lee, el resto nada
 ```
 
-## Editar archivos de código
+Este sistema de permisos también se usa para directorios, tuberías con nombre ([`mkfifo`](../03-pipes-y-fifos/README.md)) o memoria compartida ([`shm_open`](../06-memoria-compartida-y-semaforos/README.md)). Se verá en esas prácticas.
+
+## Editar archivos de código C
 
 Un programa en C es texto plano en un fichero `.c`. Se puede escribir con cualquier editor.
 
@@ -294,7 +301,7 @@ Uso: ./saluda <nombre>
 
 ## Depurar
 
-Depurar es ejecutar el programa  (p.ej paso a paso) para ver **dónde y por qué** falla. Requiere compilar con `-g`.
+Depurar es ejecutar un programa  (p.ej paso a paso) para ver **dónde y por qué** falla. Requiere compilar con `-g`.
 
 Hay tres formas de hacerlo con `gdb`:
 
@@ -302,9 +309,9 @@ Hay tres formas de hacerlo con `gdb`:
 - **Post-mortem (autopsia)**: el proceso ya se ha caído y ha dejado un **coredump** —un fichero con su memoria (pila, variables, registros) en el instante de morir—. Se abre ese fichero con `gdb` y se examina  (`Caso 4`).
 - **Adjuntándose a un proceso en marcha**: el programa se está ejecutando ahora mismo (típicamente colgado) y se engancha `gdb` (`Caso 5`).
 
-### Fichero de ejemplo: [`depura.c`](depura.c)
+### Fichero de ejemplo: [`suma.c`](suma.c)
 
-Debería sumar los enteros `1..N`, pero tiene fallos: con `N` pequeño da un resultado absurdo y con `N` grande el programa se cae.
+Debería sumar los enteros `1..N`, pero tiene fallos: con `N` pequeño da un resultado absurdo y con `N` grande el programa casca.
 
 ```c
 #include <stdio.h>
@@ -327,14 +334,15 @@ int main(int argc, char *argv[]) {
 ```
 
 ```bash
-$ gcc depura.c -g -Wall -Wextra -o depura     # compila sin avisos...
-$ ./depura 5
+$ gcc suma.c -g -Wall -Wextra -o suma     # compila sin avisos...
+$ ./suma 5
 Suma 1..5 = 21855                             # ...pero el resultado es erróneo (debería ser 15)
-$ ./depura 500
+$ ./suma 500
 Segmentation fault (core dumped)              # y con N grande, se cae
 ```
 
 ### gdb — el depurador
+
 
 <details> <summary> comandos: </summary>
 
@@ -351,21 +359,24 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 | `frame <N>` (`f`) | cambia al marco `N` de la pila (para inspeccionar sus variables) |
 | `attach <pid>` | engancha gdb a un proceso que ya está corriendo; equivale a lanzar `gdb -p <pid>` |
 | `detach` | suelta el proceso adjuntado; sigue ejecutándose por su cuenta |
-| `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break depura.c:18` |
+| `break <línea\|función>` (`b`) | pone un punto de ruptura; `break main`, `break suma.c:18` |
 | `info breakpoints` (`i b`) | lista los puntos de ruptura y su número |
 | `delete [N]` (`d`) | borra el punto de ruptura `N`; sin número, borra todos. `disable`/`enable N` lo desactiva sin borrarlo |
 | `info locals` | valor de todas las variables locales |
 | `quit` (`q`) | salir de gdb |
 
-</detail>
+</details>
+
+Cada comando se puede escribir completo o con su abreviatura (`next` o `n`, `step` o `s`...). Pulsar `Enter` sin escribir nada repite el último comando: es habitual dar `n` una vez y luego solo `Enter` para ir avanzando línea a línea.
+
 
 ### Caso 1 — localizar la caída (segfault)
 
 ```bash
-$ gdb ./depura                 # abre el depurador para el programa depura
-(gdb) run 500                  # ejecuta con argv[1] = "500", como ./depura 500
+$ gdb ./suma                 # abre el depurador para el programa suma
+(gdb) run 500                  # ejecuta con argv[1] = "500", como ./suma 500
 Program received signal SIGSEGV, Segmentation fault.    # el programa casca
-0x0000555555555199 in main (argc=2, argv=0x7fffffffe2b8) at depura.c:22    # dónde: función main, línea 22
+0x0000555555555199 in main (argc=2, argv=0x7fffffffe2b8) at suma.c:22    # dónde: función main, línea 22
 22              valores[i] = i;    # la instrucción exacta que provocó el fallo
 (gdb) print i                  # ¿cuánto valía i?
 $1 = 108                       # i = 108, fuera del array valores[100] (0..99)
@@ -379,10 +390,10 @@ $2 = 500                       # el bucle llega hasta 500, mucho más allá del 
 ### Caso 2 — entender el resultado erróneo
 
 ```bash
-$ gdb ./depura                 # abre el depurador con el binario
+$ gdb ./suma                 # abre el depurador con el binario
 (gdb) break 25                 # pon un punto de ruptura en la línea 25 (el bucle de la suma)
-(gdb) run 5                    # ejecuta con argv[1] = "5", como ./depura 5
-Breakpoint 1, main (...) at depura.c:25    # gdb para al llegar a la línea 25
+(gdb) run 5                    # ejecuta con argv[1] = "5", como ./suma 5
+Breakpoint 1, main (...) at suma.c:25    # gdb para al llegar a la línea 25
 25          for (int i = 0; i < n; i++)    # línea donde está detenido, aún sin ejecutar
 (gdb) print valores[0]         # imprime el primer elemento del array
 $1 = 21845                     # nunca se le asignó nada - valor indeterminado
@@ -411,9 +422,9 @@ for (int i = 0; i < n; i++)
 Sin buscar ningún fallo: ejecutar línea a línea y observar cómo cambian las variables.
 
 ```bash
-$ gdb ./depura                 # abre el depurador con el binario
+$ gdb ./suma                 # abre el depurador con el binario
 (gdb) start 3                   # 'start' es como 'run' pero con un breakpoint automático en main
-Temporary breakpoint 1, main (argc=2, argv=...) at depura.c:18
+Temporary breakpoint 1, main (argc=2, argv=...) at suma.c:18
 18          int n = atoi(argv[1]);         # detenido aquí, aún sin ejecutar
 (gdb) display n                # muestra n automáticamente tras cada paso
 (gdb) next                     # ejecuta la línea 18 y para en la siguiente
@@ -442,7 +453,7 @@ Casi todo se abrevia: `n`, `s`, `c`, `p`, `b`… Y **`Enter` a secas repite el �
 
 ### Modo TUI (código y ejecución a la vez)
 
-`gdb -tui ./depura` —o, ya dentro, `tui enable` (o `Ctrl+X` `A`)— divide la pantalla: el código fuente arriba, con la línea actual resaltada y actualizándose en cada `next`/`step`, y la consola de gdb abajo.
+`gdb -tui ./suma` —o, ya dentro, `tui enable` (o `Ctrl+X` `A`)— divide la pantalla: el código fuente arriba, con la línea actual resaltada y actualizándose en cada `next`/`step`, y la consola de gdb abajo.
 
 - `Ctrl+X` `2` — añade una segunda ventana (registros, o ensamblador); púlsalo de nuevo para rotarla.
 - `Ctrl+X` `O` — cambia el foco entre ventanas.
@@ -457,30 +468,30 @@ Por defecto el sistema no escribe coredumps; hay que habilitarlos en la sesión 
 
 ```bash
 $ ulimit -c unlimited          # sin límite de tamaño para el coredump (por defecto: 0, desactivado)
-$ ./depura 500
+$ ./suma 500
 Segmentation fault (core dumped)
 $ ls
-core   depura   depura.c       # 'core' (a veces core.<pid>) es el volcado de memoria
+core   suma   suma.c       # 'core' (a veces core.<pid>) es el volcado de memoria
 ```
 
 Se abre pasando a `gdb` el binario y el coredump:
 
 ```bash
-$ gdb ./depura core            # binario + coredump
-Core was generated by './depura 500'.                   # qué orden lo produjo
+$ gdb ./suma core            # binario + coredump
+Core was generated by './suma 500'.                   # qué orden lo produjo
 Program terminated with signal SIGSEGV, Segmentation fault.
-#0  0x0000555555555199 in main (argc=2, argv=...) at depura.c:22    # dónde murió
+#0  0x0000555555555199 in main (argc=2, argv=...) at suma.c:22    # dónde murió
 22              valores[i] = i;
 (gdb) print i                  # ¿qué valor tenía i cuando el programa casco?
 $1 = 108
 (gdb) backtrace                # pila de llamadas en el momento del fallo
-#0  main (argc=2, argv=...) at depura.c:22
+#0  main (argc=2, argv=...) at suma.c:22
 (gdb) quit
 ```
 
 No se puede `continue` ni `next`: el proceso ya no existe, solo su "cadáver". Sirve para `backtrace`, `print` e `info locals`.
 
-> A veces los coredumps los recoge `systemd` en vez de dejar un fichero `core`. Se listan con `coredumpctl list` y se abren con `coredumpctl gdb depura`.
+> A veces los coredumps los recoge `systemd` en vez de dejar un fichero `core`. Se listan con `coredumpctl list` y se abren con `coredumpctl gdb suma`.
 
 ### Caso 5 — depurar un proceso en marcha
 
@@ -576,21 +587,20 @@ tmux -f sesion.conf attach          # arranca tmux con sesion.conf (que monta lo
 **Para salir:** pulsa `Ctrl-b` y luego `d` para desconectarte y después `tmux kill-server`.
 -->
 
-## Otras herramientas de diagnóstico
-
-### valgrind — errores de memoria
+##  valgrind — errores de memoria
 
 ```bash
-valgrind ./depura 5           # detecta accesos a memoria inválidos y fugas
+valgrind ./suma 5           # detecta accesos a memoria inválidos y fugas
 ```
 
-`valgrind` sobre el `depura` original señala directamente `Invalid write of size 4` en la línea 22 y `Use of uninitialised value` en la suma.
+`valgrind` sobre el `suma` original señala directamente `Invalid write of size 4` en la línea 22 y `Use of uninitialised value` en la suma.
 
-### strace — mostrar llamadas al sistema
+## strace — mostrar llamadas al sistema
 
 `strace` muestra, llamada a llamada, lo que un proceso le pide al kernel; útil cuando el fallo está en una llamada al sistema (abrir un fichero, permisos, red...) y el código por sí solo no explica el porqué.
 
 ```c
+//archivo lee.c
 #include <stdio.h>
 
 int main(void) {
@@ -620,12 +630,28 @@ openat(AT_FDCWD, "datos.txt", O_RDONLY) = -1 ENOENT (No existe el fichero o el d
 
 La línea de `openat` explica el origen del fallo (el fichero no existe). Se puede filtrar por tipo de llamada, por ejemplo `strace -e trace=open,openat,read ./lee`.
 
+Muchas llamadas al sistema devuelven `-1` si fallan y guardan el motivo en la variable `errno`; `strace` traduce ese valor a un nombre descripción. 
+
+<details> <summary> Los códigos más habituales: </summary>
+
+| Código | Significado | Ejemplo típico |
+|--------|-------------|-----------------|
+| `ENOENT` | No existe el fichero o directorio | abrir una ruta que no existe |
+| `EACCES` | Permiso denegado | abrir un fichero sin permiso de lectura/escritura |
+| `EEXIST` | Ya existe | crear un fichero que ya está ahí |
+| `EISDIR` | Es un directorio | abrir para escritura algo que en realidad es un directorio |
+| `ENOTDIR` | No es un directorio | usar como directorio algo que no lo es |
+| `EBADF` | Descriptor de fichero inválido | leer o escribir tras haber hecho `close()` |
+| `ENOSPC` | No queda espacio en el disco | escribir en un disco lleno |
+| `EINTR` | La llamada fue interrumpida por una señal | se verá con detalle en el tema de señales |
+</details> 
+
 <!-- 
 ## Ejercicios propuestos
 
 1. **Editar.** Crea con un editor (a tu elección) un fichero `datos.c` que imprima, con dos `printf` distintos, tu nombre y tu titulación. Compílalo y ejecútalo.
 2. **Compilar.** Sobre una copia de `hola.c`, introduce tres errores de una vez (quita un `;`, una comilla `"` y una llave `}`). Compila, copia los mensajes de `gcc` y explica qué significa cada uno; luego corrígelos y recompila.
 3. **Ejecutar.** Modifica `saluda.c` para que acepte **varios** nombres y salude a todos (recorre `argv` de `1` a `argc-1`). Pruébalo con 0, 1 y 3 argumentos y comprueba el valor de `echo $?` en cada caso.
-4. **Depurar.** Compila `depura.c` con `-g`, reproduce la caída con `./depura 500` bajo `gdb`, localiza la línea culpable con `backtrace` y `print i`, aplica la corrección y verifica que `./depura 5` imprime `15` y `./depura 500` imprime `125250`.
+4. **Depurar.** Compila `suma.c` con `-g`, reproduce la caída con `./suma 500` bajo `gdb`, localiza la línea culpable con `backtrace` y `print i`, aplica la corrección y verifica que `./suma 5` imprime `15` y `./suma 500` imprime `125250`.
 5. **Depurar.** Escribe un programa corto que desreferencie un puntero `NULL` o divida entre cero. Observa cómo `gdb` detiene la ejecución en la instrucción exacta e identifica la línea con `list` y `backtrace`. Repite el análisis con `valgrind`.
 -->

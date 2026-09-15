@@ -1,10 +1,10 @@
-/* depura.c — deberia sumar los enteros 1..N, pero tiene un fallo:
+/* suma.c — deberia sumar los enteros 1..N, pero tiene un fallo:
  * con N pequeno da un resultado erroneo y con N grande termina abruptamente.
  * El objetivo es encontrarlo con gdb (y con valgrind).
  *
- *   gcc depura.c -g -Wall -Wextra -o depura
- *   ./depura 5        -> deberia imprimir 15
- *   ./depura 500      -> deberia imprimir 125250
+ *   gcc suma.c -g -Wall -Wextra -o suma
+ *   ./suma 5        -> deberia imprimir 15
+ *   ./suma 500      -> deberia imprimir 125250
  */
 #include <stdio.h>
 #include <stdlib.h>
