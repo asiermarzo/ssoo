@@ -30,7 +30,8 @@ usuario@equipo:~$
 
 ## Moverse por directorios y mirar ficheros
 
-Primeros comandos para orientarse en el sistema de ficheros:
+<details>
+<summary> Comandos para orientarse, navegar y mostrar: </summary>
 
 | Comando | Uso |
 |---------|-----|
@@ -44,6 +45,8 @@ Primeros comandos para orientarse en el sistema de ficheros:
 | `head` / `tail` | primeras / últimas líneas (10 por defecto); `tail -f` sigue un fichero que crece | -->
 | `clear` | limpia la pantalla (`Ctrl+L` hace lo mismo) |
 | `man <comando>` | manual del comando; se navega como `less`. También `<comando> --help` |
+</details>
+
 
 Atajos importantes de la shell:
 
@@ -57,6 +60,8 @@ Atajos importantes de la shell:
 
 Un programa en ejecución es un *proceso*, identificado por un número (PID).
 
+<details> <summary> Comandos para procesos: </summary>
+
 | Comando | Uso |
 |---------|-----|
 | `ps` | lista procesos. Habitual: `ps -u $USER` (solo los míos) |
@@ -65,11 +70,13 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 | `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine. `kill -9 <pid>` manda `SIGKILL` (9), termina el proceso |
 | `killall <nombre>` | como `kill` pero por nombre en vez de pid|
 <!--| `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |-->
-
+</details>
 
 ## Referencia rápida de comandos
 
 ### Ficheros y directorios
+
+<details> <summary> Comandos: </summary>
 
 | Comando | Uso |
 |---------|-----|
@@ -82,9 +89,11 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 | `chmod <modo> <fichero>` | cambia permisos: `chmod 640 f` u `chmod g+r f` |
 | `chown <usuario>:<grupo> <fichero>` | cambia propietario y grupo |
 | `ln -s <objetivo> <enlace>` | crea un enlace simbólico |
+</details>
 
 ### Texto y búsqueda
 
+<details> <summary> Comandos: </summary>
 `file` (tipo de fichero), `wc` (cuenta líneas/palabras/caracteres), `sort` (ordena líneas), `grep <patrón>` (líneas que casan un patrón), `find` (busca ficheros), `diff` (diferencias entre dos ficheros).
 
 ```bash
@@ -96,22 +105,45 @@ find . -name "*.c"           # todos los .c bajo el directorio actual
 sort nombres.txt             # ordena alfabéticamente por líneas
 diff hola.c hola_v2.c        # qué cambió entre dos versiones
 ```
-
+</details>
 
 ### Compresión
 
 | Comando | Uso |
 |---------|-----|
 | `zip` / `unzip` | comprime / descomprime en formato ZIP |
+
+<details> <summary> otros: </summary>
+
+| Comando | Uso |
+|---------|-----|
 | `tar` | empaqueta y comprime: `tar czvf <destino>.tar.gz <origen>`; extrae: `tar xzvf <fichero>.tar.gz` |
 | `gzip` / `gunzip` | comprime / descomprime un fichero |
+</details>
 
 ### Permisos de ficheros
 
-Cada fichero tiene tres ternas de permisos (usuario, grupo, otros), cada una con lectura (`r`), escritura (`w`) y ejecución (`x`). En notación octal cada terna es un dígito: `rw- r-- ---` → `110 100 000` → `640`.
+Cada fichero tiene tres permisos (usuario, grupo, otros), cada un se puede fijar con lectura (`r`), escritura (`w`) y ejecución (`x`).
 
-Forma simbólica: `chmod <u|g|o> <+|-> <r|w|x> <fichero>`, p. ej. `chmod g+r fichero.o`. El bit de ejecución (`x`) es el que permite lanzar un binario con `./programa`.
--->
+`chmod` se utiliza para cambiar los permisos de los ficheros `chmod <quién><operador><permiso> <fichero>`.
+
+- **quién**: `u` (usuario/propietario), `g` (grupo), `o` (otros), `a` (todos)
+- **operador**: `+` añade el permiso, `-` lo quita, `=` lo deja exactamente así (y quita el resto)
+- **permiso**: `r`, `w`, `x`; se pueden combinar, p. ej. `rw`
+
+```bash
+chmod u+x programa      # añade ejecución al propietario (típico tras compilar o crear un script)
+chmod go-w fichero.txt  # quita escritura a grupo y otros: solo el propietario podrá modificarlo
+```
+
+El bit de ejecución (`x`) es el que permite lanzar un binario con `./programa`.
+
+`chmod` también acepta la notación **octal**: se suman los pesos de cada permiso (`r`=4, `w`=2, `x`=1) y el resultado forma un dígito por terna (usuario, grupo, otros), fijando los tres a la vez.
+
+```bash
+chmod 777 script.sh   # rwxrwxrwx: lectura, escritura y ejecución para todos (úsalo con cuidado)
+chmod 640 datos.txt   # rw-r-----: el propietario lee y escribe, el grupo solo lee, el resto nada
+```
 
 ## Editar archivos de código
 
@@ -304,6 +336,8 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 
 ### gdb — el depurador
 
+<details> <summary> comandos: </summary>
+
 | Comando (abreviatura) | Acción |
 |-----------------------|--------|
 | `run [args]` (`r`) | inicia el programa con esos argumentos; corre hasta un `break` o el final |
@@ -322,6 +356,8 @@ Segmentation fault (core dumped)              # y con N grande, se cae
 | `delete [N]` (`d`) | borra el punto de ruptura `N`; sin número, borra todos. `disable`/`enable N` lo desactiva sin borrarlo |
 | `info locals` | valor de todas las variables locales |
 | `quit` (`q`) | salir de gdb |
+
+</detail>
 
 ### Caso 1 — localizar la caída (segfault)
 
