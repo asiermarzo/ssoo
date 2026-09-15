@@ -166,7 +166,8 @@ Este sistema de permisos también se usa para directorios, tuberías con nombre 
 
 Un programa en C es texto plano en un fichero `.c`. Se puede escribir con cualquier editor.
 
-### Editores en la terminal
+<details>  <summary> Editores en la terminal </summary>
+
 <!-- 
 **`nano`** — el más sencillo; muestra los atajos en pantalla (`^` significa `Ctrl`):
 
@@ -196,6 +197,8 @@ vim hola.c
 | `:w` | guardar |
 | `:q` | salir · `:q!` salir descartando cambios · `:wq` guardar y salir |
 | `dd` / `yy` / `p` | borrar / copiar / pegar línea (en modo normal) |
+
+</details>
 
 ### Editores gráficos
 
