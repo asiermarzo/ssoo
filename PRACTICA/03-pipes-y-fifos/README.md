@@ -40,7 +40,7 @@ flowchart LR
         HW["write por el extremo de escritura"]
         HC["close del extremo de lectura"]
     end
-    HW ==>|"write"| BUF[["búfer FIFO del núcleo (la tubería)"]]
+    HW ==>|"write"| BUF[["búfer FIFO del kernel (la tubería)"]]
     BUF ==>|"read"| PR
 
     classDef lector fill:#d9ead3,stroke:#3a7a3a,color:#222;

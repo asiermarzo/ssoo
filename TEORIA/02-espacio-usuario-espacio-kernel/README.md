@@ -1,18 +1,8 @@
 # Espacio usuario y espacio kernel. Llamadas al sistema
 
-## Contenidos
-
-- Modo usuario y modo núcleo (kernel). Bit de modo y protección.
-- El SO como colección de procedimientos con interfaz de entrada/salida definida.
-- Llamadas al sistema: paso de parámetros en lugares bien definidos, cambio de modo, ejecución del servicio y retorno al programa de usuario.
-- Estructuras de los sistemas operativos:
-  - Sistemas monolíticos (programa principal, procedimientos de servicio, utilidades). Núcleos tipo Unix (Linux, BSD, Solaris), tipo DOS, etc.
-  - Microkernels: primitivas mínimas (espacios de direcciones, IPC, planificación básica); el resto de servicios como procesos servidores en espacio de usuario. Ventajas (complejidad, aislamiento de fallos, portabilidad, drivers) e inconvenientes (sincronización entre módulos).
-  - Sistemas por capas, máquinas virtuales, exokernels.
-
 ## Modo usuario y modo kernel
 
-Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos (memoria, CPU, dispositivos, sistema de ficheros) deben solicitar un servicio al núcleo a través de un único punto de control: la llamada al sistema.
+Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos (memoria, CPU, dispositivos, sistema de ficheros) deben solicitar un servicio al kernel a través de un único punto de control: la llamada al sistema.
 
 ```mermaid
 flowchart TB
@@ -46,7 +36,24 @@ flowchart TB
     style K fill:none,stroke-dasharray: 5 5;
 ```
 
-*Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos deben solicitar un servicio al núcleo.*
+*Los programas ordinarios se ejecutan con privilegios limitados. Para acceder a recursos protegidos deben solicitar un servicio al kernel.*
+
+## Mecanismos de transferencia de control
+
+| Mecanismo | Causa | Uso | Ejemplo |
+|-----------|-------|-----|---------|
+| **Interrupción** | Externa a la ejecución de la instrucción en curso | Reacción a un suceso asíncrono externo | Interrupción de reloj, interrupción de E/S |
+| **Cepo** (*trap*) | Asociada a la ejecución de la instrucción en curso | Tratamiento de un error o condición de excepción | Intento ilegal de acceso a un archivo |
+| **Llamada al sistema** | Solicitud explícita | Llamada a una función del SO | Un proceso de usuario llega a una instrucción que solicita abrir un archivo |
+
+- En una **interrupción**, el control se transfiere primero a un **gestor de interrupciones** que realiza tareas básicas y luego salta a una rutina del SO específica del tipo de interrupción.
+- En los **cepos**, el SO determina si el error es **fatal** (el proceso termina) o **no fatal** (se intenta recuperación o se notifica al usuario).
+- Una **llamada al sistema** transfiere el control a una rutina que forma parte del código del SO (ver flujo detallado abajo).
+
+Antes de leer la siguiente instrucción, el procesador **siempre comprueba si se ha producido alguna interrupción**:
+
+1. Si no hay ninguna pendiente, continúa con la siguiente instrucción del proceso actual.
+2. Si hay alguna pendiente: guarda el contexto del programa en ejecución, asigna al PC la dirección de comienzo del programa de tratamiento de la interrupción y lee su primera instrucción.
 
 ## Flujo de una llamada al sistema
 
@@ -54,45 +61,25 @@ flowchart TB
 sequenceDiagram
     participant U as Programa · modo usuario
     participant W as Envoltorio de libc
-    participant K as Núcleo · modo kernel
+    participant K as Kernel
+
     U->>W: read(fd, buf, n)
-    W->>K: instrucción de trap · nº de syscall + parámetros
-    Note over K: cambio a modo kernel
+    W->>K: número de servicio (syscall) + parámetros
     K->>K: valida parámetros y ejecuta el servicio
-    K-->>W: valor de retorno / -1 y errno
-    Note over U: vuelta a modo usuario
+    K-->>W: valor de retorno
     W-->>U: resultado
 ```
 
-La llamada al sistema se comporta como una ventanilla segura: la aplicación entrega una petición y unos parámetros, el núcleo comprueba permisos y direcciones, ejecuta el servicio y devuelve el resultado, sin ceder nunca a la aplicación el control directo del hardware.
+La llamada al sistema se comporta como una ventanilla segura: la aplicación entrega una petición y unos parámetros, el kernel comprueba permisos y direcciones, ejecuta el servicio y devuelve el resultado, sin ceder nunca a la aplicación el control directo del hardware.
 
-```mermaid
-sequenceDiagram
-    participant A as Aplicación
-    participant V as Ventanilla segura · libc
-    participant K as Núcleo
-    participant H as Hardware
-    A->>V: read(fd, búfer, tamaño)
-    V->>K: número de servicio + parámetros
-    Note over V,K: cambio controlado a modo kernel
-    K->>K: comprueba permisos y direcciones
-    K->>H: solicita los datos
-    H-->>K: datos disponibles
-    K-->>V: resultado o error
-    V-->>A: retorno a modo usuario
-```
 
 *Una llamada al sistema cruza temporalmente la frontera entre modo usuario y modo kernel sin entregar a la aplicación el control directo del hardware.*
 
 ## Estructuras: monolítico frente a microkernel
 
-<img src="img/monolitico-vs-microkernel.svg" width="560" alt="Comparación en capas de un núcleo monolítico y un microkernel, con la frontera entre espacio de usuario y espacio de kernel marcada en cada caso">
+<img src="img/monolitico-vs-microkernel.svg" width="560" alt="Comparación en capas de un kernel monolítico y un microkernel, con la frontera entre espacio de usuario y espacio de kernel marcada en cada caso">
 
-Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado; un microkernel conserva solo los mecanismos esenciales y delega el resto a procesos aislados que se comunican por mensajes, como talleres separados apoyados sobre el mismo hardware.
-
-<img src="img/microkernel-talleres.svg" width="560" alt="Un gran taller único frente a varios talleres aislados que se comunican por mensajes, ambos apoyados sobre el mismo hardware">
-
-*Un núcleo monolítico reúne muchos servicios en un mismo espacio privilegiado. Un microkernel conserva solo los mecanismos esenciales y delega otros servicios a procesos aislados.*
+Un kernel monolítico reúne muchos servicios en un mismo espacio privilegiado; un microkernel conserva solo los mecanismos esenciales y delega el resto a procesos aislados que se comunican por mensajes.
 
 ---
 

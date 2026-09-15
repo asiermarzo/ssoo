@@ -19,7 +19,7 @@ El Xerox Alto, desarrollado en Xerox PARC durante la década de 1970, reunió va
 
 ## Arquitectura de un entorno gráfico (modelo X11)
 
-<img src="img/arquitectura-x11.svg" width="560" alt="Las aplicaciones y el gestor de ventanas hablan con el servidor X mediante el protocolo X; el servidor X se apoya en el núcleo para acceder al hardware gráfico y de entrada">
+<img src="img/arquitectura-x11.svg" width="560" alt="Las aplicaciones y el gestor de ventanas hablan con el servidor X mediante el protocolo X; el servidor X se apoya en el kernel para acceder al hardware gráfico y de entrada">
 
 En Wayland el compositor asume el papel del servidor X y del gestor de ventanas, y cada cliente dibuja en su propio búfer.
 
@@ -38,7 +38,7 @@ Un clic atraviesa varias capas del sistema antes de convertirse en una respuesta
 ```mermaid
 sequenceDiagram
     participant M as Ratón
-    participant K as Driver del núcleo
+    participant K as Driver del kernel
     participant C as Servidor gráfico o compositor
     participant A as Aplicación
     participant P as Pantalla

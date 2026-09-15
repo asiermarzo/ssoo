@@ -8,7 +8,7 @@
 - **<abbr title="Tanenbaum y Bos, Modern Operating Systems, 4.ª ed., 2014, §1.1.1">A. Tanenbaum</abbr>** — como máquina extendida: el sistema operativo presenta al usuario el equivalente de una máquina extendida (o virtual), más fácil de programar que el hardware subyacente.
 - **<abbr title="Tanenbaum y Bos, Modern Operating Systems, 4.ª ed., 2014, §1.1.2">A. Tanenbaum</abbr>** — como administrador de recursos: su tarea es proporcionar una asignación ordenada y controlada de los procesadores, la memoria y los dispositivos de E/S entre los programas que compiten por ellos.
 
-**Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (procesador, memoria, gráficos, disco, red y otros dispositivos) para que el usuario pueda ejecutar sus programas (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para ellos, facilitando su programación, depuración y distribución.
+**Mi definición:** Uno de los códigos más complejos del mundo (junto con un motor de videojuegos, un compilador, una base de datos o un navegador). Gestiona el hardware del ordenador (cpu, memoria, gráficos, disco, red y dispositivos) para que el usuario pueda ejecutar sus programas (compiladores, editores, navegadores, reproductor multimedia o videojuegos) de forma eficiente, segura e intuitiva. El sistema operativo se encarga de compartir y coordinar los recursos para hacer creer a los procesos que tienen todos el ordenador para ellos, facilitando su programación, depuración y distribución.
 
 
 El sistema operativo se ocupa de:
@@ -23,7 +23,7 @@ flowchart TD
     SO --> SV[Servicios]
 
     CP --- CP1[Crear y terminar]
-    CP1 --- CP2[Comunicación  IPCs]
+    CP1 --- CP2[Comunicación IPCs]
     CP2 --- CP3[Sincronización]
 
     PL --- PL1[Reparto de la CPU]
@@ -48,123 +48,62 @@ flowchart TD
     class CP1,CP2,CP3,CR1,CR2,CR3,PL1,PL2,SV1,SV2,SV3,SV4,SV5,SV6 leaf;
 ```
 
-Aunque tengan tamaño físico y función diferentes, un smartwatch, un móvil, un servidor, un automóvil, un robot industrial, un avión o un satélite son dispositivos que tienen un software base para que administre sus recursos y conecte las aplicaciones con el hardware. Tienen un Sistema Operativo.
-
+Aunque tengan tamaño físico y función diferentes, un smartwatch, un móvil, un servidor, un automóvil, un robot industrial, un avión o un satélite son dispositivos que tienen un software base para administrar sus recursos y conectar las aplicaciones con el hardware. Tienen un Sistema Operativo.
 <img src="img/dispositivos-con-so.png" width="520" alt="Smartwatch, teléfono, portátil, servidor, automóvil, robot industrial, avión y satélite como ejemplos de dispositivos gobernados por software de sistema">
 
-*Aunque cambien radicalmente de tamaño y función, todos estos dispositivos necesitan software que administre sus recursos y conecte las aplicaciones con el hardware. Ilustración generada para estos apuntes.*
+## Conceptos básicos
 
+No hace falta haber visto arquitectura de computadores para seguir esta parte: basta con imaginar la CPU como una máquina que ejecuta instrucciones muy simples una detrás de otra, guardando los valores con los que trabaja en un puñado de "cajones" ultrarrápidos dentro de la propia CPU llamados registros.
 
-## Conceptos básicos previos
+Estos son solo los cinco conceptos mínimos que hacen falta para entender el resto de la asignatura: qué es un proceso, cómo el Sistema Operativo le puede quitar la CPU a un proceso para dársela a otro, qué hace la CPU por dentro para ejecutar instrucciones, cómo un proceso le pide ayuda al sistema operativo, y por qué la CPU no trabaja directamente contra la memoria. Todos se retoman con mucho más detalle en los próximos temas; aquí solo se fija el vocabulario.
 
-### Arquitectura de Von Neumann
+### Procesos
 
-En ella se basan los ordenadores actuales: la máquina tiene un conjunto **fijo** de componentes electrónicos cuyas acciones están determinadas por un **programa variable**.
+Un **programa** es un archivo guardado en disco: solo código, no hace nada mientras nadie lo ejecuta. Un **proceso** aparece cuando el sistema operativo pone ese programa en ejecución: le reserva una zona de memoria para su código y sus variables, y le va dando turnos de CPU para que sus instrucciones se ejecuten. Dos procesos pueden venir del mismo programa —dos terminales abiertos a la vez ejecutan el mismo `bash`— y aun así cada uno tiene su propia memoria y su propio turno de CPU, sin verse entre sí.
 
-La alternativa es la **arquitectura Harvard**, que separa físicamente la memoria de instrucciones de la de datos, con buses independientes. No se suele considerar en sistemas operativos porque casi todos los ordenadores de propósito general son Von Neumann (memoria única para código y datos, lo que permite cargar programas como simples datos); Harvard queda relegada a microcontroladores y a las cachés internas de la CPU, transparentes para el sistema operativo.
+<!-- TODO: diagrama "programa en disco" -> "proceso en memoria con su turno de CPU" -->
 
-<img src="img/arquitectura-von-neumann.svg" width="560" alt="Arquitectura de Von Neumann: CPU conectada por bus de direcciones y de datos a la memoria principal y a los dispositivos de E/S">
+### Cambio de contexto
 
-### Unidad Central de Proceso (CPU)
+Un núcleo de CPU solo ejecuta un proceso realmente; el resto esperan su turno. Aun con un sólo núcleo, el sistema operativo rota tan rápido entre los procesos que quieren ejercución que da la impresión de que se ejecutan en paralelo.
 
-Es el componente que **ejecuta las instrucciones** de un programa cargado en la memoria principal. Dentro de ella se distinguen:
+El sistema operativo realiza un **cambio de contexto** al quitar el proceso en ejecución y poner a otro, aprovechando estos momentos: el proceso se queda dormido voluntariamente (`sleep`), cede el turno explícitamente (`yield`), hace una llamada al sistema que le va a bloquear (por ejemplo, esperar un dato de teclado o de disco), o salta una interrupción de reloj (*timer*) que le recuerda al SO que ya ha pasado el tiempo asignado al proceso actual. En cualquiera de estos casos el SO guarda dónde se había quedado el proceso saliente y carga el turno del entrante.
 
-- **Unidad de control (CU)**: dirige la ejecución. En cada paso *obtiene* (fetch) la siguiente instrucción de memoria, la *decodifica* y activa al resto de unidades para *ejecutarla*. Se apoya en dos registros propios:
-  - **contador de programa (PC)**: dirección de la siguiente instrucción a ejecutar;
-  - **registro de instrucción (IR)**: instrucción que se está ejecutando en este momento.
-- **Unidad funcional o aritmético‑lógica (ALU)**: realiza las operaciones (sumar, restar, comparar, AND, OR…).
-- **Registros de propósito general** (`R1`, `R2`, …, `Rn`): almacenamiento muy rápido dentro de la CPU donde se colocan los operandos y los resultados.
-- **Registros de estado** (*flags*): bits estado de la última operación de la ALU (*cero*, *acarreo*, *signo*, *desbordamiento*) las instrucciones de salto condicional los consultan.
+<!-- TODO: diagrama de línea temporal con dos procesos alternándose en la CPU -->
 
-<img src="img/unidad-de-control.svg" width="560" alt="Componentes de la CPU: unidad de obtención, de decodificación, unidad funcional, PC e IR">
+### Arquitectura básica del ordenador
 
-Un fragmento de código de alto nivel se traduce a una secuencia de instrucciones máquina de unos pocos tipos —transferencia, aritmético‑lógicas y de salto— que mueven datos entre la memoria y los registros y operan sobre ellos:
+La CPU ejecuta instrucciones guardadas en la memoria principal, una detrás de otra, apoyándose en unos pocos registros internos:
+
+- **PC (contador de programa)**: dirección de la siguiente instrucción a ejecutar.
+- **SP (puntero de pila)**: dirección de la cima de la pila, usada en llamadas a función y variables locales.
+- **Registros de datos** (`R1`, `R2`, …): almacenamiento rapidísimo donde la CPU coloca los operandos y los resultados; no calcula directamente sobre la memoria, primero trae los datos registros, calcula y mueve registros a memoria.
+- **Flags**: bits con el resultado de la última operación (cero, signo, desbordamiento…), que consultan los saltos condicionales.
+
+<!-- TODO: diagrama de la CPU con PC, SP, registros de datos y flags -->
+
+Con unas pocas instrucciones básicas se construye cualquier programa: mover datos entre memoria y registros (`mov`), operar sobre ellos (`add`, `sub`, `cmp` y otras ariméticas), saltar a otra instrucción (`jump`) o saltar solo si se cumple una condición sobre los flags (`jump if zero`…) —esto último es lo que hay debajo de cada `if` y de cada bucle—. Existe además una instrucción para invocar al sistema operativo (`syscall`), que se ve en detalle en el tema de espacio de usuario y espacio de kernel.
 
 ```asm
 ; a = b + c;
-load  R1, b      ; transferencia:  R1 <- memoria[b]
-load  R2, c      ; transferencia:  R2 <- memoria[c]
-add   R1, R2     ; aritmética:     R1 <- R1 + R2   (y actualiza los flags)
-store R1, a      ; transferencia:  memoria[a] <- R1
-
-; d = a - 100;
-load  R2, =100   ; carga la constante 100 en R2
-sub   R1, R2     ; R1 <- R1 - 100
-store R1, d      ; memoria[d] <- R1
+mov  R1, b      ; R1 <- memoria[b]
+mov  R2, c      ; R2 <- memoria[c]
+add  R1, R2     ; R1 <- R1 + R2   (actualiza los flags)
+mov  a, R1      ; memoria[a] <- R1
 ```
+CompilerExplorer permite generar código ASM de un programa C, en el [material extra](material-extra/material_extra.md#del-código-c-al-código-máquina).
 
-Set de instrucciones abstracta para razonar sobre la ruta de datos. Un compilador real genera instrucciones equivalentes para una CPU concreta, ver en Compiler Explorer, está en el [material extra](material-extra/material_extra.md#del-código-c-al-código-máquina).
+### Llamadas al sistema
 
-**Ruta de datos**: los registros aportan a la unidad funcional el operando izquierdo y el derecho; ésta calcula el resultado, lo deja en un registro y actualiza los registros de estado. Los registros intercambian datos con la memoria primaria.
+Un proceso de usuario no puede tocar el hardware directamente (disco, red, memoria de otros procesos…); para eso le pide un servicio al sistema operativo con una **llamada al sistema** (`syscall`), como `read()` para leer un fichero o `fork()` para crear un proceso nuevo. Al hacerla, la CPU pasa a modo privilegiado, el sistema operativo atiende la petición, y al terminar, el control vuelve al programa en modo usuario. El mecanismo completo —modo usuario/kernel, tabla de llamadas, cómo se hace la transición— se ve en detalle en el tema de espacio de usuario y espacio de kernel.
 
-**Saltos**: las instrucciones de salto cargan en el PC la dirección de otra instrucción de la memoria para seguir la ejecución ahí, en lugar de continuar con la siguiente. El salto condicional solo salta si se cumple una condición sobre los flags (p. ej. que el resultado anterior fuera cero); es la base de los `if` y de los bucles.
+### Jerarquía de memoria
 
-### Memoria Principal (PM)
+La CPU opera sobre registros y no directamente sobre la memoria: los registros están dentro de la propia CPU y se leen en un ciclo de reloj, mientras que la memoria principal, cientos de veces más lenta, obligaría a la CPU a esperar en cada instrucción si trabajara siempre contra ella.
 
-- Contiene los programas (conjuntos de instrucciones) y sus datos (variables) que la CPU manipula.
-- La unidad de acceso es la **palabra**, formada por celdas de 8 bits (**bytes**).
-- Los ordenadores actuales tienen longitudes de palabra de 64 bits, frente a los más antiguos de 8, 16 o 32 bits.
+Entre registros y memeoria, hay más escalones: **registros ↔ caché ↔ RAM ↔ disco**, cada uno más lejos de la CPU, más lento y con más capacidad que el anterior. ¿Por qué esta jerarquía y no un único tipo de memoria? Por **coste**: la memoria rápida de registros y cachés usa 6 transistores por bit y ocupa mucho silicio, así que no se puede tener toda la memoria rápida; se pone poca cerca de la CPU.
 
-
-### Dispositivos de E/S
-
-- **Operación de entrada**: transfieren información de entrada, a través del bus de datos, a los registros de la CPU, para que ésta la almacene en la memoria principal.
-  - *Teclado*: al pulsar una tecla, su controlador deja el código de la tecla en un registro; ese código viaja por el bus de datos a un registro de la CPU, que lo escribe en el buffer de teclado en la memoria principal para que lo lea el proceso.
-  - *Sensor de temperatura (sistema empotrado)*: el conversor analógico‑digital del sensor deja el valor medido en un registro de su controlador; la CPU lo lee por el bus de datos y lo guarda en la memoria principal para procesarlo.
-- **Operación de salida**: la CPU obtiene información de la memoria principal y la coloca en sus registros para volcarla sobre un dispositivo de salida con ayuda del bus de datos.
-  - *Pantalla*: la CPU toma de la memoria principal los datos del framebuffer, los pasa a sus registros y los vuelca por el bus de datos al controlador gráfico, que los envía al monitor.
-  - *Impresora*: la CPU lee de la memoria principal el texto o la imagen a imprimir, lo coloca en sus registros y lo transfiere por el bus de datos al controlador de la impresora.
-
-
-### Interrupciones
-
-Las interrupciones permiten **detener el orden normal de ejecución** para atender un evento y luego reanudarlo. Sus finalidades principales son:
-
-- **Evitar la espera activa**: la CPU lanza una operación de E/S al disco duro y sigue trabajando; el disco duro avisa con una interrupción cuando termina, en lugar de que la CPU lo espere en bucle hasta que encuentra la información.
-- **Devolver el control al sistema operativo**: permite al SO recuperar la CPU periódicamente para repartirla entre procesos (multiprogramación) y evitar que un proceso la monopolice.
-- **Atender errores y eventos urgentes**: excepciones como la división por cero o un fallo de hardware se tratan de inmediato, sin esperar a que el programa las compruebe.
-
-**Clases de interrupciones:**
-
-| Clase | Ejemplos |
-|-------|----------|
-| Programa | desbordamiento (*overflow*), división por cero, instrucción ilegal, referencia de programa fuera de límites… |
-| Tiempo | *timer* del procesador |
-| E/S | al completarse una operación de E/S |
-| Fallos de hardware | error de paridad de memoria |
-
-**Procesamiento de una interrupción:**
-
-1. Una fuente de interrupción activa una señal de interrupción hacia la CPU (poner un pin en HIGH).
-2. La CPU termina la ejecución de la instrucción en curso.
-3. La CPU comprueba qué interrupción está activada (máscaras) y si debe atenderla (prioridades).
-4. La CPU guarda el contexto del programa interrumpido (registros, incluido el PC) en la pila.
-5. Carga en el PC la dirección de comienzo de la rutina de servicio de la interrupción.
-6. Se ejecuta la rutina de servicio, que atiende la causa concreta de la interrupción (por ejemplo, leer el estado de un dispositivo de E/S y completar la operación, o tratar el error).
-7. Se recupera el contexto del programa desde la pila.
-8. Se retoma la ejecución del programa en el punto en el que se había detenido.
-
-Las interrupciones permiten que un proceso inicie una operación en un dispositivo, el sistema operativo ponga en ejecución otro trabajo mientras el primero espera, y vuelva al primero cuando el dispositivo anuncia que ha terminado:
-
-```mermaid
-sequenceDiagram
-    participant CPU as CPU trabajando
-    participant D as Dispositivo de E/S
-    CPU->>D: inicia una operación
-    CPU->>CPU: ejecuta otro proceso
-    D-->>CPU: interrupción: operación terminada
-    CPU->>CPU: guarda contexto y atiende el evento
-    CPU-->>CPU: reanuda el trabajo interrumpido
-```
-
-*Una interrupción permite que el procesador haga otro trabajo mientras espera a un dispositivo y recupere la operación cuando este anuncia que ha terminado.*
-
-**Interrupciones simultáneas.** Cuando se producen varias interrupciones a la vez se puede:
-
-- **Deshabilitar interrupciones**: se manejan una detrás de otra. Puede no ser suficiente para sistemas que requieran tiempo real (RTOS).
-- **Niveles de prioridad**: permiten el procesamiento anidado de interrupciones.
-
-### Jerarquía de memoria y Cachés
+Las **cachés** (el escalón entre los registros y la RAM) funcionan porque los accesos a memoria siguen patrones predecibles (**localidad**): si se usa un dato, es muy probable que se vuelva a usar pronto (temporal) y que se usen los datos vecinos (espacial). Por eso la caché no trae de la RAM datos sueltos, sino **bloques** enteros de memoria, apostando a que lo de alrededor también se va a necesitar pronto.
 
 De más rápida y pequeña (arriba) a más lenta y grande (abajo):
 
@@ -172,53 +111,45 @@ De más rápida y pequeña (arriba) a más lenta y grande (abajo):
 
 *Cuanto más cerca está la memoria de la CPU, más rápida es, pero menor es su capacidad.*
 
-Esta pirámide existe por **coste**: la memoria rápida (SRAM de registros y cachés) usa 6 transistores por bit y ocupa mucho silicio. Como no se puede tener toda la memoria rápida, se pone poca cerca de la CPU y mucha lejos. Las **cachés** funcionan porque los accesos a memoria siguen patrones predecibles (**localidad**): si se usa un dato, es muy probable que se vuelva a usar pronto (temporal) y que se usen los datos vecinos (espacial). La caché guarda automáticamente esas zonas «calientes», de modo que la mayoría de accesos se resuelven en L1/L2 sin bajar a la RAM.
-
 | Nivel | Latencia típica | Capacidad | Precio aprox. |
 |-------|-----------------|-----------|---------------|
 | Registros | < 1 ns (acceso inmediato) | ~1–2 KB por núcleo | carísima por byte |
 | Caché L1 | ~1 ns (~4 ciclos) | 32–64 KB por núcleo | ~1000 €/GB (estimado, SRAM) |
 | Caché L2 | ~3–5 ns (~12–15 ciclos) | 256 KB–2 MB por núcleo | ~1000 €/GB (estimado, SRAM) |
 | RAM DDR4 | ~60–90 ns (~200–300 ciclos) | 8–128 GB | ~2–4 €/GB |
+| Disco SSD | ~10–100 µs | 256 GB–4 TB | ~0,05–0,1 €/GB |
 
 ## Estructuras de los sistemas operativos
 
-En su forma más básica, el sistema operativo es un **conjunto de funciones** que implementan sus tareas: `fork()` para crear un proceso, `read()` para leer de un fichero, `kmalloc()` para reservar memoria del núcleo, `schedule()` para elegir el siguiente proceso, etc.
+El sistema operativo es, en el fondo, un conjunto de funciones del kernel a las que un proceso de usuario solo llega a través de una llamada al sistema (visto en conceptos básicos). Lo que distingue a unas arquitecturas de otras es **cuánto de ese código corre en espacio de kernel** y cuánto en espacio de usuario.
 
-- Una función del núcleo puede llamar directamente a cualquier otra: `sys_read` llama al gestor del sistema de archivos, que a su vez llama al *driver* del disco.
-- Los programas de usuario no llaman a esas funciones del sistema operativo directamente: usan **llamadas al sistema**, primero colocan los parámetros en registros o en la pila y provocan una interrupción software para entrar al núcleo. La CPU pasa a **modo privilegiado** y ejecuta el gestor de interrupciones (que es código del propio sistema operativo), el gestor consulta el número de llamada en una tabla y salta a la función del núcleo correspondiente, que la ejecuta. Al terminar, se vuelve a modo usuario y el control regresa al programa. Así el sistema operativo puede controlar cada llamada al sistema y hace imposible (en teoría) que un proceso de usuario acceda a recursos de forma incorrecta.
+Comparativa de estructuras:
 
-Comparativa de estructuras (usuario / núcleo):
-
-<img src="img/estructuras-so.svg" width="680" alt="Comparativa de estructuras: monolítico y microkernel, con espacio de usuario y espacio de núcleo">
+<img src="img/estructuras-so.svg" width="680" alt="Comparativa de estructuras: monolítico y microkernel, con espacio de usuario y espacio de kernel">
 
 ### Sistemas monolíticos
 
-Todo el sistema operativo es **un único binario que se ejecuta en espacio de núcleo**. El programa de usuario solo interviene al principio: hace una llamada al sistema (`read()`, `fork()`…) que salta al núcleo. Dentro del núcleo, el código se organiza en 3 capas (todas son código del núcleo, no del usuario):
-
-- Una **rutina despachadora** (*dispatcher*): recibe la llamada al sistema, mira su número y salta a la función de servicio correspondiente.
-- Un conjunto de **funciones de servicio**: una por cada llamada al sistema (`sys_read`, `sys_fork`…); son las que hacen el trabajo.
-- Un conjunto de **funciones de utilidad**: código auxiliar compartido que usan las funciones de servicio (copiar datos entre usuario y núcleo, manejar listas de procesos, bloques de disco…).
+Todo el sistema operativo es **un único binario que se ejecuta en espacio de kernel**. El programa de usuario solo interviene al principio: hace una llamada al sistema (`read()`, `fork()`…) que salta al kernel, y allí el propio kernel se encarga de todo el trabajo.
 
 - **Ventaja**: **eficiencia**. Todos los módulos comparten el mismo espacio de memoria y se llaman entre sí con una simple llamada a función (unos pocos nanosegundos); no hay cambios de contexto ni copias de datos entre servicios.
 - **Desventaja**: **fragilidad y complejidad**. Todo corre con máximos privilegios y sin aislamiento, un fallo en cualquier módulo (por ejemplo un *driver*) tumba el sistema entero: *kernel panic* en Linux, pantallazo azul en Windows. El código fuente de Linux ronda los **30 millones de líneas de código** (la mayoría, controladores de dispositivos), lo que hace muy difícil garantizar que todo funcione bien junto.
 
-Ejemplos: núcleos tipo Unix (Linux, Syllable, Unix, BSD —FreeBSD, NetBSD, OpenBSD—, Solaris), núcleos tipo DOS (DR‑DOS, MS‑DOS, familia Microsoft Windows 9x —95, 98, 98SE, Me—), núcleos de Mac OS hasta Mac OS 8.6, OpenVMS.
+Ejemplos: kernels tipo Unix (Linux, Syllable, Unix, BSD —FreeBSD, NetBSD, OpenBSD—, Solaris), kernels tipo DOS (DR‑DOS, MS‑DOS, familia Microsoft Windows 9x —95, 98, 98SE, Me—), kernels de Mac OS hasta Mac OS 8.6, OpenVMS.
 
 ### Sistemas de microkernels
 
-Un **microkernel** es un tipo de núcleo que provee un conjunto de llamadas al sistema **mínimas** para implementar servicios básicos: espacios de direcciones, comunicación entre procesos y planificación básica. El resto de servicios (gestión de memoria, sistema de archivos, operaciones de E/S…) se ejecutan como **procesos servidores en el espacio de usuario**. 
+Un **microkernel** es un tipo de kernel que provee un conjunto de llamadas al sistema **mínimas** para implementar servicios básicos: espacios de direcciones, comunicación entre procesos y planificación básica. El resto de servicios (gestión de memoria, sistema de archivos, operaciones de E/S…) se ejecutan como **procesos servidores en el espacio de usuario**. 
 
 - **Ventaja**: **robustez**. Cada servicio corre en su propio proceso aislado, con privilegios mínimos; si el *driver* de red o el sistema de archivos se cuelga, el microkernel puede reiniciar ese servidor sin arrastrar al resto del sistema. También reduce la complejidad de cada pieza, mejora la portabilidad y facilita el desarrollo de *drivers*.
-- **Desventaja**: **rendimiento** (al menos históricamente). Lo que en un monolítico es una llamada a función, aquí es un mensaje entre procesos (IPC): cambio de contexto, copia de datos y vuelta. Una operación sencilla puede cruzar varias veces la frontera usuario/núcleo. Los microkernels modernos (L4, seL4) han recortado esa penalización.
+- **Desventaja**: **rendimiento** (al menos históricamente). Lo que en un monolítico es una llamada a función, aquí es un mensaje entre procesos (IPC): cambio de contexto, copia de datos y vuelta. Una operación sencilla puede cruzar varias veces la frontera usuario/kernel. Los microkernels modernos (L4, seL4) han recortado esa penalización.
 
 Ejemplos: AIX, AmigaOS, Amoeba, Minix, Hurd, L4, Netkernel, RaOS, RadiOS, ChorusOS, QNX (BlackBerry), SO3, Symbian.
 
 ### Sistemas híbridos
 
-Hay microkernels que meten código **no esencial** en espacio de núcleo para que se ejecute más rápido. Por ejemplo, meter los gráficos en espacio kernel para tener siempre una respuesta fluida al usuario.
+Hay microkernels que meten código **no esencial** en espacio de kernel para que se ejecute más rápido. Por ejemplo, meter los gráficos en espacio kernel para tener una respuesta fluida al usuario.
 
-Linux, aunque es monolítico, soporta **módulos cargables** (`insmod`/`rmmod`, `modprobe`) que añaden o quitan código al núcleo en caliente; así se instala el *driver* de una tarjeta wifi nueva sin tener que reconstruir el resto del kernel.
+Linux, aunque es monolítico, soporta **módulos cargables** (`insmod`/`rmmod`, `modprobe`) que añaden o quitan código al kernel en caliente; así se instala el *driver* de una tarjeta wifi nueva sin tener que recompilar el kernel entero.
 
 ## Clases de sistemas operativos
 
@@ -244,10 +175,12 @@ Dos bloques: primero una **evolución histórica**, cada paso resolviendo el des
 
 4. **Sistemas de tiempo compartido**: además, el usuario interactúa con su trabajo mientras se ejecuta — antes había que anticipar todo el flujo en el mazo de tarjetas y esperar horas para ver el primer error. El sistema operativo reparte la CPU en turnos muy cortos entre varios usuarios a la vez, dando a cada uno la sensación de tener el ordenador para sí, a costa de bajar el rendimiento bruto de la CPU.
 
+<!-- 
 ### Según su arquitectura: uno, varios o muchos procesadores
 
 - **Paralelos** — varios procesadores **fuertemente acoplados**: comparten memoria y reloj dentro de la misma máquina (cualquier PC o móvil actual, un servidor con varios zócalos, una GPU). Más rendimiento y tolerancia a fallos, a cambio de sincronizar los accesos a los mismos datos. Lo normal hoy es **SMP**: todos los procesadores son iguales y ejecutan la misma copia del sistema operativo.
 - **Distribuidos** — varios ordenadores **débilmente acoplados**: cada uno con su memoria y su reloj, comunicados solo por red (un clúster, la nube, una red *peer-to-peer*, internet). Escalan mucho y toleran que caiga un nodo, a cambio de que la red puede fallar o ir lenta y no hay memoria común para coordinarse.
+-->
 
 ### Según su uso: tiempo real, empotrados, virtualizados
 
@@ -257,24 +190,10 @@ Dos bloques: primero una **evolución histórica**, cada paso resolviendo el des
 
 - **Empotrados**: un ordenador escondido dentro de un aparato, dedicado a una única tarea fija grabada de fábrica (el termostato de una caldera, la centralita de un motor, un router doméstico). Prioriza precio y consumo mínimo — pasa casi todo el tiempo dormido y solo despierta ante un evento.
 
-- **Máquinas virtuales y contenedores**: varios entornos aislados sobre una misma máquina física. Las máquinas virtuales emulan un ordenador completo, cada una con su propio SO invitado sobre un hipervisor; los contenedores comparten el núcleo del anfitrión y solo aíslan la aplicación y sus dependencias.
+- **Máquinas virtuales y contenedores**: varios entornos aislados sobre una misma máquina física. Las máquinas virtuales emulan un ordenador completo, cada una con su propio SO invitado sobre un hipervisor; los contenedores comparten el kernel del anfitrión y solo aíslan la aplicación y sus dependencias.
 
   <img src="img/vm-vs-contenedores.svg" width="640" alt="Comparación de máquinas virtuales y contenedores como pilas de capas apiladas directamente sobre el hardware, sin líneas que atraviesen las cajas">
-
-### Resumen
-
-| Tipo | Qué resuelve o distingue | Ejemplo |
-|---|---|---|
-| Primeros sistemas | Automatiza lo que hacía un operador a mano | ENIAC |
-| Por lotes | Encadena trabajos sin esperar al operador | FMS, IBSYS |
-| Multiprogramado | La CPU no espera a la E/S de un solo trabajo | Unix temprano |
-| Tiempo compartido | El usuario interactúa mientras el trabajo corre | Unix con terminales |
-| Paralelo | Varios procesadores, memoria compartida | PC multinúcleo, GPU |
-| Distribuido | Varios ordenadores, comunicados por red | Clúster, internet |
-| Tiempo real | El plazo importa tanto como el resultado | Airbag, dron |
-| Empotrado | Una sola tarea fija, consumo mínimo | Termostato, router |
-| VM / contenedor | Varios entornos aislados en una máquina | Hipervisor, Docker |
-
+<!-- 
 ---
 
 ## Material extra
@@ -330,5 +249,6 @@ timeline
 | **1960‑1970** | Tiempo compartido | Varios usuarios comparten la CPU por turnos (*time slice*); terminales interactivos; memoria virtual; sistema de archivos en línea | Menor rendimiento de CPU por los cambios de contexto; mayor complejidad (protección entre usuarios, planificación, sincronización) | **CTSS** y **Multics** (MIT), **UNIX** (Bell, 1970) |
 | **1970‑1980** | Distribuidos y en red | Varios ordenadores conectados por red que cooperan mediante **paso de mensajes**; reparto de carga, recursos compartidos, redundancia | Programar la comunicación es complejo al no haber memoria común; la red es lenta y poco fiable; nodos heterogéneos | ARPANET, Xerox PARC (Ethernet); más tarde Novell NetWare, redes UNIX (TCP/IP) |
 | **1980‑1990** | Tiempo real y empotrados | La corrección depende también del **instante** de entrega: determinismo, responsividad, tolerancia a fallos. Empotrados: hardware mínimo, ensamblador o C, bajo consumo | Recursos muy escasos; difícil garantizar los plazos; poca portabilidad; herramientas de desarrollo limitadas | VxWorks, QNX, VRTX, pSOS |
-| **1990‑2000** | Ordenador personal y software libre | GUI de uso masivo; redes domésticas; **Linux** (Torvalds, 1991) = núcleo tipo Unix + herramientas **GNU** (Stallman, 1983): código abierto, portable, sin dependencia de un fabricante | Fragmentación y problemas de compatibilidad de controladores; curva de aprendizaje | **Windows 3.x/9x/NT**, **Mac OS**, **Linux**, distintos UNIX comerciales (Solaris, AIX, HP‑UX) |
-| **2000‑** | Dispositivos móviles y computación ubicua | Diseño para batería y conectividad inalámbrica; pantalla táctil; tiendas de aplicaciones; organización en capas (**kernel**, ***middleware***, entorno de ejecución con APIs, interfaz de usuario) | Autonomía de la batería, seguridad y privacidad, diversidad de dispositivos | **Android** (núcleo Linux), **iOS** (núcleo Darwin/XNU); antes Symbian, BlackBerry OS, Windows Phone |
+| **1990‑2000** | Ordenador personal y software libre | GUI de uso masivo; redes domésticas; **Linux** (Torvalds, 1991) = kernel tipo Unix + herramientas **GNU** (Stallman, 1983): código abierto, portable, sin dependencia de un fabricante | Fragmentación y problemas de compatibilidad de controladores; curva de aprendizaje | **Windows 3.x/9x/NT**, **Mac OS**, **Linux**, distintos UNIX comerciales (Solaris, AIX, HP‑UX) |
+| **2000‑** | Dispositivos móviles y computación ubicua | Diseño para batería y conectividad inalámbrica; pantalla táctil; tiendas de aplicaciones; organización en capas (**kernel**, ***middleware***, entorno de ejecución con APIs, interfaz de usuario) | Autonomía de la batería, seguridad y privacidad, diversidad de dispositivos | **Android** (kernel Linux), **iOS** (kernel Darwin/XNU); antes Symbian, BlackBerry OS, Windows Phone |
+-->

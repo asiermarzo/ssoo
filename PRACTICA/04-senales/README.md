@@ -10,7 +10,7 @@ Las señales `SIGKILL` y `SIGSTOP` **no** pueden capturarse, bloquearse ni ignor
 
 ```mermaid
 flowchart TD
-    K["otro proceso: kill(pid, sig)<br/>o evento del núcleo"] --> D{"¿hay manejador<br/>instalado para sig?"}
+    K["otro proceso: kill(pid, sig)<br/>o evento del kernel"] --> D{"¿hay manejador<br/>instalado para sig?"}
     D -->|"SIG_IGN"| I["se descarta"]
     D -->|"SIG_DFL"| DEF["acción por defecto<br/>(Term / Core / Stop / Ign / Cont)"]
     D -->|"función manejadora"| H["se interrumpe el flujo normal<br/>→ se ejecuta el manejador<br/>→ se reanuda el flujo"]

@@ -61,7 +61,7 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 | `ps` | lista procesos. Habitual: `ps axu \| less` (todos, con detalle) |
 | `pstree` | muestra los procesos como árbol, según quién creó a quién (`pstree -p` añade el pid) |
 | `top` / `htop` | procesos ordenados por consumo de CPU y memoria, en tiempo real; `q` sale |
-| `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine, y este puede capturarla para limpiar antes de salir. `kill -9 <pid>` manda `SIGKILL` (9), que el núcleo aplica directamente: no se puede capturar ni ignorar |
+| `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine, y este puede capturarla para limpiar antes de salir. `kill -9 <pid>` manda `SIGKILL` (9), que el kernel aplica directamente: no se puede capturar ni ignorar |
 | `killall <nombre>` | como `kill` pero por nombre de programa en vez de pid|
 <!--| `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |-->
 

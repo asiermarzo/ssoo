@@ -417,7 +417,7 @@ sequenceDiagram
     SO-->>P: reejecuta la instrucción
 ```
 
-*Si una página necesaria no está en memoria, el núcleo detiene temporalmente el proceso, la carga desde disco y reanuda la instrucción.*
+*Si una página necesaria no está en memoria, el kernel detiene temporalmente el proceso, la carga desde disco y reanuda la instrucción.*
 
 ## Copy‑on‑write
 
@@ -427,9 +427,9 @@ sequenceDiagram
 - Si un proceso intenta **modificar** su copia, se crea una **copia auténtica** para que sus cambios no sean visibles por los demás. Todo es transparente para los procesos.
 - **Ventaja principal**: no se crea ninguna copia adicional si ningún proceso realiza modificaciones (escaso uso de memoria).
 
-En memoria virtual: cuando un proceso crea una copia de sí mismo (`fork`), las páginas que puedan modificarse se marcan **copy‑on‑write**. Cuando un proceso escribe, el núcleo interviene y crea una copia. `calloc` puede aprovechar esta estrategia con una única página física de ceros a la que refieren todas las páginas devueltas, marcadas COW; la memoria real no aumenta hasta que se escribe.
+En memoria virtual: cuando un proceso crea una copia de sí mismo (`fork`), las páginas que puedan modificarse se marcan **copy‑on‑write**. Cuando un proceso escribe, el kernel interviene y crea una copia. `calloc` puede aprovechar esta estrategia con una única página física de ceros a la que refieren todas las páginas devueltas, marcadas COW; la memoria real no aumenta hasta que se escribe.
 
-Implementación: se marcan ciertas páginas como **solo lectura** en la MMU. Al intentar escribir, la MMU lanza una **excepción** que captura el núcleo, que decide **emitir una señal de violación de acceso** o **reservar nueva memoria** y escribir en ella la página modificada. El principal problema a nivel de núcleo es su **complejidad**: al escribir en una página, debe copiarla si está marcada COW.
+Implementación: se marcan ciertas páginas como **solo lectura** en la MMU. Al intentar escribir, la MMU lanza una **excepción** que captura el kernel, que decide **emitir una señal de violación de acceso** o **reservar nueva memoria** y escribir en ella la página modificada. El principal problema a nivel de kernel es su **complejidad**: al escribir en una página, debe copiarla si está marcada COW.
 
 **Ejemplo de reserva de memoria** (efecto de COW y de la reserva perezosa):
 

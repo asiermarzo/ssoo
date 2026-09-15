@@ -33,7 +33,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    SRC["origen: kill() / evento del núcleo / excepción"] --> PEND["señal pendiente en el proceso destino"]
+    SRC["origen: kill() / evento del kernel / excepción"] --> PEND["señal pendiente en el proceso destino"]
     PEND --> M{"¿bloqueada por la máscara?"}
     M -->|sí| WAIT["queda pendiente hasta desbloquearse"]
     M -->|no| DISP{"disposición de la señal"}
@@ -57,12 +57,12 @@ Detalle y tabla de señales: [`PRACTICA/04`](../../PRACTICA/04-senales/).
 
 ## De `Ctrl+C` a `SIGINT`
 
-Al pulsar `Ctrl+C`, el *driver* de terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.
+Al pulsar `Ctrl+C`, el *driver* de terminal solicita al kernel que envíe `SIGINT` al grupo de procesos en primer plano.
 
 ```mermaid
 flowchart LR
     K["Teclado<br/>Ctrl+C"] --> T["driver de terminal"]
-    T --> SO["núcleo genera SIGINT"]
+    T --> SO["kernel genera SIGINT"]
     SO --> FG["grupo de procesos<br/>en primer plano"]
     FG --> D{"disposición"}
     D -->|por defecto| F(("terminar"))
@@ -80,7 +80,7 @@ flowchart LR
     class H ok;
 ```
 
-*Al pulsar `Ctrl+C`, el terminal solicita al núcleo que envíe `SIGINT` al grupo de procesos en primer plano.*
+*Al pulsar `Ctrl+C`, el terminal solicita al kernel que envíe `SIGINT` al grupo de procesos en primer plano.*
 
 ## Señal bloqueada y pendiente
 
@@ -115,7 +115,7 @@ flowchart TB
     P -->|sí| L["guardar estado<br/>cerrar ficheros<br/>liberar recursos"]
     P -->|no| X(("terminar"))
     L --> X
-    KILL["SIGKILL<br/>terminación forzosa"] --> D["el núcleo termina el proceso<br/>no se captura ni se ignora"]
+    KILL["SIGKILL<br/>terminación forzosa"] --> D["el kernel termina el proceso<br/>no se captura ni se ignora"]
 
     classDef term fill:#fdf3d0,stroke:#333,color:#000;
     classDef decision fill:#fdf3d0,stroke:#333,color:#000;

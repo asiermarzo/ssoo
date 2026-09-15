@@ -57,7 +57,7 @@ El `README.md` de cada práctica incluye la descripción del tema, los comandos,
 
 ## Guía de estilo
 
-### Estilo presentaciones
+### Presentaciones
 Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También se pueden dar simulaciones interactivas embebidas, normalmente en HTML + JS. Se utilizará un markdown mínimo y el texto estará siempre en una línea.
 
 Se prefieren explicaciones concisas y resumidas.
@@ -68,11 +68,13 @@ Para prácticas, se utilizan archivos Markdown, archivos `.c`, Makefiles, script
 
 En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. 
 
-Se evitarán programas con varios archivos C: cada proceso o grupo de procesos será un `.c` que acabará compilado en un binario. Esto hace el uso de make opcional. Se pueden utilizar `.h` para compartir constantes y estructuras comunes.
+Se evitarán programas con varios archivos C: cada proceso o grupo de procesos será un `.c` que acabará compilado en un binario. Esto hace el uso de Makefile opcional. Se pueden utilizar `.h` para compartir constantes y estructuras comunes.
 
 Se pueden dejar `#include` que no sean necesarios si esto evita estar buscando qué includes necesita cada función. Es más como incluir un bloque común de `#include <>` y quitar los que den *warning* por no usarse.
 
-Sobre convenciones de código: aunque cada estudiante puede seguir su propia preferencia, el código de este material sigue estas normas:
+Se puede quitar el tratamiento de errores para que el código quede más claro. La captura de errores se puede hacer con strace o gdb.
+
+Estílos de código, aunque cada estudiante puede seguir el suyo:
 
 - La llave de apertura `{` se coloca en la misma línea.
 - Se usa `snake_case` en lugar de `CamelCase`.

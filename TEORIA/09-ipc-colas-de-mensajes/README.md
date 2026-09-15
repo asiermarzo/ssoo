@@ -15,7 +15,7 @@ Práctica asociada: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).
 
 <img src="img/cola-mensajes.svg" width="560" alt="Productores envían mensajes a una cola FIFO con prioridad; los consumidores extraen mensajes completos de la cola">
 
-Una cola conserva mensajes completos hasta que un receptor los recoge, y puede ordenarlos por tipo o prioridad: el clasificador del núcleo coloca cada mensaje según su prioridad y entrega primero el más prioritario.
+Una cola conserva mensajes completos hasta que un receptor los recoge, y puede ordenarlos por tipo o prioridad: el clasificador del kernel coloca cada mensaje según su prioridad y entrega primero el más prioritario.
 
 <img src="img/cola-mensajes-prioridad.svg" width="560" alt="Tres remitentes envían mensajes con distinta prioridad; el nucleo los coloca en una cola ordenada por prioridad, con el mensaje de mayor prioridad más cerca de la salida; el receptor extrae mensajes completos">
 

@@ -15,7 +15,7 @@ Práctica asociada: [`PRACTICA/03`](../../PRACTICA/03-pipes-y-fifos/).
 
 ```mermaid
 flowchart LR
-    W["proceso escritor<br/>write por el extremo de escritura"] ==> BUF[["búfer FIFO del núcleo"]]
+    W["proceso escritor<br/>write por el extremo de escritura"] ==> BUF[["búfer FIFO del kernel"]]
     BUF ==> R["proceso lector<br/>read por el extremo de lectura"]
 
     classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#000;
@@ -24,11 +24,11 @@ flowchart LR
     class BUF nucleo;
 ```
 
-Una pipe funciona como un tubo neumático de sentido único administrado por el núcleo: un proceso introduce una secuencia de bytes por el extremo de escritura y otro la recibe, en el mismo orden, por el extremo de lectura.
+Una pipe funciona como un tubo neumático de sentido único administrado por el kernel: un proceso introduce una secuencia de bytes por el extremo de escritura y otro la recibe, en el mismo orden, por el extremo de lectura.
 
 <img src="img/pipe-tubo-neumatico.svg" width="560" alt="Una pipe como un tubo neumático de sentido único: el escritor introduce bytes por un extremo y el lector los recibe en el mismo orden por el otro">
 
-*Una pipe es un canal unidireccional administrado por el núcleo: un proceso escribe una secuencia de bytes y otro la lee.*
+*Una pipe es un canal unidireccional administrado por el kernel: un proceso escribe una secuencia de bytes y otro la lee.*
 
 ## Pipelines de shell
 

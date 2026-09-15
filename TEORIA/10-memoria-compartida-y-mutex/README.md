@@ -72,10 +72,10 @@ flowchart TB
 
 ## El mismo segmento en dos espacios de direcciones
 
-Cada proceso conserva su memoria privada, pero el núcleo puede mapear (`mmap`) el mismo segmento físico dentro de varios espacios de direcciones, posiblemente en direcciones virtuales distintas.
+Cada proceso conserva su memoria privada, pero el kernel puede mapear (`mmap`) el mismo segmento físico dentro de varios espacios de direcciones, posiblemente en direcciones virtuales distintas.
 
 <img src="img/memoria-compartida-mmap.svg" width="560" alt="Los procesos A y B mapean, en direcciones virtuales distintas, el mismo segmento físico de memoria compartida">
 
-*Cada proceso conserva su memoria privada, pero el núcleo puede mapear el mismo segmento físico dentro de varios espacios de direcciones.*
+*Cada proceso conserva su memoria privada, pero el kernel puede mapear el mismo segmento físico dentro de varios espacios de direcciones.*
 
 Detalle en la práctica: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaforos/). Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

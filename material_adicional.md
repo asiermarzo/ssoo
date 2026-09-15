@@ -11,7 +11,7 @@ Relacionado con [`TEORIA/02`](TEORIA/02-espacio-usuario-espacio-kernel/) (espaci
 | Vídeo | Traducción | Opcional |
 |---|---|---|
 | [How a Single Bit Inside Your Processor Shields Your Operating System's Integrity](https://www.youtube.com/watch?v=H4SDPLiUnv4) | Cómo un único bit dentro del procesador protege la integridad del sistema operativo | |
-| [The Question Nobody Ever Explains: Where Does the Kernel End?](https://www.youtube.com/watch?v=ZmPIxfCggFw) | La pregunta que nadie explica: ¿dónde termina el núcleo? | |
+| [The Question Nobody Ever Explains: Where Does the Kernel End?](https://www.youtube.com/watch?v=ZmPIxfCggFw) | La pregunta que nadie explica: ¿dónde termina el kernel? | |
 | [Why Applications Are Operating-System Specific](https://www.youtube.com/watch?v=eP_P4KOjwhs) | Por qué las aplicaciones son específicas de cada sistema operativo | Sí |
 
 ### Procesos

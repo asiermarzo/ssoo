@@ -158,19 +158,19 @@ cuadrado:
 int main(void) { if (write(1, "hola\n", 5) != 5) return 1; return 0; }
 ```
 
-tu llamada `write` no puede tocar el hardware por su cuenta: prepara los argumentos y ejecuta una **interrupción software** para entrar en el núcleo.
+tu llamada `write` no puede tocar el hardware por su cuenta: prepara los argumentos y ejecuta una **interrupción software** para entrar en el kernel.
 
 ```asm
         mov     edi, 1              ; fd 1 = salida estándar
         lea     rsi, [rip+.LC0]    ; puntero al texto "hola\n"
         mov     edx, 5             ; longitud
         mov     eax, 1             ; número de la llamada al sistema (write = 1)
-        syscall                    ; INTERRUPCIÓN SW: la CPU pasa a modo núcleo
+        syscall                    ; INTERRUPCIÓN SW: la CPU pasa a modo kernel
 ```
 
 Al ejecutar `syscall` (antiguamente `int 0x80`):
 
-1. La CPU cambia a **modo núcleo** y salta a una dirección fija: la rutina de servicio que instaló el SO al arrancar.
+1. La CPU cambia a **modo kernel** y salta a una dirección fija: la rutina de servicio que instaló el SO al arrancar.
 2. El SO mira `eax` (número de llamada), valida los argumentos y hace la E/S real sobre el dispositivo.
 3. Devuelve el resultado en `rax` y ejecuta `sysret`: la CPU vuelve a **modo usuario** y a la instrucción siguiente al `syscall`.
 

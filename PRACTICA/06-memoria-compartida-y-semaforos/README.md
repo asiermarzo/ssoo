@@ -2,7 +2,7 @@
 
 ## Descripción general
 
-La **memoria compartida** permite que dos o más procesos accedan a una misma zona de memoria. Es el mecanismo IPC más rápido: una vez conectados los procesos trabajan directamente con el puntero, sin más llamadas al sistema ni interacción con el núcleo. A cambio, hay que garantizar el acceso en exclusiva para evitar inconsistencias.
+La **memoria compartida** permite que dos o más procesos accedan a una misma zona de memoria. Es el mecanismo IPC más rápido: una vez conectados los procesos trabajan directamente con el puntero, sin más llamadas al sistema ni interacción con el kernel. A cambio, hay que garantizar el acceso en exclusiva para evitar inconsistencias.
 
 Los **semáforos** son una herramienta de sincronización: permiten el acceso a un recurso a un proceso y lo deniegan a los demás hasta que aquel concluya. Sus operaciones son atómicas. Un semáforo debe garantizar exclusión mutua (un solo proceso en la sección crítica), que un proceso fuera de su sección crítica no bloquee a otros y que el que está en ella no bloquee para siempre al resto.
 
@@ -31,7 +31,7 @@ Varios procesos vinculan (`shmat`) el mismo segmento y obtienen un puntero a la 
 
 ```mermaid
 flowchart TD
-    SEG[["segmento de memoria compartida<br/>(núcleo, clave común vía ftok)"]]
+    SEG[["segmento de memoria compartida<br/>(kernel, clave común vía ftok)"]]
     A["proceso A<br/>shmget → shmat → puntero"] <--> SEG
     B["proceso B<br/>shmget → shmat → puntero"] <--> SEG
     C["proceso C<br/>shmget → shmat → puntero"] <--> SEG
