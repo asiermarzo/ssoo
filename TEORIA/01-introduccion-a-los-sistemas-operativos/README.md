@@ -53,36 +53,30 @@ Aunque tengan tamaño físico y función diferentes, un smartwatch, un móvil, u
 
 ## Conceptos básicos
 
-No hace falta haber visto arquitectura de computadores para seguir esta parte: basta con imaginar la CPU como una máquina que ejecuta instrucciones muy simples una detrás de otra, guardando los valores con los que trabaja en un puñado de "cajones" ultrarrápidos dentro de la propia CPU llamados registros.
+Debemos imaginar la CPU como una máquina que ejecuta instrucciones muy simples una detrás de otra, guardando los valores con los que trabaja en un puñado de "cajones" ultrarrápidos dentro de la propia CPU llamados registros.
 
-Estos son solo los cinco conceptos mínimos que hacen falta para entender el resto de la asignatura: qué es un proceso, cómo el Sistema Operativo le puede quitar la CPU a un proceso para dársela a otro, qué hace la CPU por dentro para ejecutar instrucciones, cómo un proceso le pide ayuda al sistema operativo, y por qué la CPU no trabaja directamente contra la memoria. Todos se retoman con mucho más detalle en los próximos temas; aquí solo se fija el vocabulario.
+Es importante entender a nivel básico: qué es un proceso, cómo el Sistema Operativo le puede quitar la CPU a un proceso para dársela a otro, qué hace la CPU por dentro para ejecutar instrucciones, cómo un proceso hace llamadas al sistema operativo, y por qué la CPU no trabaja directamente contra la memoria. Todos se retoman con más detalle en los próximos temas; aquí solo se fija el vocabulario.
 
 ### Procesos
 
-Un **programa** es un archivo guardado en disco: solo código, no hace nada mientras nadie lo ejecuta. Un **proceso** aparece cuando el sistema operativo pone ese programa en ejecución: le reserva una zona de memoria para su código y sus variables, y le va dando turnos de CPU para que sus instrucciones se ejecuten. Dos procesos pueden venir del mismo programa —dos terminales abiertos a la vez ejecutan el mismo `bash`— y aun así cada uno tiene su propia memoria y su propio turno de CPU, sin verse entre sí.
-
-<!-- TODO: diagrama "programa en disco" -> "proceso en memoria con su turno de CPU" -->
+Un **programa** es un archivo guardado en disco: solo código, no hace nada mientras nadie lo ejecuta. Un **proceso** aparece cuando el sistema operativo pone ese programa en ejecución: le reserva una zona de memoria para su código y sus variables, y le va dando turnos de CPU para que sus instrucciones se ejecuten.
 
 ### Cambio de contexto
 
-Un núcleo de CPU solo ejecuta un proceso realmente; el resto esperan su turno. Aun con un sólo núcleo, el sistema operativo rota tan rápido entre los procesos que quieren ejercución que da la impresión de que se ejecutan en paralelo.
+Un núcleo de CPU solo ejecuta un proceso; el resto esperan su turno. Aun con un sólo núcleo, el sistema operativo rota tan rápido entre los procesos que da la impresión de que se ejecutan en paralelo.
 
-El sistema operativo realiza un **cambio de contexto** al quitar el proceso en ejecución y poner a otro, aprovechando estos momentos: el proceso se queda dormido voluntariamente (`sleep`), cede el turno explícitamente (`yield`), hace una llamada al sistema que le va a bloquear (por ejemplo, esperar un dato de teclado o de disco), o salta una interrupción de reloj (*timer*) que le recuerda al SO que ya ha pasado el tiempo asignado al proceso actual. En cualquiera de estos casos el SO guarda dónde se había quedado el proceso saliente y carga el turno del entrante.
-
-<!-- TODO: diagrama de línea temporal con dos procesos alternándose en la CPU -->
+El sistema operativo realiza un **cambio de contexto** al quitar el proceso en ejecución y poner a otro. 
 
 ### Arquitectura básica del ordenador
 
-La CPU ejecuta instrucciones guardadas en la memoria principal, una detrás de otra, apoyándose en unos pocos registros internos:
+La CPU ejecuta instrucciones guardadas en la memoria principal, una detrás de otra, apoyándose en unos pocos registros internos (donde almacena y opera con valores):
 
-- **PC (contador de programa)**: dirección de la siguiente instrucción a ejecutar.
+- **PC (contador de programa)**: dirección en memoria de la siguiente instrucción a ejecutar.
 - **SP (puntero de pila)**: dirección de la cima de la pila, usada en llamadas a función y variables locales.
 - **Registros de datos** (`R1`, `R2`, …): almacenamiento rapidísimo donde la CPU coloca los operandos y los resultados; no calcula directamente sobre la memoria, primero trae los datos registros, calcula y mueve registros a memoria.
 - **Flags**: bits con el resultado de la última operación (cero, signo, desbordamiento…), que consultan los saltos condicionales.
 
-<!-- TODO: diagrama de la CPU con PC, SP, registros de datos y flags -->
-
-Con unas pocas instrucciones básicas se construye cualquier programa: mover datos entre memoria y registros (`mov`), operar sobre ellos (`add`, `sub`, `cmp` y otras ariméticas), saltar a otra instrucción (`jump`) o saltar solo si se cumple una condición sobre los flags (`jump if zero`…) —esto último es lo que hay debajo de cada `if` y de cada bucle—. Existe además una instrucción para invocar al sistema operativo (`syscall`), que se ve en detalle en el tema de espacio de usuario y espacio de kernel.
+Con unas pocas instrucciones básicas se construye un programa: mover datos entre memoria y registros (`mov`), operar sobre ellos (`add`, `sub`, `cmp` y otras ariméticas), saltar a otra instrucción (`jump`) o saltar solo si se cumple una condición sobre los flags (`jump if zero`…) —esto último es lo que hay debajo de cada `if` y de cada bucle—. Existe además una instrucción para invocar al sistema operativo (`syscall`), que se ve en detalle en el tema de espacio de usuario y espacio de kernel.
 
 ```asm
 ; a = b + c;
@@ -99,11 +93,11 @@ Un proceso de usuario no puede tocar el hardware directamente (disco, red, memor
 
 ### Jerarquía de memoria
 
-La CPU opera sobre registros y no directamente sobre la memoria: los registros están dentro de la propia CPU y se leen en un ciclo de reloj, mientras que la memoria principal, cientos de veces más lenta, obligaría a la CPU a esperar en cada instrucción si trabajara siempre contra ella.
+La CPU opera sobre registros y no directamente sobre la memoria: los registros están dentro de la propia CPU , mientras que la memoria principal, cientos de veces más lenta, obligaría a la CPU a esperar en cada instrucción si trabajara siempre contra ella.
 
-Entre registros y memeoria, hay más escalones: **registros ↔ caché ↔ RAM ↔ disco**, cada uno más lejos de la CPU, más lento y con más capacidad que el anterior. ¿Por qué esta jerarquía y no un único tipo de memoria? Por **coste**: la memoria rápida de registros y cachés usa 6 transistores por bit y ocupa mucho silicio, así que no se puede tener toda la memoria rápida; se pone poca cerca de la CPU.
+Entre registros y memeoria, hay más escalones: **registros ↔ caché ↔ RAM ↔ disco**, cada uno más lejos de la CPU, más lento y con más capacidad que el anterior. ¿Por qué esta jerarquía y no un único tipo de memoria? Por **coste**: la memoria rápida de registros y cachés ocupa mucho silicio y es cara, así que no se puede tener toda la memoria rápida; se pone poca cerca de la CPU.
 
-Las **cachés** (el escalón entre los registros y la RAM) funcionan porque los accesos a memoria siguen patrones predecibles (**localidad**): si se usa un dato, es muy probable que se vuelva a usar pronto (temporal) y que se usen los datos vecinos (espacial). Por eso la caché no trae de la RAM datos sueltos, sino **bloques** enteros de memoria, apostando a que lo de alrededor también se va a necesitar pronto.
+Las **cachés** (el escalón entre los registros y la RAM) funcionan porque los accesos a memoria siguen patrones predecibles (**localidad**): si se usa un dato, es muy probable que se vuelva a usar pronto (temporal) y que se usen los datos vecinos (espacial). Por eso la caché no trae de la RAM datos sueltos, sino **bloques**, apostando a que lo de alrededor también se va a necesitar pronto.
 
 De más rápida y pequeña (arriba) a más lenta y grande (abajo):
 

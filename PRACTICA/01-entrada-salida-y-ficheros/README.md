@@ -7,9 +7,9 @@ C ofrece dos niveles para trabajar con ficheros:
 - **`FILE*`**: funciones que empiezan por `f` y trabajan con el tipo `FILE *`. Secuencia habitual: declarar un `FILE *` y abrir con `fopen`, operar (lectura/escritura), cerrar con `fclose`.
 - **file descriptors o fds (`int`)**: Es más bajo nivel, los file descriptors (enteros no negativos) representan archivos, directorios, tuberías o sockets. La ventaja es que un programa que usa `read`/`write` tiene el mismo código tanto si escribe/lee de la consola, de archivos, de sockets o de tuberías. 
 
-Cada proceso arranca con tres fds abiertos: `0` = `STDIN_FILENO` (entrada - normalmente teclado), `1` = `STDOUT_FILENO` (salida - normalmente consola), `2` = `STDERR_FILENO` (error). A nivel `FILE*` son `stdin`, `stdout` y `stderr` (declarados en `<stdio.h>`)
+Cada proceso arranca con tres fds abiertos: `0` = `STDIN_FILENO` (entrada - normalmente teclado), `1` = `STDOUT_FILENO` (salida - normalmente consola), `2` = `STDERR_FILENO` (error). A nivel `FILE*` estos son `stdin`, `stdout` y `stderr` (declarados en `<stdio.h>`)
 
-Se puede pasar de un nivel a otro:
+Se puede pasar de uno a otro:
 - de `FILE *fp` a descriptor: `int fd = fileno(fp);`
 - de descriptor (fd) a `FILE *`: `FILE *fp = fdopen(fd, "r");` (el `mode` debe ser compatible con cómo se abrió el descriptor).
 
@@ -23,6 +23,11 @@ Solo hace falta cerrar el de más alto nivel. Si tienes un `FILE *`, cierra con 
 | Leer con formato | `scanf(fmt, ...)` | `fscanf(fp, fmt, ...)` | — (parsear con sscanf tras `read`) |
 | Abrir | ya abierto (`stdin`, `stdout`, `stderr`) | `fopen(ruta, modo)` | `open(ruta, flags[, mode])` / `creat` |
 | Cerrar | — (se cierran al terminar proceso) | `fclose(fp)` | `close(fd)` |
+
+<details> <summary> otros comandos: </summary>
+
+| Operación | Consola (`stdio`) | Fichero con `FILE *` | Fichero con descriptor |
+|-----------|-------------------|----------------------|------------------------|
 | Leer línea / bloque | `fgets(buf, n, stdin)` | `fgets(buf, n, fp)` / `fread` | `read(fd, buf, n)` |
 | Escribir cadena / bloque | `puts(s)` | `fputs(s, fp)` / `fwrite` | `write(fd, buf, n)` |
 | Fin de fichero / error | `feof` / `ferror` | `feof` / `ferror` | `read` devuelve `0` / `-1` |
@@ -30,6 +35,7 @@ Solo hace falta cerrar el de más alto nivel. Si tienes un `FILE *`, cierra con 
 | Leer carácter | `getchar()` | `fgetc(fp)` | `read(fd, &c, 1)` |
 | Escribir carácter | `putchar(c)` | `fputc(c, fp)` | `write(fd, &c, 1)` |
 | Mover el cursor | — | `fseek` / `rewind` / `ftell` | `lseek(fd, off, whence)` |
+</details>
 
 ## Salida con formato: `printf`, `fprintf`, `dprintf`
 
@@ -43,7 +49,7 @@ int dprintf(int fd,   const char *fmt, ...);  /* a un fd: fichero, socket, pipe.
 ```
 
 - `printf(fmt, ...)` es equivalente a `fprintf(stdout, fmt, ...)`.
-- `dprintf` útil cuando solo tienes un `fd` (una tubería, un socket) y no quieres envolverlo en un `FILE *`.
+- `dprintf` útil cuando tienes un `fd` (una tubería, un socket) y no quieres envolverlo en un `FILE *`.
 - **Devuelven** el número de caracteres escritos, o un valor negativo si hay error.
 - Para escribir a una cadena en memoria: `snprintf(buf, sizeof buf, fmt, ...)`.
 
@@ -67,15 +73,20 @@ int dprintf(int fd,   const char *fmt, ...);  /* a un fd: fichero, socket, pipe.
 | `%s` | `char *` | cadena terminada en `'\0'` |
 | `%f` | `double` | decimal en punto fijo (`3.140000`) |
 | `%p` | `void *` | dirección de memoria (hex) |
-<!-- 
+
+<details> <summary> otros </summary>
+
+| Conversión | Tipo del argumento | Qué imprime |
+|------------|--------------------|-------------|
 | `%e` / `%E` | `double` | notación científica (`3.14e+00`) |
 | `%g` | `double` | `%e` o `%f`, el más corto |
 | `%u` | `unsigned int` | entero decimal sin signo |
 | `%o` | `unsigned int` | entero en octal |
 | `%x` / `%X` | `unsigned int` | entero en hexadecimal (minúsculas / mayúsculas) |
 | `%c` | `int` | un carácter |
--->
 | `%%` | — | un `%` literal |
+
+</details>
 
 ### Conversiones básicas
 
@@ -126,7 +137,7 @@ int main(void) {
 }
 ```
 
-`%p` espera un `void *`; por eso se hace el *cast* `(void*)&numero`.
+`%p` espera un `void *`; por eso se hace el *cast* `(void*)`.
 
 ## Entrada con formato: `scanf`, `fscanf`, `sscanf`
 
@@ -263,11 +274,11 @@ int main(void) {
     char mensaje[] = "hola\n";
     char buffer[50];
 
-    int fd = open(ruta, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    int fd = open(ruta, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);  /* flags == 00102, mode == 0600 */
     ssize_t n = write(fd, mensaje, strlen(mensaje));
     close(fd);
 
-    fd = open(ruta, O_RDONLY);
+    fd = open(ruta, 0);           /* 0 == O_RDONLY */
     n  = read(fd, buffer, n);
     write(1, buffer, n);          /* 1 = STDOUT_FILENO */
     close(fd);
@@ -287,9 +298,9 @@ int main(int argc, char *argv[]) {
     char buffer[2048];
     if (argc != 3) { fprintf(stderr, "Se precisan 2 argumentos\n"); exit(1); }
 
-    int fdold = open(argv[1], O_RDONLY);
+    int fdold = open(argv[1], 0);      /* 0 == O_RDONLY */
     if (fdold == -1) { perror("open origen"); exit(1); }
-    int fdnew = creat(argv[2], 0666);
+    int fdnew = creat(argv[2], 0666);  /* 0666 == S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH */
     if (fdnew == -1) { perror("creat destino"); exit(1); }
 
     for (int cuenta; (cuenta = read(fdold, buffer, sizeof buffer)) > 0; )
@@ -322,6 +333,7 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+<!-- 
 ## Operaciones opcionales
 
 Con `FILE *`:
@@ -340,6 +352,7 @@ Con descriptores (`#include <unistd.h>`):
 |---------|-----------|-------------|
 | `lseek` | `off_t lseek(int fd, off_t offset, int whence)` | Mueve el cursor (`whence`: `SEEK_SET` / `SEEK_CUR` / `SEEK_END`); devuelve la nueva posición, o `-1` si error |
 | `unlink` | `int unlink(const char *pathname)` | Borra el fichero; `0` si correcto, `-1` si error |
+-->
 
 ## Ejercicios propuestos
 
@@ -349,7 +362,4 @@ Con descriptores (`#include <unistd.h>`):
    - línea a línea (`fgets`),
    - por bloques de tamaño fijo (`fread` / `read` a un buffer de, p. ej., 512 bytes),
    - cargando el fichero entero a memoria y volcándolo después a consola de una vez.
-3. Programa que cambie las vocales en minúscula de un fichero a mayúsculas (modificando el propio fichero). Como el reemplazo no cambia el tamaño, hay dos enfoques:
-   - **Sobrescritura en el sitio**: abrir en lectura+escritura (`r+` / `O_RDWR`), leer el contenido a memoria, convertir, volver el cursor al principio (`rewind` / `lseek(fd, 0, SEEK_SET)`) y reescribir encima.
-   - **Cerrar y reabrir**: leer todo, cerrar, reabrir con truncado (`w` / `O_WRONLY|O_TRUNC`) y escribir el resultado.
-   La primera evita dejar el fichero vacío si el programa falla a mitad; la segunda es más simple. Conviene implementar ambas y comparar.
+3. Programa que cambie las vocales en minúscula de un fichero a mayúsculas (modificando el propio fichero). - **Cerrar y reabrir**: leer todo, cerrar, reabrir con truncado (`w` / `O_WRONLY|O_TRUNC`) y escribir el resultado.
