@@ -95,7 +95,7 @@ int main(void) {
     for (int i = 0; i < 5; i++) {
         int pid = fork();
         if (pid == 0) {   /* hijo */
-            printf("Hijo %d, padre %d\n", i, getppid());
+            printf("Hijo %d, padre %d\n", getpid(), getppid());
             exit(0);
         }
     }
@@ -119,6 +119,8 @@ void exit(int status);
 - **Devuelven** el `pid` del hijo terminado, o `-1` si no hay hijos o hay error. Si el hijo ya había terminado, retornan de inmediato.
 - Si `status` no es `NULL` guarda el estado de salida, inspeccionable con macros (`#include <sys/wait.h>`):
 
+<details> <summary> macros </summary>
+
 | Macro | Significado |
 |-------|-------------|
 | `WIFEXITED(status)` | cierto si el hijo terminó normalmente (`exit` / fin de `main`) |
@@ -128,6 +130,8 @@ void exit(int status);
 | `WIFSTOPPED(status)` | cierto si el hijo fue detenido por una señal |
 | `WSTOPSIG(status)` | señal que lo detuvo; sólo si `WIFSTOPPED` |
 | `WIFCONTINUED(status)` | cierto si el hijo se reanudó |
+
+</details>
 
 ### Fichero de ejemplo: [`fork_wait_status.c`](fork_wait_status.c)
 
@@ -142,14 +146,14 @@ El padre entra en `wait` justo después del `fork`, así que recoge el estado de
 int main(void) {
     int status = 0;
     pid_t childpid = fork();
-    if (childpid == 0) {
-        printf("Hijo (%d); espero 2 s y termino sacando 3\n", getpid());
+    if (childpid == 0) { //hijo
+        printf("Hijo (%d): espero 2s y termino(con 3) \n", getpid());
         sleep(2);
         exit(3);
-    } else {
-        waitpid(childpid, &status, 0);
-        printf("Padre (%d): hijo devolvió STATUS=%d\n", getpid(), status);
     }
+    //padre
+    waitpid(childpid, &status, 0);
+    printf("Padre (%d): hijo devolvió STATUS=%d\n", getpid(), status);
     return 0;
 }
 ```
@@ -165,13 +169,13 @@ Si el padre tarda en llamar a `wait` y el hijo termina antes, el hijo se vuelve 
 #include <stdio.h>
 #include <stdlib.h>
 int main(void) {
-    pid_t childpid = fork();
-    if (childpid == 0) {
-        printf("Hijo (%d): termino ya\n", getpid());
+    pid_t pid = fork();
+    if (pid == 0) {
+        printf("Hijo (%d): termino\n", getpid());
         exit(0);
     } else {
-        printf("Padre (%d): duermo 60 s sin hacer wait; el hijo %d queda zombie\n", getpid(), childpid);
-        sleep(60);
+        printf("Padre (%d): duermo 30 s sin hacer wait; el hijo %d queda zombie\n", getpid(), pid);
+        sleep(30);
         wait(NULL);
     }
     return 0;
@@ -184,7 +188,7 @@ ps -o pid,ppid,stat,cmd -C zombie   # STAT = Z, CMD = <defunct>
 top                                 # también aparece con estado Z
 ```
 
-Un zombie ya ha terminado, así que no se puede "matar" con `kill`/`kill -9`: no hay proceso en ejecución al que enviar la señal, solo queda su entrada en la tabla de procesos (PCB). Para eliminarlo hay que:
+Un zombie ya ha terminado, así que no se puede "matar" con `kill`: no hay proceso en ejecución al que enviar la señal, solo queda su entrada en la tabla de procesos (PCB). Para eliminarlo hay que:
 - que el padre llame a `wait`/`waitpid` (lo recoge y desaparece), o
 - terminar al padre: el zombie queda huérfano, lo adopta `init` (pid 1), que hace `wait` por él automáticamente.
 
@@ -215,7 +219,7 @@ int main(void) {
 }
 ```
 
-El mismo ejemplo con `execlp`, pasando los argumentos uno a uno en vez de en un array (variante sin fichero aparte):
+El mismo ejemplo con `execlp`, pasando los argumentos uno a uno en vez de en un array:
 
 ```c
 #include <unistd.h>
@@ -230,7 +234,7 @@ int main(void) {
 
 Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto en comandos comunes](#comandos-comunes).
 
-1. Analizar y describir el funcionamiento de los cinco programas de ejemplo suministrados: [`identificadores.c`](identificadores.c), [`fork_varios_hijos.c`](fork_varios_hijos.c), [`fork_wait_status.c`](fork_wait_status.c), [`fork_zombie.c`](fork_zombie.c) y [`exec_ps.c`](exec_ps.c).
+1. Compila y prueba el funcionamiento de los cinco programas de ejemplo suministrados: [`identificadores.c`](identificadores.c), [`fork_varios_hijos.c`](fork_varios_hijos.c), [`fork_wait_status.c`](fork_wait_status.c), [`fork_zombie.c`](fork_zombie.c) y [`exec_ps.c`](exec_ps.c).
 
 2. Programa que cree cuatro procesos A, B, C y D de forma que A sea padre de B, B de C y C de D.
 
@@ -249,7 +253,7 @@ Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto 
        class D p4;
    ```
 
-3. Programa que cree un árbol de procesos de tres niveles de profundidad, de modo que cada rama tenga dos procesos.
+3. Programa que cree un árbol de procesos de tres niveles de profundidad, con 2 procesos en cada rama.
 
    ```mermaid
    flowchart TD
@@ -269,7 +273,7 @@ Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto 
        class N3a,N3b,N3c,N3d nivel3;
    ```
 
-   Para comprobar que el árbol de procesos es el esperado, hay dos opciones: en el proceso raíz, antes de que empiece a hacer `wait`:
+   Para comprobar que el árbol de procesos es el esperado, hay dos opciones. En el proceso raíz, antes del `wait`:
 
    **Opción 1:** el proceso raíz imprime su pid y se queda esperando una tecla; mientras tanto, desde otra terminal inspeccionas el árbol de procesos.
 
@@ -285,7 +289,7 @@ Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto 
    ```c
    //pasamos el pid a cadena 
    char pid_str[16];
-   snprintf(ppid_str, sizeof(ppid_str), "%d", getpid());
+   snprintf(pid_str, sizeof(pid_str), "%d", getpid());
    //ejecutamos pstree -p <pid>
    execlp("pstree", "pstree", "-p", pid_str, NULL);
    ```
@@ -326,7 +330,7 @@ Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto 
    unsigned int sleep(unsigned int segundos);
    ```
 
-   Suspende el proceso durante los segundos indicados (o hasta que llegue una señal). Cada proceso debe hacer `wait` sobre su hijo, luego `sleep(1)` y luego terminar.
+   Suspende el proceso durante los segundos indicados (o hasta que llega una señal). Cada proceso debe hacer `wait` sobre su hijo, luego `sleep(1)` y luego terminar.
 
    Ejemplo de salida (hay 1 segundo de diferencia entre cada línea):
 

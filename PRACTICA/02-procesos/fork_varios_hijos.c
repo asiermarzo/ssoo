@@ -6,7 +6,7 @@ int main(void) {
     for (int i = 0; i < 5; i++) {
         int pid = fork();
         if (pid == 0) {   /* hijo */
-            printf("Hijo %d, padre %d\n", i, getppid());
+            printf("Hijo %d, padre %d\n", getpid(), getppid());
             exit(0);
         }
     }

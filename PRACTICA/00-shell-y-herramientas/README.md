@@ -249,8 +249,7 @@ gcc hola.c -Wall -g -O0 -o hola
 ```
 
 - `-o hola`: nombre del binario de salida (sin `-o`, el binario se llama `a.out`).
-- `-Wall`: activa los avisos más habituales (variables sin usar, formatos de `printf`/`scanf` incorrectos, etc.).
-- `-Wextra`: se puede añadir junto a `-Wall` para mostrar avisos adicionales (parámetros sin usar, comparaciones signed/unsigned...) y detectar aún más fallos en compilación.
+- `-Wall`: activa los avisos más habituales (variables sin usar, formatos de `printf`/`scanf` incorrectos, etc.). Puedes añadir  `-Wextra` para mostrar aún más avisos en compilación.
 - `-g`: incluye información  para el depurador (nombres de variables, números de línea) (ver [Depurar](#depurar)).
 - `-O0`: sin optimizar, imprescindible para depurar paso a paso. `-O2` optimiza para producción pero reordena y elimina código.
 
@@ -298,7 +297,7 @@ Uso: ./saluda <nombre>
 
 ### Ejemplo: [`dec2rom.c`](dec2rom.c) / [`rom2dec.c`](rom2dec.c) / [`gen_rand.c`](gen_rand.c)
 
-`dec2rom` lee un entero por consola y escribe su número romano; `rom2dec` hace lo contrario. `gen_rand` genera números aleatorios según `argv`: `[1]` cuántos (16 por defecto), `[2]` máximo (3999), `[3]` mínimo (1).
+`dec2rom` lee un enteros por consola y escribe su número romano; `rom2dec` hace lo contrario. `gen_rand` genera números aleatorios. Según los argumentos que le pases al ejecutarlo `gen_rand cuantos max min` si no se especifican por defecto usara cuantos=16, max=3999 y min =0.
 
 Los compilamos:
 ```bash
@@ -473,7 +472,7 @@ int main(int argc, char *argv[]) {
 ```bash
 $ gcc suma.c -g -Wall -o suma     # compila sin avisos...
 $ ./suma 5
-Suma 1..5 = 21855                             # ...pero el resultado es erróneo (debería ser 15)
+Suma 1..5 = 21855 o 10                   #o otro número erroneo, el resultado debería ser 15
 $ ./suma 500
 *** stack smashing detected ***: terminated
 Aborted (core dumped)                         # y con N grande, se cae
@@ -486,7 +485,7 @@ $ gdb ./suma                 # abre el depurador con el binario
 Breakpoint 1, main (...) at suma.c:25    # gdb para al llegar a la línea 25
 25          for (int i = 0; i < n; i++)    # línea donde está detenido, aún sin ejecutar
 (gdb) print valores[0]         # imprime el primer elemento del array
-$1 = 21845                     # nunca se le asignó nada - valor indeterminado
+$1 = 21845                     # puede ser 0 u otro valor. nunca se le asignó nada - valor indeterminado
 (gdb) print valores[1]         # el segundo elemento
 $2 = 1                         # el primer bucle sí lo escribió (valores[1] = 1)
 (gdb) print valores[5]         # el elemento de índice 5

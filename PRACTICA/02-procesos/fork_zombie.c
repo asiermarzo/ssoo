@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 int main(void) {
-    pid_t childpid = fork();
-    if (childpid == 0) {
-        printf("Hijo (%d): termino ya\n", getpid());
+    pid_t pid = fork();
+    if (pid == 0) {
+        printf("Hijo (%d): termino\n", getpid());
         exit(0);
     } else {
-        printf("Padre (%d): duermo 60 s sin hacer wait; el hijo %d queda zombie\n", getpid(), childpid);
-        sleep(60);
+        printf("Padre (%d): duermo 30 s sin hacer wait; el hijo %d queda zombie\n", getpid(), pid);
+        sleep(30);
         wait(NULL);
     }
     return 0;
