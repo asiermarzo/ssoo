@@ -12,7 +12,6 @@ Cuando un proceso termina debe haber finalizado ordenadamente a sus hijos; si no
 
 Más comandos de gestión de procesos (`ps`, `pstree`, `top`, `kill`, `killall`) en [Procesos, práctica 00](../00-shell-y-herramientas/README.md#procesos).
 
-Para terminar de golpe un proceso que ha creado otros procesos (como en esta práctica) sin matarlos uno a uno: lanzado en primer plano, pulsar `Ctrl+C` manda `SIGINT` a todo el grupo de procesos de esa terminal —el proceso y todos sus hijos, nietos, etc., ya que `fork()` no cambia el grupo de procesos— y en cuanto termina, la terminal vuelve al prompt de bash. Funciona en todos los ejercicios de esta práctica, mientras ningún proceso llame a `setpgid`/`setsid` (no se usan aquí). Los hijos que ya hubieran terminado y quedado zombie no reciben la señal (ya están muertos), pero al terminar el resto del árbol quedan huérfanos y `init` los recoge.
 
 ## Identificadores de proceso
 
