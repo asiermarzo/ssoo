@@ -41,9 +41,9 @@ Se irán añadiendo temas conforme se avance en la asignatura
 |----------|---------|
 | P0 — Shell y herramientas | [`PRACTICA/00`](PRACTICA/00-shell-y-herramientas/) |
 | P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
+| P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos-e-hilos/) |
 Se irán añadiendo temas conforme se avance en la asignatura
 <!-- 
-| P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos-e-hilos/) |
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
 | P4 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/04`](PRACTICA/04-senales/) |
 | P5 — Minishell | [`PRACTICA/05`](PRACTICA/05-minishell/) |
