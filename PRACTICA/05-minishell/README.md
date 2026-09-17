@@ -89,7 +89,7 @@ VALOR DEVUELTO
 
 ## Llamadas al sistema útiles
 
-`fork(2)`, `execvp(3)`, `wait(2)`, `open(2)`, `close(2)`, `dup2(2)`, `pipe(2)`, `signal(2)`. Ver las prácticas [P2](../02-procesos-e-hilos/), [P3](../03-pipes-y-fifos/) y [P4](../04-senales/) para sus descripciones detalladas.
+`fork(2)`, `execvp(3)`, `wait(2)`, `open(2)`, `close(2)`, `dup2(2)`, `pipe(2)`, `signal(2)`. Ver las prácticas [P2](../02-procesos/), [P3](../03-pipes-y-fifos/) y [P4](../04-senales/) para sus descripciones detalladas.
 
 Esquema básico de ejecución de un comando:
 

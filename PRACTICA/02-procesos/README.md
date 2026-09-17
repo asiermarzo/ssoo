@@ -297,7 +297,7 @@ Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto 
 
    ```
    comando> pwd
-   /home/alumno/ssoo/PRACTICA/02-procesos-e-hilos
+   /home/alumno/ssoo/PRACTICA/02-procesos
    comando> who
    alumno   tty1         2026-09-17 10:03
    comando> ls

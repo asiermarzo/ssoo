@@ -110,7 +110,7 @@ Las cuatro combinaciones posibles son:
 - Todo proceso posee un identificador único, el **descriptor de proceso** (`pid`).
 - La **creación** de un proceso se realiza con la llamada al sistema `fork()`.
 - La **finalización** de un proceso se lleva a cabo con la llamada al sistema `kill()`.
-- En Linux se puede obtener información sobre el estado de los procesos en ejecución en el directorio `/proc`, o mediante comandos `ps` y `top` (ver [`PRACTICA/00`](../../PRACTICA/00-shell-y-herramientas/) y [`PRACTICA/02`](../../PRACTICA/02-procesos-e-hilos/)).
+- En Linux se puede obtener información sobre el estado de los procesos en ejecución en el directorio `/proc`, o mediante comandos `ps` y `top` (ver [`PRACTICA/00`](../../PRACTICA/00-shell-y-herramientas/) y [`PRACTICA/02`](../../PRACTICA/02-procesos/)).
 
 El sistema operativo representa cada proceso mediante su **Bloque de Control de Proceso (PCB)**. La **tabla de procesos** es una lista de PCBs, con una entrada por cada proceso ejecutandose.
 

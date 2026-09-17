@@ -62,7 +62,7 @@ Realiza dos tareas en paralelo (crea un proceso hijo):
 
 ## Llamadas al sistema útiles
 
-De prácticas anteriores: `fork`, `execvp`, `wait` ([P2](../02-procesos-e-hilos/)); `pipe`, `dup2` ([P3](../03-pipes-y-fifos/)); `kill`, `sigaction`, `pause` ([P4](../04-senales/)); `shmget`/`shmat`/`shmdt`/`shmctl`, `semget`/`semctl`/`semop` ([P6](../06-memoria-compartida-y-semaforos/)); `msgget`/`msgsnd`/`msgrcv`/`msgctl` ([P7](../07-colas-de-mensajes/)).
+De prácticas anteriores: `fork`, `execvp`, `wait` ([P2](../02-procesos/)); `pipe`, `dup2` ([P3](../03-pipes-y-fifos/)); `kill`, `sigaction`, `pause` ([P4](../04-senales/)); `shmget`/`shmat`/`shmdt`/`shmctl`, `semget`/`semctl`/`semop` ([P6](../06-memoria-compartida-y-semaforos/)); `msgget`/`msgsnd`/`msgrcv`/`msgctl` ([P7](../07-colas-de-mensajes/)).
 
 ## Entrega
 

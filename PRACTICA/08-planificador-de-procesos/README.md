@@ -68,7 +68,7 @@ VALOR DEVUELTO
 
 ## Llamadas al sistema útiles
 
-`kill(1)`, `kill(2)`, `sigaction(2)`, `signal(2)`, `signal(7)`, `sleep(2)`/`sleep(3)`, `raise(3)`, `nanosleep(2)`, `pause(2)`, `alarm(2)`, `execvp(3)`, `fork(2)`, `wait(2)`. Ver [P2](../02-procesos-e-hilos/), [P4](../04-senales/) y [P7](../07-colas-de-mensajes/) para sus descripciones.
+`kill(1)`, `kill(2)`, `sigaction(2)`, `signal(2)`, `signal(7)`, `sleep(2)`/`sleep(3)`, `raise(3)`, `nanosleep(2)`, `pause(2)`, `alarm(2)`, `execvp(3)`, `fork(2)`, `wait(2)`. Ver [P2](../02-procesos/), [P4](../04-senales/) y [P7](../07-colas-de-mensajes/) para sus descripciones.
 
 Se sugiere emplear la biblioteca `fragmenta.o` usada en [P5](../05-minishell/).
 
