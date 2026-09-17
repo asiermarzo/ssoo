@@ -2,13 +2,17 @@
 
 ## Descripción general
 
-Cada proceso tiene un identificador único en Linux, el *process id* (`pid`). Al proceso que solicita la creación de otro se le llama **padre** y al resultante **hijo**; los procesos forman un árbol (varios hijos, un solo padre). Un proceso consta de código, datos y pila.
+Cada proceso tiene un identificador único en Linux, el *process id* (`pid`). Al proceso crea otro proceso se le llama **padre** y al resultante **hijo**; los procesos forman un árbol (varios hijos, un solo padre).
 
-Cuando un proceso termina debe haber finalizado ordenadamente sus hijos; si no, quedan **procesos zombie** (terminados pero cuyo estado de salida aún no ha sido recogido por el padre). Si el padre muere antes, los hijos quedan **huérfanos** y los adopta `init` (`pid` 1). Algo análogo ocurre con los hilos de un proceso.
+Cuando un proceso termina debe haber finalizado ordenadamente a sus hijos; si no, quedan **procesos zombie** (terminados pero cuyo estado de salida aún no ha sido recogido por el padre). Si el padre muere antes, los hijos quedan **huérfanos** y los adopta el proceso `init` (`pid` 1).
 
 ## Comandos comunes
 
 `ps` (lista de procesos), `top` (por consumo), `pstree` (árbol de procesos), `kill` / `killall` (envío de señales).
+
+Más comandos de gestión de procesos (`ps`, `pstree`, `top`, `kill`, `killall`) en [Procesos, práctica 00](../00-shell-y-herramientas/README.md#procesos).
+
+Para terminar de golpe un proceso que ha creado otros procesos (como en esta práctica) sin matarlos uno a uno: lanzado en primer plano, pulsar `Ctrl+C` manda `SIGINT` a todo el grupo de procesos de esa terminal —el proceso y todos sus hijos, nietos, etc., ya que `fork()` no cambia el grupo de procesos— y en cuanto termina, la terminal vuelve al prompt de bash. Funciona en todos los ejercicios de esta práctica, mientras ningún proceso llame a `setpgid`/`setsid` (no se usan aquí). Los hijos que ya hubieran terminado y quedado zombie no reciben la señal (ya están muertos), pero al terminar el resto del árbol quedan huérfanos y `init` los recoge.
 
 ## Identificadores de proceso
 
@@ -20,19 +24,23 @@ pid_t getppid(void);   /* pid del proceso padre */
 uid_t getuid(void);    /* uid del usuario propietario */
 ```
 
-`pid_t` y `uid_t` son enteros. Ejemplo:
+`pid_t` y `uid_t` son enteros.
+
+### Fichero de ejemplo: [`identificadores.c`](identificadores.c)
 
 ```c
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 int main(void) {
-    printf("PID: %ld\n",  (long)getpid());
-    printf("PPID: %ld\n", (long)getppid());
-    printf("UID: %ld\n",  (long)getuid());
+    printf("PID: %d\n",  getpid());
+    printf("PPID: %d\n", getppid());
+    printf("UID: %d\n",  getuid());
     return 0;
 }
 ```
+
+En Linux `pid_t` y `uid_t` son `int` pero en otros sistemas podrían ser `long`. 
 
 ## Creación de procesos: `fork`
 
@@ -42,30 +50,42 @@ int main(void) {
 pid_t fork(void);
 ```
 
-Crea un nuevo proceso como copia casi exacta del padre (espacio de direcciones, entorno, privilegios, tabla de descriptores de fichero). Ambos continúan en la instrucción siguiente al `fork`.
+Crea un nuevo proceso como copia exacta del padre (espacio de direcciones, entorno, privilegios, tabla de descriptores de fichero). Ambos continúan en la instrucción siguiente al `fork`, pero **devuelve** `0` en el hijo, y el `pid` del hijo en el padre, `-1` si hay error.
 
-- **Devuelve** `0` en el hijo, el `pid` del hijo en el padre, y `-1` si hay error.
-- **Herencia de descriptores**: padre e hijo comparten el mismo desplazamiento de fichero para los abiertos por el padre antes del `fork`.
 
 ```mermaid
 flowchart TD
-    U(["proceso único: pid = fork()"]) --> R{"valor devuelto por fork()"}
-    R -->|"0"| H["rama del proceso HIJO"]
-    R -->|"pid del hijo, positivo"| P["rama del proceso PADRE"]
-    R -->|"-1"| E["error: no se creó el hijo"]
+    Padre["PADRE"] --> F(["fork()"])
+    F -->|"pid del hijo"| P["PADRE"]
+    F -->|"0"| H["HIJO"]
+    P --> P2["continúa el resto del programa"]
+    H --> H2["continúa el resto del programa"]
 
     classDef inicio fill:#eef2f7,stroke:#444,color:#222;
-    classDef decision fill:#fce5a8,stroke:#a06a1a,color:#222;
-    classDef hijo fill:#cfe2f3,stroke:#2b6f99,color:#222;
     classDef padre fill:#d9ead3,stroke:#3a7a3a,color:#222;
-    classDef error fill:#fbe0e0,stroke:#a04040,color:#222;
+    classDef hijo fill:#cfe2f3,stroke:#2b6f99,color:#222;
 
-    class U inicio;
-    class R decision;
-    class H hijo;
-    class P padre;
-    class E error;
+    class F inicio;
+    class Padre,P,P2 padre;
+    class H,H2 hijo;
 ```
+
+```mermaid
+sequenceDiagram
+    participant P as Padre
+
+    Note over P: pid = fork()
+    create participant H as Hijo
+    P->>H: clonar
+    Note over P: pid = pid del hijo
+    Note over H: pid = 0
+    P->>P: rama padre
+    H->>H: rama hijo
+```
+
+### Fichero de ejemplo: [`fork_varios_hijos.c`](fork_varios_hijos.c)
+
+Crea 5 hijos y cada uno imprime su pid, y el de su padre (que debería coincidir):
 
 ```c
 #include <stdio.h>
@@ -75,9 +95,8 @@ flowchart TD
 int main(void) {
     for (int i = 0; i < 5; i++) {
         int pid = fork();
-        if (pid == -1) { perror("fork"); exit(-1); }
         if (pid == 0) {   /* hijo */
-            printf("Hijo %d, padre %ld\n", i, (long)getppid());
+            printf("Hijo %d, padre %d\n", i, getppid());
             exit(0);
         }
     }
@@ -97,7 +116,7 @@ pid_t waitpid(pid_t pid, int *status, int options);
 void exit(int status);
 ```
 
-- `wait` suspende al padre hasta que termine **cualquier** hijo; `waitpid` espera a uno concreto. `wait(&status)` ≡ `waitpid(-1, &status, 0)`.
+- `wait` duerme al padre hasta que termine **cualquier** hijo; `waitpid` espera a un hijo en concreto. `wait(&status)` equivale a `waitpid(-1, &status, 0)`.
 - **Devuelven** el `pid` del hijo terminado, o `-1` si no hay hijos o hay error. Si el hijo ya había terminado, retornan de inmediato.
 - Si `status` no es `NULL` guarda el estado de salida, inspeccionable con macros (`#include <sys/wait.h>`):
 
@@ -111,7 +130,9 @@ void exit(int status);
 | `WSTOPSIG(status)` | señal que lo detuvo; sólo si `WIFSTOPPED` |
 | `WIFCONTINUED(status)` | cierto si el hijo se reanudó |
 
-Si el padre no está en `wait` cuando el hijo termina, el hijo se convierte en zombie.
+### Fichero de ejemplo: [`fork_wait_status.c`](fork_wait_status.c)
+
+El padre entra en `wait` justo después del `fork`, así que recoge el estado del hijo cuando termina. Sirve para ver cómo se usa `wait` y cómo se lee `status`.
 
 ```c
 #include <sys/types.h>
@@ -122,34 +143,67 @@ Si el padre no está en `wait` cuando el hijo termina, el hijo se convierte en z
 int main(void) {
     int status = 0;
     pid_t childpid = fork();
-    if (childpid == -1) { perror("fork"); exit(1); }
-    else if (childpid == 0) {
-        printf("Hijo (%ld); espero 2 s y devuelvo 3\n", (long)getpid());
+    if (childpid == 0) {
+        printf("Hijo (%d); espero 2 s y termino sacando 3\n", getpid());
         sleep(2);
         exit(3);
     } else {
-        while (childpid != wait(&status));
-        printf("Padre (%ld): hijo devolvió STATUS=%d\n", (long)getpid(), status);
+        waitpid(childpid, &status, 0);
+        printf("Padre (%d): hijo devolvió STATUS=%d\n", getpid(), status);
     }
     return 0;
 }
 ```
 
-## Sustitución de la imagen: familia `exec`
+### Fichero de ejemplo: [`fork_zombie.c`](fork_zombie.c)
+
+Si el padre tarda en llamar a `wait` y el hijo termina antes, el hijo se vuelve zombi:
+
+```c
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+int main(void) {
+    pid_t childpid = fork();
+    if (childpid == 0) {
+        printf("Hijo (%d): termino ya\n", getpid());
+        exit(0);
+    } else {
+        printf("Padre (%d): duermo 60 s sin hacer wait; el hijo %d queda zombie\n", getpid(), childpid);
+        sleep(60);
+        wait(NULL);
+    }
+    return 0;
+}
+```
+Mientras el padre duerme, abre otra terminal y pon:
+
+```bash
+ps -o pid,ppid,stat,cmd -C zombie   # STAT = Z, CMD = <defunct>
+top                                 # también aparece con estado Z
+```
+
+Un zombie ya ha terminado, así que no se puede "matar" con `kill`/`kill -9`: no hay proceso en ejecución al que enviar la señal, solo queda su entrada en la tabla de procesos (PCB). Para eliminarlo hay que:
+- que el padre llame a `wait`/`waitpid` (lo recoge y desaparece), o
+- terminar al padre: el zombie queda huérfano, lo adopta `init` (pid 1), que hace `wait` por él automáticamente.
+
+## Ejecución de comandos: la familia `exec`
 
 ```c
 #include <unistd.h>
-int execl (const char *path, const char *arg0, ..., (char *)NULL);
 int execlp(const char *file, const char *arg0, ..., (char *)NULL);
-int execle(const char *path, const char *arg0, ..., (char *)NULL, char *const envp[]);
-int execv (const char *path, char *const argv[]);
 int execvp(const char *file, char *const argv[]);
-int execve(const char *path, char *const argv[], char *const envp[]);
 ```
 
-Sustituyen el código y los datos del proceso llamante por los del programa indicado; el `pid`, `ppid`, `pgid`, la tabla de descriptores y el directorio actual se conservan. Letras: **l** argumentos uno a uno terminados en `NULL`; **v** argumentos en un array terminado en `NULL`; **e** se pasa el entorno; **p** se busca el programa en `$PATH`.
+Existen más variantes (`execl`, `execle`, `execv`, `execve`), que exigen indicar la ruta completa del programa en vez de buscarlo en `$PATH`, y/o permiten pasar el entorno explícitamente; no hacen falta para estas prácticas.
+
+Llamar a `exec()` sustituyen el código y los datos del proceso llamante por los del programa indicado; el `pid`, `ppid`, `pgid`, la tabla de descriptores y el directorio actual se conservan. `execlp` recibe los argumentos uno a uno terminados en `NULL`; `execvp` los recibe en un array terminado en `NULL`. Ambas buscan el programa en `$PATH` (la `p` final), por eso no hace falta indicar la ruta completa.
 
 - **Devuelve** `-1` sólo si hay error (si tiene éxito no retorna).
+
+### Fichero de ejemplo: [`exec_ps.c`](exec_ps.c)
 
 ```c
 #include <unistd.h>
@@ -157,26 +211,28 @@ Sustituyen el código y los datos del proceso llamante por los del programa indi
 #include <stdlib.h>
 int main(void) {
     char *args[] = { "ps", "-aux", NULL };
-    if (execvp("ps", args) < 0) { perror("exec"); exit(1); }
+    execvp(args[0], args);
     return 0;   /* nunca se alcanza si exec tiene éxito */
 }
 ```
 
-## Hilos (POSIX threads)
+El mismo ejemplo con `execlp`, pasando los argumentos uno a uno en vez de en un array (variante sin fichero aparte):
 
 ```c
-#include <pthread.h>
-int pthread_create(pthread_t *tid, const pthread_attr_t *attr,
-                   void *(*rutina)(void *), void *arg);
-int pthread_join(pthread_t tid, void **retval);
-void pthread_exit(void *retval);
+#include <unistd.h>
+int main(void) {
+    execlp("ps", "ps", "-aux", NULL);
+    return 0;   /* nunca se alcanza si exec tiene éxito */
+}
 ```
 
-Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y terminar y cambiar entre hilos del mismo proceso también.
 
 ## Ejercicios propuestos
 
-1. Analizar y describir el funcionamiento de los cuatro programas de ejemplo (`proc_01.c` a `proc_04.c`) suministrados.
+Para terminar estos procesos y todos sus hijos a la vez utilizar [Ctrl+C, visto en comandos comunes](#comandos-comunes).
+
+1. Analizar y describir el funcionamiento de los cinco programas de ejemplo suministrados: [`identificadores.c`](identificadores.c), [`fork_varios_hijos.c`](fork_varios_hijos.c), [`fork_wait_status.c`](fork_wait_status.c), [`fork_zombie.c`](fork_zombie.c) y [`exec_ps.c`](exec_ps.c).
+
 2. Programa que cree cuatro procesos A, B, C y D de forma que A sea padre de B, B de C y C de D.
 
    ```mermaid
@@ -213,5 +269,74 @@ Compilar con `-pthread`. Crear un hilo es más barato que crear un proceso, y te
        class N2a,N2b nivel2;
        class N3a,N3b,N3c,N3d nivel3;
    ```
-4. Programa `ejecutar` que lea de la entrada estándar el nombre de un programa y cree un proceso hijo para ejecutar dicho programa.
+
+   Para comprobar que el árbol de procesos es el esperado, hay dos opciones: en el proceso raíz, antes de que empiece a hacer `wait`:
+
+   **Opción 1:** el proceso raíz imprime su pid y se queda esperando una tecla; mientras tanto, desde otra terminal inspeccionas el árbol de procesos.
+
+   ```c
+   printf("PID raíz: %d, pulsa una tecla para terminar...\n", getpid());
+   getchar();
+   ```
+
+   Desde otra terminal: `pstree -p <pid>` (el pid que acaba de imprimir).
+
+   **Opción 2:** el proceso raíz se reemplaza a sí mismo con `pstree`:
+
+   ```c
+   //pasamos el pid a cadena 
+   char pid_str[16];
+   snprintf(ppid_str, sizeof(ppid_str), "%d", getpid());
+   //ejecutamos pstree -p <pid>
+   execlp("pstree", "pstree", "-p", pid_str, NULL);
+   ```
+
+4. Programa `microshell` que muestre el prompt `comando> ` y vaya leyendo de la entrada estándar el nombre de un programa, creando un hijo para ejecutarlo (con `exec`) cada vez; no hace falta que soporte argumentos. Termina al llegar a fin de fichero (`Ctrl+D`).
+
+   Ejemplo de ejecución:
+
+   ```
+   comando> pwd
+   /home/alumno/ssoo/PRACTICA/02-procesos-e-hilos
+   comando> who
+   alumno   tty1         2026-09-17 10:03
+   comando> ls
+   README.md  microshell.c  microshell
+   comando> ...
+   ```
+
+   Hay muchas formas de leer línea a línea, esta es una de ellas:
+   ```c
+   #include <stdio.h>
+   int main(void) {
+       for (char linea[256]; ; ) {
+           printf("comando> ");
+           if (fscanf(stdin, "%255s", linea) != 1) break;
+           printf("Leído: %s\n", linea);
+       }
+       return 0;
+   }
+   ```
+
 5. Como el ejercicio 2, pero creando cinco hijos y de forma que cada proceso termine ordenadamente 1 segundo después de hacerlo su hijo.
+
+   puedes usar `sleep`:
+
+   ```c
+   #include <unistd.h>
+   unsigned int sleep(unsigned int segundos);
+   ```
+
+   Suspende el proceso durante los segundos indicados (o hasta que llegue una señal). Cada proceso debe hacer `wait` sobre su hijo, luego `sleep(1)` y luego terminar.
+
+   Ejemplo de salida (hay 1 segundo de diferencia entre cada línea):
+
+   ```
+   Terminado proceso 24109, hijo de 24108
+   Terminado proceso 24108, hijo de 24107
+   Terminado proceso 24107, hijo de 24106
+   Terminado proceso 24106, hijo de 24105
+   Terminado proceso 24105, hijo de 24104
+   ```
+
+

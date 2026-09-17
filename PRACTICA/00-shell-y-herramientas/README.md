@@ -307,7 +307,7 @@ gcc rom2dec.c -o rom2dec
 gcc gen_rand.c -o gen_rand
 ```
 
-Probamos `dec2rom` introduciendo el número por teclado (stdin): `Ctrl+D` termina la entrada, `Ctrl+C` cancela.
+Probamos `dec2rom` introduciendo el número por teclado (stdin): `Ctrl+D` termina la entrada, `Ctrl+C` termina el proceso.
 
 ```bash
 $ ./dec2rom
@@ -315,7 +315,7 @@ $ ./dec2rom
 MCMXCIV
 ```
 
-A continuación: `gen_rand` genera 1000 números y en vez de sacarlos por consola (stdou) los redirige al archivo `numeros.txt`. `dec2rom` convierte este archivo a `romanos.txt`, `rom2dec` los vuelve a convertir a decimal en `vuelta.txt`, y `diff` compara el fichero original con el de vuelta. Tras cada comando se puede inspeccionar el `.txt` correspondiente.
+A continuación: `gen_rand` genera 1000 números y en vez de sacarlos por consola (stdout) los redirige al archivo `numeros.txt`. `dec2rom` convierte este archivo a `romanos.txt`, `rom2dec` los vuelve a convertir a decimal en `vuelta.txt`, y `diff` compara el fichero original con el de vuelta. Tras cada comando se puede inspeccionar el `.txt` correspondiente.
 
 ```bash
 ./gen_rand 1000 > numeros.txt           # 1000 aleatorios a numeros.txt
