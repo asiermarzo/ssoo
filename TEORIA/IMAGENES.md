@@ -10,16 +10,16 @@ Este documento registra la campaña visual de los 13 temas. Cada figura está in
 | 02 · Usuario y kernel | T02.1–T02.3 | 3 Mermaid |
 | 03 · Procesos e hilos | T03.1–T03.5 | 1 generada, 4 Mermaid |
 | 04 · Planificación | T04.1–T04.5 | 1 generada, 4 Mermaid |
-| 05 · Concurrencia | T05.1–T05.5 | 1 generada, 4 Mermaid |
+| 05 · Concurrencia | T05.1–T05.10 | 1 generada, 9 Mermaid |
 | 06 · Memoria | T06.1–T06.5 | 5 Mermaid |
-| 07 · Pipes y FIFOs | T07.1–T07.3 | 3 Mermaid |
-| 08 · Señales | T08.1–T08.4 | 4 Mermaid |
+| 07 · Pipes y FIFOs | T07.1–T07.7 | 7 Mermaid |
+| 08 · Señales | T08.1–T08.6 | 6 Mermaid |
 | 09 · Colas de mensajes | T09.1–T09.3 | 3 Mermaid |
 | 10 · Memoria compartida | T10.1–T10.3 | 3 Mermaid |
 | 11 · Dispositivos de E/S | T11.1–T11.5 | 1 de archivo, 4 Mermaid |
 | 12 · Sistemas de ficheros | T12.1–T12.4 | 4 Mermaid |
 | 13 · GUI | T13.1–T13.4 | 1 de archivo, 3 Mermaid |
-| **Total** | **57** | **5 generadas, 4 de archivo, 48 Mermaid** |
+| **Total** | **68** | **5 generadas, 4 de archivo, 59 Mermaid** |
 
 Las ilustraciones generadas no contienen texto ni marcas, de modo que la explicación y la localización permanecen en Markdown.
 

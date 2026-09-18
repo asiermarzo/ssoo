@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" font-family="sans-serif" font-size="12" role="img" aria-label="Dos servidores remotos envían su log por ssh a dos FIFOs locales; diff lee ambas FIFOs como si fueran ficheros y compara su contenido">
+  <defs>
+    <marker id="arrFD" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#333"/></marker>
+  </defs>
+  <rect width="640" height="260" fill="#ffffff"/>
+
+  <rect x="15" y="30" width="140" height="50" rx="6" fill="#6ba3d6" stroke="#2b6f99"/>
+  <text x="85" y="59" text-anchor="middle" fill="#fff" font-size="10">servidor1 (ssh)</text>
+
+  <rect x="15" y="180" width="140" height="50" rx="6" fill="#6ba3d6" stroke="#2b6f99"/>
+  <text x="85" y="209" text-anchor="middle" fill="#fff" font-size="10">servidor2 (ssh)</text>
+
+  <rect x="260" y="30" width="110" height="42" rx="18" fill="#fce5a8" stroke="#333"/>
+  <text x="315" y="55" text-anchor="middle" font-size="10">/tmp/log1</text>
+
+  <rect x="260" y="188" width="110" height="42" rx="18" fill="#fce5a8" stroke="#333"/>
+  <text x="315" y="213" text-anchor="middle" font-size="10">/tmp/log2</text>
+
+  <rect x="460" y="105" width="150" height="55" rx="6" fill="#d9ead3" stroke="#3a7a3a"/>
+  <text x="535" y="128" text-anchor="middle" font-size="10">diff /tmp/log1</text>
+  <text x="535" y="142" text-anchor="middle" font-size="10">/tmp/log2</text>
+
+  <line x1="155" y1="55" x2="258" y2="52" stroke="#333" stroke-width="1.5" marker-end="url(#arrFD)"/>
+  <text x="205" y="42" text-anchor="middle" font-size="9">cat log &gt; /tmp/log1</text>
+
+  <line x1="155" y1="205" x2="258" y2="208" stroke="#333" stroke-width="1.5" marker-end="url(#arrFD)"/>
+  <text x="205" y="228" text-anchor="middle" font-size="9">cat log &gt; /tmp/log2</text>
+
+  <line x1="370" y1="52" x2="465" y2="115" stroke="#333" stroke-width="1.5" marker-end="url(#arrFD)"/>
+  <line x1="370" y1="209" x2="465" y2="150" stroke="#333" stroke-width="1.5" marker-end="url(#arrFD)"/>
+
+  <text x="535" y="90" text-anchor="middle" font-size="10" fill="#666">diff necesita dos rutas de fichero:</text>
+  <text x="535" y="102" text-anchor="middle" font-size="10" fill="#666">una pipe anónima no basta, hacen falta dos FIFOs</text>
+</svg>

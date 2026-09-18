@@ -1,9 +1,5 @@
 # Tema 4: Sincronización de procesos
 
-Conceptos básicos · Problema de la sección crítica · Semáforos · Problemas clásicos de sincronización · Monitores · Interbloqueo.
-
----
-
 ## Conceptos básicos
 
 ### Recursos del sistema
@@ -26,21 +22,11 @@ La comunicación entre procesos (*Inter‑Process Communication*) es una funció
 
 La **concurrencia** o computación concurrente consiste en la ejecución simultánea de varias tareas. Hay que garantizar la correcta secuenciación de las interacciones entre procesos y del acceso a los recursos compartidos.
 
-Se busca garantizar la concurrencia en sistemas operativos con:
+En un sistema monoprocesador multiprogramado los procesos se **intercalan** en el tiempo aparentando ejecución simultánea; no hay procesamiento paralelo, pero la ejecución intercalada beneficia la estructuración de los programas y la eficiencia.
 
-- **Multiprogramación**: varios procesos en un sistema monoprocesador.
-- **Multiprocesamiento**: varios procesos en un sistema multiprocesador.
-- **Procesamiento distribuido**: varios procesos en sistemas de computadores múltiples y distribuidos (ejemplo: *clusters*).
+**Problema**: la velocidad de ejecución de los procesos no puede predecirse y depende de otros procesos. Compartir recursos ocasiona problemas ⇒ hay que protegerlos.
 
-La concurrencia comprende: comunicación entre procesos, compartición y competencia por los recursos, sincronización de la ejecución de varios procesos y asignación del tiempo de procesador.
-
-Puede presentarse en tres contextos: **múltiples aplicaciones** (compartición dinámica del procesador), **aplicaciones estructuradas** (una aplicación como conjunto de procesos concurrentes) y **estructura del sistema operativo** (el propio SO implementado como conjunto de procesos o hilos).
-
-En un sistema monoprocesador multiprogramado los procesos se **intercalan** en el tiempo aparentando ejecución simultánea; no hay procesamiento paralelo y se produce sobrecarga en los intercambios, pero la ejecución intercalada beneficia la estructuración de los programas y la eficiencia. El intercalado y la superposición suponen **procesamiento concurrente** en un monoprocesador.
-
-**Problemas**: la velocidad de ejecución de los procesos no puede predecirse y depende de otros procesos; al SO le resulta difícil gestionar la asignación óptima y la compartición de recursos. Compartir recursos ocasiona problemas ⇒ hay que protegerlos.
-
-**Tareas del SO referentes a la concurrencia**: seguimiento de los procesos activos; asignación y liberación de recursos (tiempo de procesador, memoria, archivos, dispositivos de E/S); protección de datos y recursos de cada proceso frente a injerencias de otros; garantía de la correcta ejecución de un proceso independientemente de la velocidad de los demás.
+Más detalle (multiprogramación/multiprocesamiento/procesamiento distribuido, contextos en que aparece la concurrencia, tareas del SO al respecto): [`material_adicional.md`](material_adicional.md).
 
 ### Concurrencia vs paralelización
 
@@ -114,14 +100,7 @@ El mutex se comporta como una única llave: mientras un trabajador la tiene y es
 | **Progresión** | Ordenadamente, todos los procesos pueden ejecutarse y entrar en la SC. |
 | **Espera limitada** (viveza) | Una vez que un proceso solicita entrar en la SC, debe hacerlo en un plazo de tiempo determinado. |
 
-La solución se implementa mediante distintos algoritmos; las instrucciones máquina se ejecutan **atómicamente**.
-
-### Requisitos para la exclusión mutua
-
-- Que no haya en ningún momento dos procesos dentro de sus respectivas secciones críticas.
-- Que no se hagan suposiciones a priori sobre las velocidades relativas de los procesos ni el número de procesadores disponibles.
-- Que ningún proceso fuera de su sección crítica pueda bloquear a otros.
-- Que ningún proceso tenga que esperar un intervalo de tiempo arbitrariamente grande para entrar en su sección crítica.
+La solución se implementa mediante distintos algoritmos; las instrucciones máquina se ejecutan **atómicamente**, sin hacer suposiciones a priori sobre las velocidades relativas de los procesos ni el número de procesadores disponibles.
 
 ### Conceptos de sincronización
 
@@ -132,7 +111,7 @@ La solución se implementa mediante distintos algoritmos; las instrucciones máq
 | **Operaciones atómicas** | Operación que no se interrumpe hasta que finaliza su ejecución. |
 | **Sección crítica** | Mientras se ejecuta, hay garantía de que ningún proceso ejecutará a la vez ese código: se comporta como una operación atómica. |
 | **Interbloqueo** | Dos o más procesos esperan la ocurrencia de un evento que solo uno de los procesos que esperan puede causar. |
-| **Inanición** (bloqueo indefinido) | Los procesos interbloqueados esperan indefinidamente. |
+| **Inanición** (bloqueo indefinido) | Un proceso queda indefinidamente sin acceder a un recurso disponible porque otros procesos son siempre preferidos. No implica interbloqueo: en el ejemplo de P₁, P₂ y P₃, estos dos primeros no están bloqueados entre sí. |
 
 ## Semáforos
 
@@ -346,17 +325,18 @@ fin lector_escritor.
 **Con semáforos** (`mutex`, `sem_escritura` y el entero `num_lecturas`):
 
 ```text
-Write_lock:                       Read_lock:
-    wait(sem_escritura);              wait(mutex);
-                                     num_lecturas++;
-Write_unlock:                        if (num_lecturas == 1) wait(sem_escritura);
-    signal(sem_escritura);            signal(mutex);
+Escritor                          Lector
+    P(sem_escritura);                 P(mutex);
+    < Sección Crítica >               num_lecturas++;
+    V(sem_escritura);                 si (num_lecturas == 1) P(sem_escritura);
+                                     V(mutex);
 
-                                  Read_unlock:
-                                     wait(mutex);
+                                     < Lectura >
+
+                                     P(mutex);
                                      num_lecturas--;
-                                     if (num_lecturas == 0) signal(sem_escritura);
-                                     signal(mutex);
+                                     si (num_lecturas == 0) V(sem_escritura);
+                                     V(mutex);
 ```
 
 ## Monitores
@@ -438,7 +418,7 @@ Como cuatro vehículos que entran a la vez en un cruce estrecho: cada uno conser
 
 <img src="img/interbloqueo-cruce.png" width="520" alt="Cuatro vehículos ocupan un cruce y cada uno bloquea el avance del siguiente">
 
-*En un interbloqueo, cada participante conserva un recurso mientras espera otro. La espera circular impide que cualquiera pueda continuar. Ilustración generada para estos apuntes.*
+*En un interbloqueo, cada participante conserva un recurso mientras espera otro. La espera circular impide que cualquiera pueda continuar.*
 
 ### Modelo de sistema
 
