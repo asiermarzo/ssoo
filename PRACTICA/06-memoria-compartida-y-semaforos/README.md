@@ -2,12 +2,7 @@
 
 ## Descripción general
 
-La **memoria compartida** permite que dos o más procesos accedan a una misma zona de memoria. Es el mecanismo IPC más rápido: una vez conectados los procesos trabajan directamente con el puntero, sin más llamadas al sistema ni interacción con el kernel. A cambio, hay que garantizar el acceso en exclusiva para evitar inconsistencias.
-
-Los **semáforos** son una herramienta de sincronización: permiten el acceso a un recurso a un proceso y lo deniegan a los demás hasta que aquel concluya. Sus operaciones son atómicas. Un semáforo debe garantizar exclusión mutua (un solo proceso en la sección crítica), que un proceso fuera de su sección crítica no bloquee a otros y que el que está en ella no bloquee para siempre al resto.
-
-- **Binarios** (0/1): a 1 permiten el acceso a la sección crítica, a 0 lo bloquean. Útiles para exclusión mutua.
-- **N-arios** (0..N): permiten que hasta N procesos trabajen concurrentemente en una tarea no crítica (p. ej. varios lectores).
+La memoria compartida permite que dos o más procesos accedan a una misma zona de memoria, y los semáforos son la herramienta que se usa aquí para sincronizar ese acceso. Exclusión mutua y condiciones de carrera: ver [`TEORIA/10`](../../TEORIA/10-memoria-compartida-y-mutex/).
 
 Esta práctica usa la interfaz **System V IPC**. Los semáforos y la memoria compartida **sobreviven a la muerte de los procesos que los crean**: hay que liberarlos siempre.
 
@@ -15,7 +10,7 @@ Esta práctica usa la interfaz **System V IPC**. Los semáforos y la memoria com
 
 `ipcs` (lista los recursos IPC: memoria compartida, semáforos, colas de mensajes), `ipcrm` (elimina un recurso IPC por id), `lsipc`.
 
-## Clave común: `ftok`
+## Claves: `ftok`
 
 ```c
 #include <sys/types.h>
@@ -23,151 +18,107 @@ Esta práctica usa la interfaz **System V IPC**. Los semáforos y la memoria com
 key_t ftok(const char *path, int proj_id);
 ```
 
-Convierte una ruta de fichero existente y un entero en una `key_t` (un `long`). Todos los procesos que comparten el recurso deben usar el **mismo fichero y el mismo entero**. Alternativa: `IPC_PRIVATE` como clave (el creador debe comunicar el id resultante).
+Convierte una ruta de fichero existente y un entero en una `key_t` (un `long`). Todos los procesos que comparten el recurso deben usar el **mismo fichero y el mismo entero**. Alternativa: `IPC_PRIVATE` como clave, el creador debe comunicar el id resultante a los que quieran usarlo.
+
+Esta misma clave identifica memoria compartida, semáforos y también colas de mensajes (ver [P7](../07-colas-de-mensajes/)): son recursos independientes, cada uno con su propio identificador, pero localizables por la misma pareja fichero + entero.
 
 ## Memoria compartida
 
-Varios procesos vinculan (`shmat`) el mismo segmento y obtienen un puntero a la misma zona física; a partir de ahí trabajan con memoria normal, sin llamadas al sistema:
-
-```mermaid
-flowchart TD
-    SEG[["segmento de memoria compartida<br/>(kernel, clave común vía ftok)"]]
-    A["proceso A<br/>shmget → shmat → puntero"] <--> SEG
-    B["proceso B<br/>shmget → shmat → puntero"] <--> SEG
-    C["proceso C<br/>shmget → shmat → puntero"] <--> SEG
-
-    classDef nucleo fill:#d9d9d9,stroke:#555,color:#222;
-    classDef procA fill:#cfe2f3,stroke:#2b6f99,color:#222;
-    classDef procB fill:#d9ead3,stroke:#3a7a3a,color:#222;
-    classDef procC fill:#fce5a8,stroke:#a06a1a,color:#222;
-
-    class SEG nucleo;
-    class A procA;
-    class B procB;
-    class C procC;
-```
-
-### `shmget` — crear / obtener
+### Crear — `shmget`
 
 ```c
 #include <sys/ipc.h>
 #include <sys/shm.h>
-int shmget(key_t key, int size, int shmflg);
+int shmget(key_t key, size_t size, int shmflg);
 ```
 
 - `key`: clave (de `ftok` o `IPC_PRIVATE`).
 - `size`: tamaño del segmento en bytes.
-- `shmflg`: OR de permisos (`0640`, `SHM_R`, `SHM_W`) y opciones: `IPC_CREAT` (crea si no existe), `IPC_EXCL` (con `IPC_CREAT`, falla si ya existe).
-- **Devuelve** el identificador del segmento, o `-1` y `errno` (`EEXIST` = ya existía).
+- `shmflg`: permisos (`0640`, `SHM_R`, `SHM_W`) y opciones: `IPC_CREAT` (crea si no existe), `IPC_EXCL` (con `IPC_CREAT`, falla si ya existe).
+- **Devuelve** el identificador del segmento, o `-1` y en `errno` (`EEXIST` = ya existía).
 
+Crear memoria compartida para 100 enteros
 ```c
-int shmid = shmget(IPC_PRIVATE, sizeof(int),
-                   IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
-if (shmid == -1) perror("shmget");
+key_t clave = ftok("/etc", 33);
+int shmid = shmget(clave, 100 * sizeof(int), IPC_CREAT | 0600);
 ```
 
-### `shmat` — vincular
+### Adjuntar — `shmat`
 
 ```c
 #include <sys/shm.h>
 void *shmat(int shmid, const void *shmaddr, int shmflg);
 ```
 
-Asocia el segmento al espacio del proceso. `shmaddr` normalmente `NULL` (lo elige el SO, igual dirección lógica en todos los procesos). `shmflg & SHM_RDONLY` para sólo lectura.
+Asocia la memoria compartida al proceso y nos da un puntero a él.
+
+- `shmid`: identificador devuelto por `shmget`.
+- `shmaddr`: normalmente `NULL` (para que elija dirección el SO).
+- `shmflg`: normalmente `0`; `SHM_RDONLY` para adjuntarlo solo lectura.
 
 - **Devuelve** la dirección de comienzo del segmento, o `(void *) -1` y `errno` si hay error.
 
 ```c
-int *entero = (int *) shmat(shmid, NULL, 0);
-if (entero == (int *) -1) { perror("shmat"); return -1; }
-*entero = 10;
+int *enteros = (int *) shmat(shmid, NULL, 0);
+enteros[5] = 10; /* ponemos la posición 6 a 10 */
 ```
 
-### `shmdt` — desvincular
+Al terminar, el proceso desvincula automáticamente todo lo que tuviera adjuntado. Para desvincular manualmente se utiliza `shmdt()`
 
-```c
-#include <sys/shm.h>
-int shmdt(const void *shmaddr);
-```
-
-Desvincula el segmento del proceso. **Devuelve** `0` o `-1` y `errno`.
-
-### `shmctl` — control / eliminación
+### Borrar — `shmctl`
 
 ```c
 #include <sys/shm.h>
 int shmctl(int shmid, int cmd, struct shmid_ds *buff);
 ```
 
-- `cmd`: `IPC_STAT` (lee la estructura de control), `IPC_SET` (actualiza uid/gid/mode), `IPC_RMID` (elimina el segmento; efectivo cuando el último proceso lo desvincula), `SHM_LOCK` / `SHM_UNLOCK`.
+Borra la memoria compartida (se hace efectivo cuando el último proceso que la usa se desvincula).
+
+- `cmd`: `IPC_RMID` para borrarla; también admite `IPC_STAT` (lee la estructura de control) e `IPC_SET` (actualiza uid/gid/mode).
 - **Devuelve** `0` o `-1` y `errno`.
 
 ```c
-if (shmctl(shmid, IPC_RMID, NULL) == -1) perror("shmctl IPC_RMID");
+shmctl(shmid, IPC_RMID, NULL);
 ```
 
 ## Semáforos
 
-Un semáforo binario protege la sección crítica (p. ej. la escritura en la memoria compartida): `semop(-1)` para entrar, `semop(+1)` para salir.
+Concepto de wait/signal, semáforos binarios/n-arios y las garantías que debe cumplir un semáforo: ver [`TEORIA/10`](../../TEORIA/10-memoria-compartida-y-mutex/#semáforos-wait-y-signal).
 
-```mermaid
-flowchart TD
-    W["semop(sem, -1)  ·  WAIT / P"] --> Q{"¿semáforo ≥ 0?"}
-    Q -->|sí| CS["SECCIÓN CRÍTICA<br/>(acceso exclusivo a la memoria compartida)"]
-    Q -->|no| BL["proceso bloqueado en la cola del semáforo"]
-    BL -. otro proceso hace signal .-> CS
-    CS --> S["semop(sem, +1)  ·  SIGNAL / V<br/>(despierta a un proceso bloqueado)"]
-
-    classDef accion fill:#cfe2f3,stroke:#2b6f99,color:#222;
-    classDef decision fill:#fce5a8,stroke:#a06a1a,color:#222;
-    classDef critica fill:#d9ead3,stroke:#3a7a3a,color:#222;
-    classDef bloqueado fill:#fbe0e0,stroke:#a04040,color:#222;
-
-    class W,S accion;
-    class Q decision;
-    class CS critica;
-    class BL bloqueado;
-```
-
-### `semget` — obtener un array de semáforos
+### Crear e inicializar — `semget` y `semctl`
 
 ```c
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 int semget(key_t key, int nsems, int semflg);
+int semctl(int semid, int semnum, int cmd, ...);
 ```
 
-- `nsems`: número de semáforos del array.
-- `semflg`: permisos en octal (`0640`) OR `IPC_CREAT`.
-- **Devuelve** el identificador del array, o `-1` y `errno`.
+- `semget` crea un array de `nsems` semáforos, sin inicializar su valor.
+- `semctl` con `SETVAL` fija ese valor inicial; `semnum` es el índice del semáforo dentro del array.
+- `nsems`: número de semáforos del array; en esta práctica basta con `1`.
+- `semflg`: permisos en octal (`0640`) e `IPC_CREAT`.
+- **Devuelven** el identificador del array (`semget`) o con error `-1` y `errno`.
 
-### `semctl` — inicialización y control
+Crear un semáforo con valor inicial 1 ("libre"):
 
 ```c
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-int semctl(int semid, int semnum, int cmd, ... /* union semun arg */);
-
-union semun {
-    int             val;
-    struct semid_ds *buf;
-    unsigned short  *array;
-};
+int id_sem = semget(clave, 1, 0640 | IPC_CREAT); /* crea un semáforo */
+semctl(id_sem, 0, SETVAL, 1); /* fija el valor del primer semáforo (el único que hay) a 1 */
 ```
 
-- `semnum`: índice del semáforo dentro del array (empieza en 0).
-- `cmd`: `SETVAL` (fija el valor a `arg.val`), `GETVAL` (devuelve el valor actual), `IPC_RMID` (elimina el conjunto; `semnum` se ignora).
-- **Devuelve** según el comando, o `-1` y `errno`.
+### Borrar — `semctl`
+
+Elimina el grupo semafórico; `semnum` se ignora.
 
 ```c
-union semun arg;
-arg.val = 1;                          /* valor inicial: "verde" */
-semctl(id_semaforo, 0, SETVAL, arg);  /* semáforo 0 del array = 1 */
+semctl(id_sem, 0, IPC_RMID);
 ```
 
-### `semop` — operaciones wait / signal
+### Acquire — `semop`
+
+Un **acquire** comprueba primero el valor del semáforo: si es 1 o más, le resta 1 y el proceso sigue; si ya vale 0, no resta nada y el proceso se queda bloqueado hasta que otro proceso haga un release (que sumará 1 al valor).
 
 ```c
 #include <sys/types.h>
@@ -177,33 +128,44 @@ int semop(int semid, struct sembuf *sops, unsigned nsops);
 
 struct sembuf {
     unsigned short sem_num;   /* índice del semáforo */
-    short          sem_op;    /* -1 = wait, +1 = signal */
+    short          sem_op;    /* -1 = acquire, +1 = release */
     short          sem_flg;   /* 0, IPC_NOWAIT, SEM_UNDO */
 };
 ```
 
-- `sem_op` negativo = operación **wait**: si el semáforo se volvería negativo, el proceso se bloquea hasta que otro lo incremente. `sem_op` positivo = operación **signal**: suma ese valor. Las operaciones de `sops` se realizan de forma atómica.
-- **Devuelve** `0` o `-1` y `errno`.
+`semop` (tanto en acquire como en release) **devuelve** `0` o `-1` y `errno`.
 
 ```c
-struct sembuf accion;
-accion.sem_num = 0;
-accion.sem_flg = 0;
-
-accion.sem_op = -1;  semop(id_semaforo, &accion, 1);   /* WAIT: entrar en sección crítica */
-/* ... sección crítica sobre la memoria compartida ... */
-accion.sem_op =  1;  semop(id_semaforo, &accion, 1);   /* SIGNAL: salir */
+struct sembuf accion = { .sem_num = 0, .sem_op = -1 };
+semop(id_sem, &accion, 1);   /* acquire: entrar en sección crítica */
 ```
 
-### Eliminación
+### Release — `semop`
+
+Un **release** libera el semáforo: suma 1 y, si había algún proceso bloqueado en un acquire, lo despierta.
 
 ```c
-semctl(id_semaforo, 0, IPC_RMID);   /* elimina el grupo semafórico */
+struct sembuf accion = { .sem_num = 0, .sem_op = 1 };
+semop(id_sem, &accion, 1);   /* release: salir de la sección crítica */
 ```
 
 ## Ejercicios propuestos
 
-1. Programa `memoria clave tamano` que cree una zona de memoria compartida de enteros del tamaño indicado, con la clave indicada, y permanezca en ejecución hasta que se pulse `Ctrl-C`; al recibir la señal libera la memoria compartida y finaliza ordenadamente.
-2. Programa `escribir clave posicion valor` que acceda a la memoria compartida identificada por `clave` y actualice el entero `posicion`-ésimo al valor `valor`. Tener en cuenta que el acceso puede entrar en conflicto con otras lecturas/escrituras en curso.
-3. Programa `leer clave posicion` que acceda a la memoria compartida `clave`, obtenga el entero `posicion`-ésimo y lo imprima por pantalla (con las mismas precauciones de concurrencia).
-4. Programa `inicializar clave valor tamano` que inicialice toda la memoria compartida con `valor` (con las mismas precauciones de concurrencia).
+Los siguientes tres ejercicios son **sin semáforos**: usan memoria compartida pero no protegen el acceso concurrente.
+
+1. Programa `memoria clave n` que cree una zona de memoria compartida para `n` enteros (`int compartidos[n]`) con la clave indicada, y quede en ejecución mostrando cada 5 segundos la suma de esos valores. Al pulsar `Ctrl-C`, destruye la memoria compartida y termina.
+2. Programa `escribir clave pos valor` que acceda a la memoria compartida identificada por `clave` y haga `compartidos[pos] = valor`.
+3. Programa `leer clave pos` que acceda a la memoria compartida `clave` y muestre `compartidos[pos]`.
+
+4. Programa `banco clave` que cree una memoria compartida con 3 `long` (el saldo de 3 cuentas, inicializadas a 1000 cada una) y quede en ejecución mostrando cada segundo la suma de las tres cuentas: el total del banco, que debería mantenerse constante. Al pulsar `Ctrl-C`, destruye la memoria compartida y termina.
+
+   Programa `transferencia clave` que elija al azar dos cuentas distintas y una cantidad, resta esa cantidad de una cuenta y la suma a la otra, **sin ninguna protección**. Lanza 100 copias a la vez:
+
+   ```bash
+   for i in $(seq 100); do ./transferencia clave & done
+   ```
+
+   y observa cómo el total que muestra `banco` deja de ser constante: al no ser atómica la transferencia (leer, restar, sumar, escribir), dos transferencias que tocan la misma cuenta a la vez pueden pisarse y perder dinero (o crearlo).
+
+   Mejora el ejercicio con un semáforo: `banco` lo crea (junto con la memoria compartida) y lo borra al terminar; `transferencia` hace toda la operación —leer las dos cuentas, restar, sumar, escribir— dentro de un único `acquire`/`release`. Repite la prueba con 100 transferencias concurrentes y comprueba que ahora el total no cambia.
+

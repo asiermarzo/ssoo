@@ -9,6 +9,8 @@ Práctica asociada: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaf
 - Necesidad de sincronizar el acceso: exclusión mutua.
 - Mutex y semáforos como mecanismo de protección de la región compartida.
 - Mutex POSIX (`pthread_mutex_*`) y semáforos POSIX (`sem_open`/`sem_wait`/`sem_post`), con y sin nombre, compartidos entre procesos.
+- Semáforos binarios (0/1, exclusión mutua) y n-arios (0..N, hasta N procesos concurrentes).
+- Operaciones atómicas `wait`/`P` y `signal`/`V`, y las tres condiciones que debe garantizar un semáforo.
 
 ## Memoria compartida y exclusión mutua
 
@@ -69,6 +71,34 @@ flowchart TB
 ```
 
 *Compartir memoria aporta velocidad. El mutex aporta el orden necesario para que esa velocidad no produzca resultados incoherentes.*
+
+## Semáforos: wait y signal
+
+Un semáforo es la generalización del mutex: un contador con dos operaciones atómicas, **wait/P** (decrementa; si el contador quedaría negativo, bloquea al proceso) y **signal/V** (incrementa y despierta a un proceso bloqueado, si lo hay). Debe garantizar tres cosas: exclusión mutua (solo un proceso en la sección crítica), que un proceso fuera de su sección crítica no bloquee a otros, y que el que está dentro no bloquee para siempre al resto.
+
+- **Binarios** (0/1): a 1 permiten el acceso a la sección crítica, a 0 lo bloquean. Es el caso particular que equivale a un mutex.
+- **N-arios** (0..N): permiten que hasta N procesos trabajen a la vez en una tarea no crítica (p. ej. varios lectores).
+
+```mermaid
+flowchart TD
+    W["wait / P  ·  decrementa"] --> Q{"¿semáforo ≥ 0?"}
+    Q -->|sí| CS["SECCIÓN CRÍTICA<br/>(acceso exclusivo al recurso compartido)"]
+    Q -->|no| BL["proceso bloqueado en la cola del semáforo"]
+    BL -. otro proceso hace signal .-> CS
+    CS --> S["signal / V  ·  incrementa<br/>(despierta a un proceso bloqueado)"]
+
+    classDef accion fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef decision fill:#fce5a8,stroke:#a06a1a,color:#222;
+    classDef critica fill:#d9ead3,stroke:#3a7a3a,color:#222;
+    classDef bloqueado fill:#fbe0e0,stroke:#a04040,color:#222;
+
+    class W,S accion;
+    class Q decision;
+    class CS critica;
+    class BL bloqueado;
+```
+
+*Un mutex es el caso particular de un semáforo binario usado para exclusión mutua.*
 
 ## El mismo segmento en dos espacios de direcciones
 
