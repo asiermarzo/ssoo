@@ -334,4 +334,4 @@ Información adicional: [Seagate — modos RAID](http://www.seagate.com/es/es/ma
 
 ## Material gráfico
 
-Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo): fotos de cabinas y *enclosures* RAID. Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E, 50, 100) se resumen en la tabla de niveles.
+Las figuras de este tema están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo): fotos de cabinas y *enclosures* RAID. Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E, 50, 100) se resumen en la tabla de niveles.

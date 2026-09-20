@@ -46,7 +46,3 @@ Los procesos preparados forman una cola circular. Cada uno recibe la CPU por un 
 ---
 
 Más detalle (niveles de planificación, dispatcher, tipos de planificación, criterios de evaluación, FCFS, SJN/SJF, SRJF, colas múltiples, multiprocesador, y la planificación clásica en UNIX/Linux/Windows/macOS): [`material_adicional.md`](material_adicional.md).
-
----
-
-Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

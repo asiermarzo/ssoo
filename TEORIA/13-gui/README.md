@@ -80,5 +80,3 @@ flowchart TB
 ```
 
 *X11 distribuye el dibujo y los eventos mediante un servidor gráfico. En Wayland, el compositor coordina directamente clientes, entrada y presentación.*
-
-Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

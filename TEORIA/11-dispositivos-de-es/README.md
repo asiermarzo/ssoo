@@ -256,4 +256,4 @@ Como la memoria es mucho más rápida que el disco y los bloques más frecuentes
 
 ## Material gráfico
 
-Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo): las fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD y el render 3D del disco con pistas y sectores.
+Las figuras de este tema están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo): las fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD y el render 3D del disco con pistas y sectores.

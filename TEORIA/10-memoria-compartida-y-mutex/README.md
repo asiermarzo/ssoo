@@ -78,4 +78,4 @@ Cada proceso conserva su memoria privada, pero el kernel puede mapear (`mmap`) e
 
 *Cada proceso conserva su memoria privada, pero el kernel puede mapear el mismo segmento físico dentro de varios espacios de direcciones.*
 
-Detalle en la práctica: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaforos/). Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Detalle en la práctica: [`PRACTICA/06`](../../PRACTICA/06-memoria-compartida-y-semaforos/).

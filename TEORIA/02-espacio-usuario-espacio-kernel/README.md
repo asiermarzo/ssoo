@@ -81,6 +81,3 @@ La llamada al sistema se comporta como una ventanilla segura: la aplicación ent
 
 Un kernel monolítico reúne muchos servicios en un mismo espacio privilegiado; un microkernel conserva solo los mecanismos esenciales y delega el resto a procesos aislados que se comunican por mensajes.
 
----
-
-Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

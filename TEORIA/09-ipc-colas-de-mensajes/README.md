@@ -62,4 +62,4 @@ flowchart TB
 
 *Las colas POSIX son objetos administrados por el sistema operativo, con límites de tamaño, persistencia y operaciones bloqueantes o no bloqueantes.*
 
-Detalle en la práctica: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/). Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).
+Detalle en la práctica: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).

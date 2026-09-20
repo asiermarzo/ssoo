@@ -554,4 +554,4 @@ Con 4 marcos:
 
 ## Material gráfico
 
-Las figuras de los Temas 5 y 6 están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo): el símil del aparcamiento y las capturas de las herramientas de gestión de memoria de Windows y Linux.
+Las figuras de los Temas 5 y 6 están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo): el símil del aparcamiento y las capturas de las herramientas de gestión de memoria de Windows y Linux.

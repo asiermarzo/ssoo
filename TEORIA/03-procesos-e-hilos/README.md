@@ -199,6 +199,3 @@ stateDiagram-v2
 ## Hilos y procesos en Linux
 
 Detalle de implementación (estados de un proceso en UNIX, `task_struct`, estados en Linux, `fork()`/`wait()`, hilos POSIX): [`material_adicional.md`](material_adicional.md).
-
-
-Figuras catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md).

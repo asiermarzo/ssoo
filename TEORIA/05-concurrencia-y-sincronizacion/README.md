@@ -481,4 +481,4 @@ Una asignación concreta de recursos a procesos se representa con un grafo en el
 
 ## Material gráfico
 
-Las figuras de este tema están integradas en el texto y catalogadas en [`TEORIA/IMAGENES.md`](../IMAGENES.md). Queda como **material fotográfico** adicional (ilustrativo, no reproducible): la lámina de los filósofos monjes, los *clipart* de lectores‑escritores, las fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo».
+Las figuras de este tema están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo, no reproducible): la lámina de los filósofos monjes, los *clipart* de lectores‑escritores, las fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo».
