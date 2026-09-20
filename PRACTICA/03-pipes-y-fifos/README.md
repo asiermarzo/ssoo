@@ -1,103 +1,58 @@
 # P3 — Pipes y fifos
 
-## Descripción general
-
-Las **tuberías** (*pipes*) son un mecanismo de comunicación entre procesos por paso de mensajes: la salida de un proceso se convierte en la entrada de otro. El sistema operativo las implementa con un búfer y política FIFO.
-
-- **Pipes** (tuberías sin nombre): sólo comunican procesos con un ancestro común (padre- hijo, hijo-hijo) y de forma unidireccional. Se crea la pipe **antes** del `fork` para que los hijos hereden sus descriptores.
-- **FIFOs** (tuberías con nombre): son un fichero especial persistente; comunican procesos cualesquiera, sin parentesco.
-
-Cada proceso cierra el descriptor (lectura o escritura) que no va a usar. Al leer se obtiene **EOF** cuando se han cerrado **todos** los descriptores de escritura de esa pipe. Si se escribe cuando el extremo lector está cerrado se genera `SIGPIPE`.
-
-`read` y `write` son **bloqueantes** por defecto: leer de una pipe vacía bloquea hasta que haya datos; escribir en una pipe llena bloquea hasta que haya espacio. `PIPE_BUF` es el número máximo de bytes que se escriben atómicamente.
-
-## Comandos comunes
-
-`mkfifo <ruta>` (crea una FIFO desde la shell), `rm` (la borra), `ls -l` (una FIFO aparece con tipo `p`), el operador `|` de la shell (encadena la salida/entrada estándar de comandos).
 
 ## `pipe`
 
 ```c
 #include <unistd.h>
-int pipe(int filedescriptor[2]);
+int pipe(int fds[2]);
 ```
 
-Crea la tubería: `filedescriptor[0]` es el extremo de **lectura** y `filedescriptor[1]` el de **escritura**. Lo escrito en `[1]` se lee en `[0]`.
+- `fds`: array de 2 enteros que rellenará la función `pipe`; `fds[0]` tendrá el file descriptor de lectura, `fds[1]` para escritura.
+- Devuelve `0` si todo fue bien, `-1` (con `errno`) si hubo error.
 
-- **Devuelve** `0` si correcto, `-1` y `errno` si hay error.
-
-Tras `pipe` + `fork`, ambos procesos tienen los dos extremos abiertos; cada uno cierra el que no usa para que el flujo sea unidireccional y se detecte el EOF:
-
-```mermaid
-flowchart LR
-    subgraph Padre["proceso padre · lector"]
-        direction TB
-        PR["read por el extremo de lectura"]
-        PC["close del extremo de escritura"]
-    end
-    subgraph Hijo["proceso hijo · escritor"]
-        direction TB
-        HW["write por el extremo de escritura"]
-        HC["close del extremo de lectura"]
-    end
-    HW ==>|"write"| BUF[["búfer FIFO del kernel (la tubería)"]]
-    BUF ==>|"read"| PR
-
-    classDef lector fill:#d9ead3,stroke:#3a7a3a,color:#222;
-    classDef escritor fill:#cfe2f3,stroke:#2b6f99,color:#222;
-    classDef nucleo fill:#d9d9d9,stroke:#555,color:#222;
-
-    class PR,PC lector;
-    class HW,HC escritor;
-    class BUF nucleo;
-    style Padre fill:none,stroke-dasharray: 5 5;
-    style Hijo fill:none,stroke-dasharray: 5 5;
-```
+Ejemplo completo: el hijo escribe por la pipe una agenda y el padre los lee una a uno.
 
 ```c
 #include <stdio.h>
 #include <unistd.h>
-#include <string.h>
 #include <stdlib.h>
+
+typedef struct {
+    char nombre[32];
+    char apellido[32];
+    int edad;
+    char telefono[9];
+} contacto_t;
 
 int main(void) {
     int tuberia[2];
     pipe(tuberia);
-    if (fork() == 0) {                     /* hijo: escribe */
-        char *cadena = "Hola mundo";
-        close(tuberia[0]);
-        write(tuberia[1], cadena, strlen(cadena) + 1);
-        close(tuberia[1]);
+
+    if (fork() == 0) { // rama hijo
+        close(tuberia[0]); // cierra lectura, solo escribe
+        contacto_t agenda[3] = {
+            {"Ana",   "Garcia", 30, "645111222"},
+            {"Luis",  "Perez",  21, "633333444"},
+            {"Marta", "Lopez",  41, "612555666"}
+        };
+        write(tuberia[1], agenda, sizeof(agenda));
         exit(0);
-    } else {                               /* padre: lee */
-        char buffer[100];
-        close(tuberia[1]);
-        read(tuberia[0], buffer, 100);
-        printf("Mensaje leído: %s\n", buffer);
-        close(tuberia[0]);
-        exit(0);
+    }
+
+    // rama padre
+    close(tuberia[1]); // cierra escritura, solo lee
+    for (contacto_t p;;) {
+        int leidos = read(tuberia[0], &p, sizeof(p));
+        if (leidos <= 0) break;
+        printf("%s %s, %d años, tel. %s\n",
+               p.nombre, p.apellido, p.edad, p.telefono);
     }
 }
 ```
 
-## `fcntl` — lectura/escritura no bloqueante
-
-```c
-#include <unistd.h>
-#include <fcntl.h>
-int fcntl(int fd, int cmd);
-int fcntl(int fd, int cmd, long arg);
-```
-
-- `F_GETFL`: lee las banderas del descriptor.
-- `F_SETFL`: fija las banderas de situación (`O_APPEND`, `O_NONBLOCK`, `O_ASYNC`, `O_DIRECT`).
-
-```c
-fcntl(mi_tuberia[0], F_SETFL, O_NONBLOCK);   /* lectura no bloqueante */
-fcntl(mi_tuberia[1], F_SETFL, O_NONBLOCK);   /* escritura no bloqueante */
-```
-
 ## `mkfifo` — tuberías con nombre
+
 
 ```c
 #include <sys/types.h>
@@ -105,87 +60,171 @@ fcntl(mi_tuberia[1], F_SETFL, O_NONBLOCK);   /* escritura no bloqueante */
 int mkfifo(const char *pathname, mode_t modo);
 ```
 
-- `pathname`: ruta de la FIFO; `modo`: máscara de permisos.
-- Apertura, cierre, borrado, lectura y escritura son como en ficheros (`open`, `close`, `unlink`, `read`, `write`).
-- Apertura **bloqueante**: `open(fifo, O_WRONLY)` bloquea hasta que otro proceso la abra para lectura, y viceversa. Con `O_NONBLOCK`, un `open` de lectura retorna de inmediato y uno de sólo escritura da error si no hay lector.
-- Es **persistente**: hay que eliminarla al terminar (`unlink` / `remove` / `rm`).
+- `pathname`: ruta donde se crea la FIFO.
+- `modo`: permisos, como en `chmod` (p. ej. `0660`).
+- Devuelve `0` si todo fue bien, `-1` (con `errno`) si hubo error (por ejemplo, si ya existe).
+
+También es habitual crear y borrar FIFOs directamente desde la shell, sin pasar por `mkfifo()`/`unlink()` en el código: `mkfifo mififo` la crea, `rm mififo` la borra.
+
+Ejemplo completo: la FIFO se crea desde la shell (`mkfifo /tmp/aleatorios`) y su ruta se pasa por parámetro a los programas. `generador.c` escribe un `long` al azar cada segundo y `lector.c` los va leyendo e imprimiendo; al intercambiar los números en binario (en vez de como texto) no hace falta formatear ni parsear cadenas. Se pueden lanzar varias copias de `generador` a la vez.
 
 ```c
+// generador.c
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#define NOMBREFIFO "mififo"
-#define TAM_BUF 100
-int main(void) {
-    char buffer[TAM_BUF];
-    mkfifo(NOMBREFIFO, 0660);
+#include <time.h>
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) { fprintf(stderr, "Uso: %s <fifo>\n", argv[0]); return 1; }
+
+    srand(time(NULL) ^ getpid()); //semilla rand depende de tiempo y proceso
+    int fp = open(argv[1], O_WRONLY);
     for (;;) {
-        int fp = open(NOMBREFIFO, O_RDONLY);
-        int nbytes = read(fp, buffer, TAM_BUF - 1);
-        buffer[nbytes] = '\0';
-        printf("Cadena recibida: %s\n", buffer);
-        close(fp);
+        long numero = rand();
+        write(fp, &numero, sizeof(numero));
+        sleep(1);
     }
-    return 0;
 }
 ```
 
-## `select` — atención a varios canales
-
 ```c
-#include <sys/select.h>
-int select(int nfds, fd_set *readfds, fd_set *writefds,
-           fd_set *errorfds, struct timeval *timeout);
+// lector.c
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) { fprintf(stderr, "Uso: %s <fifo>\n", argv[0]); return 1; }
+
+    int fp = open(argv[1], O_RDONLY); 
+    for (long numero; read(fp, &numero, sizeof(numero)) > 0;) {
+        printf("recibido: %ld\n", numero);
+    }
+}
 ```
 
-Indica qué descriptores están listos para lectura, escritura o han producido un error. Si ninguno lo está, bloquea hasta que venza `timeout` (si es `NULL`, bloquea indefinidamente).
-
-- `nfds`: el descriptor más alto a vigilar **más uno**.
-- `readfds` / `writefds` / `errorfds`: conjuntos de descriptores.
-- Al retornar, modifica los conjuntos para indicar cuáles tienen actividad → hay que reinicializarlos antes de cada llamada.
-
-Macros para manejar los `fd_set`: `FD_ZERO(&s)` (vacía), `FD_SET(fd, &s)` (añade), `FD_CLR(fd, &s)` (quita), `FD_ISSET(fd, &s)` (comprueba tras `select`).
-
-```c
-fd_set lectura;
-FD_ZERO(&lectura);
-FD_SET(fd1, &lectura);
-FD_SET(fd2, &lectura);
-select(maximo + 1, &lectura, NULL, NULL, NULL);
-if (FD_ISSET(fd1, &lectura)) { /* ... */ }
+```bash
+mkfifo /tmp/aleatorios
+./lector /tmp/aleatorios &
+./generador /tmp/aleatorios &
+./generador /tmp/aleatorios &   # se pueden lanzar tantos como se quiera
 ```
 
-## Redirección a la E/S estándar: `dup` / `dup2`
+## Redirección entre file descriptors: `dup2`
 
 ```c
 #include <unistd.h>
-int dup(int oldfd);           /* duplica sobre el primer descriptor libre */
-int dup2(int oldfd, int newfd); /* duplica sobre newfd (lo cierra antes si estaba abierto) */
+int dup2(int b, int a);
 ```
 
-- **Devuelven** el nuevo descriptor, o `-1` si hay error.
+Piénsalo como `a --> b`: a partir de la llamada, todo lo que se escriba (o lea) usando el descriptor `a` va en realidad a parar a `b`.
 
+- `b`: descriptor ya abierto, será el destino real.
+- `a`: descriptor que se sobrescribe.
+
+La implicación importante: cualquier código que ya use `a` queda afectado. Por ejemplo, `STDOUT_FILENO` (fd 1) apunta normalmente a la consola; si hacemos `dup2(fichero, STDOUT_FILENO)`, los `printf` posteriores ya no escriben en pantalla, escriben en `fichero`.
+
+Ejemplo:
 ```c
-if (fork() == 0) {                    /* hijo */
-    close(STDIN_FILENO);
-    dup2(fd[0], STDIN_FILENO);        /* la entrada estándar viene de la pipe */
-    close(fd[0]);
-    execvp(/* ... */);
-    exit(1);
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main(void) {
+    printf("esto se ve en pantalla\n");
+
+    int fichero = open("salida.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    dup2(fichero, STDOUT_FILENO);   // a (STDOUT_FILENO) --> b (fichero)
+    close(fichero);
+
+    printf("esto va al fichero, no a la pantalla\n");
 }
 ```
 
 ## Ejercicios propuestos
 
-1. Programa que cree dos procesos que se comuniquen por tuberías e intercambien diez mensajes. El primer proceso construye un mensaje con un contador de secuencia y su `PID`; lo envía al otro, que lo lee, incrementa la secuencia e introduce su `PID`. Al completar los diez mensajes ambos procesos concluyen ordenadamente con un mensaje de despedida.
+1. Programa que cree una tubería y un `fork()`. El padre genera 10 números aleatorios entre 1 y 3999 y los manda por la tubería (uno por segundo); el hijo los recibe, los convierte a números romanos y los imprime por pantalla. Al terminar los 10, cada uno imprime por su cuenta que acaba y su PID.
+
+   Pista: aquí basta con **una** tubería (el padre solo escribe, el hijo solo lee): tras el `fork`, cada rama cierra el extremo que no usa. Para convertir a número romano, resta repetidamente el valor de cada símbolo, de mayor a menor, imprimiendo el símbolo cada vez que resta:
 
    ```c
-   typedef struct { int secuencia, pid_emisor; } mensaje_t;
+   void imprime_romano(int decimal) {
+       int valores[]     = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+       char *simbolos[]  = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
+       for (int i = 0; i < 13; i++) {
+           for (; decimal >= valores[i]; decimal -= valores[i]) printf("%s", simbolos[i]);
+       }
+       printf("\n");
+   }
    ```
 
-2. Dos programas **independientes** que hagan lo mismo que el ejercicio 1, pero comunicándose mediante una tubería con nombre (FIFO).
-3. Como el ejercicio 1, pero empleando lecturas no bloqueantes y la función `select`.
-4. Programa en C que calcule la sucesión de Fibonacci (`f0 = 0`, `f1 = 1`, `fn = fn-1 + fn-2`) empleando **tres procesos** P1, P2 y P3 con sus mecanismos de comunicación, según el esquema siguiente. P3 va imprimiendo en pantalla los valores obtenidos separados por comas (`0, 1, 1, 2, 3, 5, 8, 13, 21`) al paso de un segundo.
+   Traza de ejecución (PID 4021 = padre, PID 4022 = hijo):
 
-   <img src="img/fibonacci-tres-procesos.svg" width="560" alt="P1 y P2 envían sus valores por pipe a P3, que los combina e imprime la sucesión de Fibonacci por la salida estándar">
+   ```
+   [4021] genera 1994
+   [4022] recibe 1994 -> MCMXCIV
+   [4021] genera 58
+   [4022] recibe 58 -> LVIII
+   [4021] genera 3999
+   [4022] recibe 3999 -> MMMCMXCIX
+   ...
+   [4021] termina, soy el proceso 4021
+   [4022] termina, soy el proceso 4022
+   ```
+
+2. Programa que cree **dos** tuberías, haga un `fork()` y que padre e hijo hagan pingpong con un `int` diez veces en total (cinco en cada sentido).
+
+   Pista: crea dos tuberías antes del `fork`, `padre_a_hijo` e `hijo_a_padre`. El padre escribe en `padre_a_hijo` y lee de `hijo_a_padre`; el hijo escribe en `hijo_a_padre` y lee de `padre_a_hijo`. El padre manda el primer valor (`1`); a partir de ahí, los dos ejecutan el mismo bucle: reciben un valor, lo incrementan, lo devuelven, y si el valor recibido es `10`, terminan en vez de responder.
+
+  
+
+   Traza de ejecución (PID 4021 = padre, PID 4022 = hijo):
+
+   ```
+   [4021] envía 1
+   [4022] recibe 1 de 4021 -> envía 2
+   [4021] recibe 2 de 4022 -> envía 3
+   [4022] recibe 3 de 4021 -> envía 4
+   [4021] recibe 4 de 4022 -> envía 5
+   [4022] recibe 5 de 4021 -> envía 6
+   [4021] recibe 6 de 4022 -> envía 7
+   [4022] recibe 7 de 4021 -> envía 8
+   [4021] recibe 8 de 4022 -> envía 9
+   [4022] recibe 9 de 4021 -> envía 10
+   [4021] recibe 10 de 4022 -> termina, soy el proceso 4021
+   [4022] termina, soy el proceso 4022
+   ```
+
+     La forma más limpia de organizarlo es con `int fds[2][2]`, creando cada una con `pipe(fds[i])` antes del `fork`: así padre e hijo ejecutan exactamente el mismo código, y lo único que cambia entre ellos es qué índice usa cada uno para escribir y cuál para leer.
+
+3. Programa que calcule la sucesión de Fibonacci (`f0 = 0`, `f1 = 1`, `fn = fn-1 + fn-2`) empleando **tres procesos** P1, P2 y P3 comunicándose por tuberías según el esquema siguiente. P3 va imprimiendo en pantalla los valores obtenidos, uno por segundo.
+
+   ```mermaid
+   flowchart LR
+       P1["P1<br/>f0 = 0"]
+       P2["P2<br/>f1 = 1"]
+       P3["P3<br/>padre"]
+       OUT[["pantalla"]]
+
+       P1 -- p1_p2 --> P2
+       P2 -- p2_p1 --> P1
+       P1 -- p1_p3 --> P3
+       P2 -- p2_p3 --> P3
+       P3 -- stdout --> OUT
+
+       classDef proceso fill:#cfe2f3,stroke:#2b6f99,color:#000;
+       classDef salida fill:#d9d9d9,stroke:#333,color:#000;
+       class P1,P2,P3 proceso;
+       class OUT salida;
+   ```
+
+   P3 es el proceso padre: crea las cuatro tuberías (`p1_p2`, `p2_p1`, `p1_p3`, `p2_p3`) y hace `fork()` dos veces para lanzar a P1 y P2.
+
+   - **P1** guarda el término par, empieza en `f0 = 0`. Manda ese valor por `p1_p3` (a P3) y por `p1_p2` (a P2); luego, en bucle: lee por `p2_p1` el valor que le manda P2, lo suma al que él guardaba, duerme 1 segundo y manda el resultado por `p1_p3` y `p1_p2`.
+   - **P2** guarda el término impar, empieza en `f1 = 1`. Hace lo mismo que P1, pero leyendo de `p1_p2` y escribiendo en `p2_p1` y `p2_p3`.
+   - **P3** en cada vuelta: lee un valor (alternando entre `p1_p3` y `p2_p3`) y lo imprime por pantalla, duerme 1 segundo.
+
+   Traza de P3 (una lectura por segundo): `0, 1, 1, 2, 3, 5, 8, 13, 21,...`

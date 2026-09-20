@@ -23,11 +23,11 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | Procesos e hilos | [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) |
 | Planificación de procesos | [`TEORIA/04`](TEORIA/04-planificacion-de-procesos/) |
 | IPC: pipes y fifos | [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/) |
+| IPC: señales | [`TEORIA/08`](TEORIA/08-ipc-senales/) |
+| IPC: colas de mensajes | [`TEORIA/09`](TEORIA/09-ipc-colas-de-mensajes/) |
 <!-- 
 | Concurrencia y sincronización | [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) |
 | Gestión de memoria | [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) |
-| IPC: señales | [`TEORIA/08`](TEORIA/08-ipc-senales/) |
-| IPC: colas de mensajes | [`TEORIA/09`](TEORIA/09-ipc-colas-de-mensajes/) |
 | Memoria compartida y mutex | [`TEORIA/10`](TEORIA/10-memoria-compartida-y-mutex/) |
 | Dispositivos de E/S | [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) |
 | Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
@@ -42,9 +42,9 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
 | P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos/) |
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
+| P4 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/04`](PRACTICA/04-senales/) |
 Se irán añadiendo temas conforme se avance en la asignatura
 <!-- 
-| P4 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/04`](PRACTICA/04-senales/) |
 | P5 — Minishell | [`PRACTICA/05`](PRACTICA/05-minishell/) |
 | P6 — Memoria compartida y semáforos | [`PRACTICA/06`](PRACTICA/06-memoria-compartida-y-semaforos/) |
 | P7 — Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`PRACTICA/07`](PRACTICA/07-colas-de-mensajes/) |

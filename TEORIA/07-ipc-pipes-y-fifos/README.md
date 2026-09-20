@@ -7,7 +7,8 @@
 - FIFOs con nombre: `mkfifo()`, un fichero especial persistente que conecta procesos sin parentesco.
 - Fin de flujo (`EOF`) y ruptura de la tubería (`SIGPIPE` / `EPIPE`).
 - Lectura y escritura bloqueantes; atomicidad garantizada por `PIPE_BUF`.
-- Pipelines de la shell (`|`) y redirección de descriptores (`dup2`).
+- E/S no bloqueante (`fcntl`, `O_NONBLOCK`) y atención a varios canales con `select`.
+- Pipelines de la shell (`|`) y redirección de descriptores (`dup`, `dup2`).
 - Casos reales: cuándo conviene una pipe y cuándo hace falta una FIFO.
 
 ## Esquema de una pipe
@@ -135,8 +136,46 @@ El búfer del kernel es finito (típicamente 64 KiB en Linux). `read` y `write` 
 
 <img src="img/pipe-bufer-bloqueo.svg" width="560" alt="El escritor llena el búfer del kernel y se bloquea cuando está lleno; el lector vacía el búfer y se bloquea cuando está vacío">
 
-<!-- 
-Con `fcntl(fd, F_SETFL, O_NONBLOCK)` ambas llamadas dejan de bloquear: `read` devuelve `-1`/`EAGAIN` si no hay datos y `write` lo mismo si no hay espacio (o `EAGAIN` en una FIFO sin lector). Para atender varias tuberías a la vez sin bloquearse en ninguna en concreto se usa `select()`, tal como se practica en `PRACTICA/03`. -->
+## E/S no bloqueante: `fcntl` y `O_NONBLOCK`
+
+```c
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...);
+```
+
+`fcntl` consulta o modifica las propiedades de un descriptor ya abierto. Con `F_GETFL` se leen las banderas actuales y con `F_SETFL` se fijan; entre ellas, `O_NONBLOCK` convierte las llamadas bloqueantes en no bloqueantes.
+
+```c
+int banderas = fcntl(fd, F_GETFL);
+fcntl(fd, F_SETFL, banderas | O_NONBLOCK);
+```
+
+Con `O_NONBLOCK` activo, `read()` sobre una pipe vacía devuelve `-1` con `errno = EAGAIN` en lugar de bloquear, y `write()` hace lo mismo si no hay espacio (o si es una FIFO sin lector). Sirve para que un proceso vigile varias tuberías sin quedarse detenido esperando en una sola.
+
+## Atender varios canales: `select`
+
+```c
+#include <sys/select.h>
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+           fd_set *errorfds, struct timeval *timeout);
+```
+
+`select` bloquea hasta que al menos uno de los descriptores vigilados está listo (o vence `timeout`; con `NULL` espera indefinidamente), y así un solo proceso puede atender varias pipes o FIFOs sin recorrerlas una a una con lecturas no bloqueantes.
+
+- `nfds`: el descriptor más alto a vigilar, más uno.
+- `readfds` / `writefds` / `errorfds`: conjuntos de descriptores a vigilar para lectura, escritura y errores.
+- Al retornar, `select` modifica los conjuntos dejando solo los descriptores con actividad: hay que reconstruirlos antes de cada llamada.
+
+Macros para manejar `fd_set`: `FD_ZERO(&s)` vacía el conjunto, `FD_SET(fd, &s)` añade un descriptor, `FD_CLR(fd, &s)` lo quita, `FD_ISSET(fd, &s)` comprueba tras `select` si tuvo actividad.
+
+```c
+fd_set lectura;
+FD_ZERO(&lectura);
+FD_SET(fd1, &lectura);
+FD_SET(fd2, &lectura);
+select(maximo + 1, &lectura, NULL, NULL, NULL);
+if (FD_ISSET(fd1, &lectura)) { /* fd1 tiene datos */ }
+```
 
 ## Pipelines de shell
 
@@ -162,6 +201,14 @@ cat registro.log | grep ERROR | sort | uniq -c
 ```
 
 Cuatro procesos, tres pipes anónimas. La shell hace `fork()` una vez por cada comando y, en cada hijo, antes del `exec`, cierra la entrada estándar (descriptor 0) y la sustituye con `dup2()` por el extremo de lectura de la pipe que lo conecta con el proceso anterior; simétricamente redirige su salida estándar (descriptor 1) al extremo de escritura de la pipe que lo conecta con el siguiente. El primer y el último comando conservan su entrada o salida estándar originales (el teclado y la pantalla del terminal), salvo que además se usen `<` o `>`.
+
+```c
+#include <unistd.h>
+int dup(int oldfd);             /* duplica oldfd sobre el descriptor libre más bajo */
+int dup2(int oldfd, int newfd); /* duplica oldfd sobre newfd, cerrándolo antes si estaba abierto */
+```
+
+Ambas devuelven el nuevo descriptor, o `-1` si hay error. `dup2` es la que se usa para redirigir E/S estándar: a diferencia de `dup`, fija de antemano qué número de descriptor va a tener la copia (`STDIN_FILENO` o `STDOUT_FILENO` en este caso).
 
 ```c
 if (fork() == 0) {                      /* hijo: por ejemplo "grep ERROR" */
