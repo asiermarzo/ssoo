@@ -136,46 +136,6 @@ El búfer del kernel es finito (típicamente 64 KiB en Linux). `read` y `write` 
 
 <img src="img/pipe-bufer-bloqueo.svg" width="560" alt="El escritor llena el búfer del kernel y se bloquea cuando está lleno; el lector vacía el búfer y se bloquea cuando está vacío">
 
-## E/S no bloqueante: `fcntl` y `O_NONBLOCK`
-
-```c
-#include <fcntl.h>
-int fcntl(int fd, int cmd, ...);
-```
-
-`fcntl` consulta o modifica las propiedades de un descriptor ya abierto. Con `F_GETFL` se leen las banderas actuales y con `F_SETFL` se fijan; entre ellas, `O_NONBLOCK` convierte las llamadas bloqueantes en no bloqueantes.
-
-```c
-int banderas = fcntl(fd, F_GETFL);
-fcntl(fd, F_SETFL, banderas | O_NONBLOCK);
-```
-
-Con `O_NONBLOCK` activo, `read()` sobre una pipe vacía devuelve `-1` con `errno = EAGAIN` en lugar de bloquear, y `write()` hace lo mismo si no hay espacio (o si es una FIFO sin lector). Sirve para que un proceso vigile varias tuberías sin quedarse detenido esperando en una sola.
-
-## Atender varios canales: `select`
-
-```c
-#include <sys/select.h>
-int select(int nfds, fd_set *readfds, fd_set *writefds,
-           fd_set *errorfds, struct timeval *timeout);
-```
-
-`select` bloquea hasta que al menos uno de los descriptores vigilados está listo (o vence `timeout`; con `NULL` espera indefinidamente), y así un solo proceso puede atender varias pipes o FIFOs sin recorrerlas una a una con lecturas no bloqueantes.
-
-- `nfds`: el descriptor más alto a vigilar, más uno.
-- `readfds` / `writefds` / `errorfds`: conjuntos de descriptores a vigilar para lectura, escritura y errores.
-- Al retornar, `select` modifica los conjuntos dejando solo los descriptores con actividad: hay que reconstruirlos antes de cada llamada.
-
-Macros para manejar `fd_set`: `FD_ZERO(&s)` vacía el conjunto, `FD_SET(fd, &s)` añade un descriptor, `FD_CLR(fd, &s)` lo quita, `FD_ISSET(fd, &s)` comprueba tras `select` si tuvo actividad.
-
-```c
-fd_set lectura;
-FD_ZERO(&lectura);
-FD_SET(fd1, &lectura);
-FD_SET(fd2, &lectura);
-select(maximo + 1, &lectura, NULL, NULL, NULL);
-if (FD_ISSET(fd1, &lectura)) { /* fd1 tiene datos */ }
-```
 
 ## Pipelines de shell
 
@@ -350,3 +310,48 @@ Para probarlo: con el túnel corriendo, `curl http://localhost:8080/` desde otra
 | Identificación | Ninguna, solo descriptores heredados | Ruta en el sistema de ficheros |
 | Persistencia | Desaparece con el último proceso que la usa | Persiste hasta `unlink`/`rm`, aunque nadie la use |
 | Uso típico | Pipelines de shell, comunicación padre-hijo | Demonios y clientes independientes, "fingir" un fichero ante un programa que lo exige |
+
+
+<details> <summary> no bloqueantes y select (opcional) </summary>
+
+## E/S no bloqueante: `fcntl` y `O_NONBLOCK`
+
+```c
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...);
+```
+
+`fcntl` consulta o modifica las propiedades de un descriptor ya abierto. Con `F_GETFL` se leen las banderas actuales y con `F_SETFL` se fijan; entre ellas, `O_NONBLOCK` convierte las llamadas bloqueantes en no bloqueantes.
+
+```c
+int banderas = fcntl(fd, F_GETFL);
+fcntl(fd, F_SETFL, banderas | O_NONBLOCK);
+```
+
+Con `O_NONBLOCK` activo, `read()` sobre una pipe vacía devuelve `-1` con `errno = EAGAIN` en lugar de bloquear, y `write()` hace lo mismo si no hay espacio (o si es una FIFO sin lector). Sirve para que un proceso vigile varias tuberías sin quedarse detenido esperando en una sola.
+
+## Atender varios canales: `select`
+
+```c
+#include <sys/select.h>
+int select(int nfds, fd_set *readfds, fd_set *writefds,
+           fd_set *errorfds, struct timeval *timeout);
+```
+
+`select` bloquea hasta que al menos uno de los descriptores vigilados está listo (o vence `timeout`; con `NULL` espera indefinidamente), y así un solo proceso puede atender varias pipes o FIFOs sin recorrerlas una a una con lecturas no bloqueantes.
+
+- `nfds`: el descriptor más alto a vigilar, más uno.
+- `readfds` / `writefds` / `errorfds`: conjuntos de descriptores a vigilar para lectura, escritura y errores.
+- Al retornar, `select` modifica los conjuntos dejando solo los descriptores con actividad: hay que reconstruirlos antes de cada llamada.
+
+Macros para manejar `fd_set`: `FD_ZERO(&s)` vacía el conjunto, `FD_SET(fd, &s)` añade un descriptor, `FD_CLR(fd, &s)` lo quita, `FD_ISSET(fd, &s)` comprueba tras `select` si tuvo actividad.
+
+```c
+fd_set lectura;
+FD_ZERO(&lectura);
+FD_SET(fd1, &lectura);
+FD_SET(fd2, &lectura);
+select(maximo + 1, &lectura, NULL, NULL, NULL);
+if (FD_ISSET(fd1, &lectura)) { /* fd1 tiene datos */ }
+```
+</details>
