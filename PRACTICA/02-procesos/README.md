@@ -1,4 +1,4 @@
-# P2 — Procesos e hilos
+# P2 — Procesos
 
 ## Descripción general
 
@@ -20,10 +20,9 @@ Más comandos de gestión de procesos (`ps`, `pstree`, `top`, `kill`, `killall`)
 #include <unistd.h>
 pid_t getpid(void);    /* pid del proceso actual */
 pid_t getppid(void);   /* pid del proceso padre */
-uid_t getuid(void);    /* uid del usuario propietario */
 ```
 
-`pid_t` y `uid_t` son enteros.
+En Linux `pid_t` son `int` pero en otros sistemas podrían ser `long`. 
 
 ### Fichero de ejemplo: [`identificadores.c`](identificadores.c)
 
@@ -34,12 +33,9 @@ uid_t getuid(void);    /* uid del usuario propietario */
 int main(void) {
     printf("PID: %d\n",  getpid());
     printf("PPID: %d\n", getppid());
-    printf("UID: %d\n",  getuid());
     return 0;
 }
 ```
-
-En Linux `pid_t` y `uid_t` son `int` pero en otros sistemas podrían ser `long`. 
 
 ## Creación de procesos: `fork`
 
@@ -173,19 +169,18 @@ int main(void) {
     if (pid == 0) {
         printf("Hijo (%d): termino\n", getpid());
         exit(0);
-    } else {
-        printf("Padre (%d): duermo 30 s sin hacer wait; el hijo %d queda zombie\n", getpid(), pid);
-        sleep(30);
-        wait(NULL);
     }
+    printf("Padre (%d): duermo 30 s sin hacer wait; el hijo %d queda zombie\n", getpid(), pid);
+    sleep(30);
+    wait(NULL);
     return 0;
 }
 ```
 Mientras el padre duerme, abre otra terminal y pon:
 
 ```bash
-ps -o pid,ppid,stat,cmd -C zombie   # STAT = Z, CMD = <defunct>
-top                                 # también aparece con estado Z
+ps -o stat,cmd -C zombie   # STAT = Z, CMD = <defunct>
+top                         # también aparece con estado Z
 ```
 
 Un zombie ya ha terminado, así que no se puede "matar" con `kill`: no hay proceso en ejecución al que enviar la señal, solo queda su entrada en la tabla de procesos (PCB). Para eliminarlo hay que:

@@ -8,10 +8,9 @@ int main(void) {
     if (pid == 0) {
         printf("Hijo (%d): termino\n", getpid());
         exit(0);
-    } else {
-        printf("Padre (%d): duermo 30 s sin hacer wait; el hijo %d queda zombie\n", getpid(), pid);
-        sleep(30);
-        wait(NULL);
     }
+    printf("Padre (%d): duermo 30 s sin hacer wait; el hijo %d queda zombie\n", getpid(), pid);
+    sleep(30);
+    wait(NULL);
     return 0;
 }

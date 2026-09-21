@@ -24,14 +24,11 @@ Una señal puede originarse en tres sitios distintos:
 
 En los tres casos, el proceso destino la recibe de la misma forma: no distingue si el aviso viene del hardware, del kernel o de otro proceso.
 
-## Tabla de señales
+## Tabla de señales más comunes
 
 | Señal | Valor | Acción por defecto | ¿Capturable? |
 |-------|-------|--------------------|--------------|
-| `SIGHUP`  | 1  | Term | Sí |
 | `SIGINT`  | 2  | Term | Sí |
-| `SIGQUIT` | 3  | Core | Sí |
-| `SIGILL`  | 4  | Core | Sí |
 | `SIGFPE`  | 8  | Core | Sí |
 | `SIGKILL` | 9  | Term | **No** |
 | `SIGSEGV` | 11 | Core | Sí |
@@ -43,7 +40,6 @@ En los tres casos, el proceso destino la recibe de la misma forma: no distingue 
 | `SIGCHLD` | 17 | Ign  | Sí |
 | `SIGCONT` | 18 | Cont | Sí |
 | `SIGSTOP` | 19 | Stop | **No** |
-| `SIGTSTP` | 20 | Stop | Sí |
 
 Acciones por defecto: **Term** (terminar), **Ign** (ignorar), **Core** (terminar + volcado de memoria), **Stop** (pausar), **Cont** (continuar si estaba pausado). Más información: `man 7 signal`.
 
@@ -88,7 +84,7 @@ void manejador(int senal) {
 int main(void) {
     signal(SIGUSR1, manejador); //también vale signal(SIGUSR1, &manejador);
     for (;;) {
-        pause();               /* duerme hasta que llegue cualquier señal */
+        pause(); //duerme hasta que llegue una señal
     }
 }
 ```
