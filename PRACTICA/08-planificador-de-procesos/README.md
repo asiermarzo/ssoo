@@ -1,7 +1,5 @@
 # P8 — Planificador de procesos
 
-Construcción de un planificador de procesos mediante colas de múltiples niveles. **Entrega evaluable** (curso 2025/26: 28/11/2025).
-
 ## Descripción general
 
 Construir un planificador (*scheduler*) de procesos **a alto nivel, basado en señales**, que implementa un sistema de colas de **tres niveles NO APROPIATIVOS**:
@@ -68,14 +66,4 @@ VALOR DEVUELTO
 
 ## Llamadas al sistema útiles
 
-`kill(1)`, `kill(2)`, `sigaction(2)`, `signal(2)`, `signal(7)`, `sleep(2)`/`sleep(3)`, `raise(3)`, `nanosleep(2)`, `pause(2)`, `alarm(2)`, `execvp(3)`, `fork(2)`, `wait(2)`. Ver [P2](../02-procesos/), [P4](../04-senales/) y [P7](../07-colas-de-mensajes/) para sus descripciones.
-
-Se sugiere emplear la biblioteca `fragmenta.o` usada en [P5](../05-minishell/).
-
-## Entrega
-
-El comprimido debe incluir el `Makefile` provisto y todos los `.c` y `.h` necesarios para crear `procsched`. `make` sin argumentos debe crear el ejecutable `procsched`. Para la corrección se borran los ejecutables, se hace `touch` a los fuentes y se recompila con el `Makefile`.
-
-## Consulta
-
-- Teoría: [`TEORIA/04`](../../TEORIA/04-planificacion-de-procesos/), [`TEORIA/08`](../../TEORIA/08-ipc-senales/), [`TEORIA/09`](../../TEORIA/09-ipc-colas-de-mensajes/).
+`kill(1)`, `sigaction(2)`, `signal(2)`, `sleep(2)`/`sleep(3)`, `pause(2)`, `alarm(2)`, `execvp(3)`, `fork(2)`, `wait(2)`. Ver [P2](../02-procesos/), [P4](../04-senales/) y [P7](../07-colas-de-mensajes/) para sus descripciones.

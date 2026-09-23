@@ -1,7 +1,5 @@
 # P9 — Sistema concurrente
 
-Construcción de un pequeño sistema concurrente. **Entrega evaluable** (curso 2025/26: 12/12/2025).
-
 ## Descripción general
 
 Construir un **simulador de un sistema hidráulico** mediante procesos, mecanismos de comunicación entre procesos y llamadas al sistema, integrando todo lo aprendido en las prácticas anteriores.

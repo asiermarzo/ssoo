@@ -86,15 +86,7 @@ void manejador(int senal) {
 signal(SIGCHLD, manejador);
 ```
 
-Y con sigaction que sólo funciona cuando el hijo termina.
-```c
-struct sigaction accion = {0};
-accion.sa_handler = manejador; //puntero al manejador, igual que en signal.
-accion.sa_flags = SA_NOCLDSTOP;      /* este flag, hace que ignora paradas y reanudaciones: sólo avisa si el hijo termina */
-sigaction(SIGCHLD, &accion, NULL);
-```
-
-Lo mismo, inicializando los campos de `accion` directamente en vez de asignarlos uno a uno:
+Y con sigaction que sólo funciona cuando el hijo termina:
 ```c
 struct sigaction accion = { .sa_handler = manejador, .sa_flags = SA_NOCLDSTOP };
 sigaction(SIGCHLD, &accion, NULL);

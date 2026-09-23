@@ -2,15 +2,14 @@
 
 ## Descripción general
 
-Construir una shell (intérprete de comandos) usando procesos: `fork` y `wait` ([P2](../02-procesos/)) y tuberías `pipe` y `dup2` ([P3](../03-pipes-y-fifos/)). La shell debe ejecutar comandos del sistema, con tuberías (`|`) y redirección de entrada y salida (`<`, `>`, `>>`).
+Construir una shell (intérprete de comandos) usando procesos: `fork` y `wait` ([P2](../02-procesos/)) y tuberías `pipe` y `dup2` ([P3](../03-pipes-y-fifos/)). La shell debe ejecutar comandos del sistema, con tuberías (`|`) y redirección de entrada y salida (`<`, `>`).
 
 
 ## Especificaciones
 
 - **Comandos con argumentos**: `minishell> cp -r sources backup`
-- **Tubería** `|`: `more kk.txt | grep hola` — se crean dos procesos (uno ejecuta `more`, otro `grep`) intercomunicados por una pipe: la salida del primero se escribe en la tubería y la entrada del segundo lee la tubería.
+- **Tubería** `|`: `more kk.txt | grep hola` — se crean dos procesos (uno ejecuta `more`, otro `grep`) intercomunicados por una pipe: la salida del primero se redirije a la tubería[1] y la entrada del segundo lee de la tubería[0].
 - **Redirección de salida** `> fichero`: `ls -al > kk.txt` (sobrescribe).
-- **Anexión a fichero** `>> fichero`: como `>` pero añade al final, sin sobrescribir.
 - **Redirección de entrada** `< fichero`: `wc -l < kk.txt`.
 - **Redirección simultánea** de entrada y salida, en cualquier orden.
 - **Prompt** personalizado: `minishell> `
@@ -364,7 +363,7 @@ waitpid(pid, NULL, 0);
    $
    ```
 
-3. **Minishell, paso 2 — una sola redirección.** Ya tienes `palabras[]` y su número de elementos `n` (lo que devuelve `str_split`). Recorre `palabras[0..n)` buscando `"<"`, `">"` o `">>"`: al encontrar uno, abre con `open` el fichero indicado en la palabra *siguiente* con las *flags* adecuadas (`O_RDONLY`; `O_WRONLY | O_CREAT | O_TRUNC`; `O_WRONLY | O_CREAT | O_APPEND`), guarda el descriptor en `fd_input` o `fd_output`, y pon `NULL` justo en la posición donde estaba el símbolo. Así `palabras[]` queda cortado ahí mismo y sirve directamente como `argv` para `ejecuta`, sin tocar el resto del array:
+3. **Minishell, paso 2 — una sola redirección.** Ya tienes `palabras[]` y su número de elementos `n` (lo que devuelve `str_split`). Recorre `palabras[0..n)` buscando `"<"` o `">"`: al encontrar uno, abre con `open` el fichero indicado en la palabra *siguiente* con las *flags* adecuadas (`O_RDONLY`; `O_WRONLY | O_CREAT | O_TRUNC`), guarda el descriptor en `fd_input` o `fd_output`, y pon `NULL` justo en la posición donde estaba el símbolo. Así `palabras[]` queda cortado ahí mismo y sirve directamente como `argv` para `ejecuta`, sin tocar el resto del array:
 
    ```c
    int fd_input = STDIN_FILENO, fd_output = STDOUT_FILENO;
@@ -376,9 +375,6 @@ waitpid(pid, NULL, 0);
            palabras[i] = NULL;
        } else if (strcmp(palabras[i], ">") == 0) {
            fd_output = open(palabras[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-           palabras[i] = NULL;
-       } else if (strcmp(palabras[i], ">>") == 0) {
-           fd_output = open(palabras[i + 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
            palabras[i] = NULL;
        }
    }
@@ -395,7 +391,6 @@ waitpid(pid, NULL, 0);
    minishell> ls -al > listado.txt
    minishell> wc -l < listado.txt
    5
-   minishell> echo otra línea >> listado.txt
    ```
 
 4. **Minishell, paso 3 — una sola tubería.** Busca el índice de `"|"` dentro de `palabras[]`. Pon `NULL` ahí: eso parte el array en dos, el propio `palabras` y `&palabras[idx + 1]`. Crea una `pipe()` y llama dos veces a `ejecuta`: la primera con `fd_output` apuntando a la escritura de la pipe, la segunda con `fd_input` apuntando a su lectura. No olvides cerrar ambos extremos en el padre después de pasarlos.
@@ -456,7 +451,7 @@ waitpid(pid, NULL, 0);
    1
    ```
 
-6. **Minishell, paso 5 (ampliación) — redirecciones en cada tramo.** Combina el ejercicio anterior con el paso 2: aplica a cada uno de los tramos la misma búsqueda de `"<"`, `">"` y `">>"` dentro de su propio trozo de `palabras[]`.
+6. **Minishell, paso 5 (ampliación) — redirecciones en cada tramo.** Combina el ejercicio anterior con el paso 2: aplica a cada uno de los tramos la misma búsqueda de `"<"` y `">"` dentro de su propio trozo de `palabras[]`.
 
    Pista: el bucle de búsqueda de redirecciones del ejercicio 3 se puede aplicar tal cual a cada tramo, justo antes de llamar a `ejecuta` para ese tramo.
 
