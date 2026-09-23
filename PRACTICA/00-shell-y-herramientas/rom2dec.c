@@ -13,19 +13,24 @@ int valor(char simbolo) {
     }
 }
 
+int rom2dec(char *str) {
+    int total = 0;
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        int actual = valor(str[i]);
+        int siguiente = valor(str[i + 1]);
+        total += actual < siguiente ? -actual : actual;
+    }
+
+    return total;
+}
+
 int main(void) {
     char romano[64];
 
-    while (scanf("%63s", romano) == 1) {
-        int total = 0;
-
-        for (int i = 0; romano[i] != '\0'; i++) {
-            int actual = valor(romano[i]);
-            int siguiente = valor(romano[i + 1]);
-            total += actual < siguiente ? -actual : actual;
-        }
-
-        printf("%d\n", total);
+    while (scanf("%63s", romano) == 1){
+        int dec = rom2dec(romano);
+        printf("%d\n", dec);
     }
 
     return 0;
