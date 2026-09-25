@@ -12,7 +12,7 @@ Esta práctica usa la misma familia que [P6](../06-memoria-compartida-y-semaforo
 int msgget(key_t key, int msgflg);
 ```
 
-- `msgflg`: permisos (`0666`) OR `IPC_CREAT` (crea la cola si no existe; si no se indica y no existe, error).
+- `msgflg`: permisos (`0666`) | `IPC_CREAT` (crea la cola si no existe; si no se indica y no existe, error).
 - **Devuelve** el identificador de la cola, o si hay error `-1` y `errno`.
 
 
@@ -38,9 +38,9 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 ```
 
 - `msqid`: id de la cola
-- `msgp`: punteroa donde empieza el mensaje.
+- `msgp`: puntero a donde empieza el mensaje.
 - `msgsz`: tamaño del mensaje sin contar el long (`sizeof(msgbuf_t) - sizeof(long)`).
-- `msgflg`: `0` (bloquea hasta poder enviar; típicamente si la cola está llena) o `IPC_NOWAIT` (retorna de inmediato con error si no puede enviar).
+- `msgflg`: `0` (bloquea hasta poder enviar; típicamente si la cola está llena) o `IPC_NOWAIT` (retorna siempre, con error si no puede enviar).
 - **Devuelve** `0` o `-1` y `errno`.
 
 ## `msgrcv` — desencolar un mensaje

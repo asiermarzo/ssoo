@@ -69,7 +69,7 @@ La shell se monta por capas: primero leer una línea, luego ejecutarla como coma
 
 int main(void) {
     for (char linea[MAX_LINEA]; fgets(linea, MAX_LINEA, stdin) != NULL; ) {
-        linea[strcspn(linea, "\n")] = '\0'; //quitar salto de línea
+        linea[strcspn(linea, "\n")] = '\0'; //cambiar el salto de línea por terminador de cadena
         printf("Leído: [%s]\n", linea);
     }
     printf("fin de entrada\n");

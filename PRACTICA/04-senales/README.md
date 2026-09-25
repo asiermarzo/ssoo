@@ -9,14 +9,15 @@ Concepto, origen de las señales, tabla completa y cómo se entregan: ver [`TEOR
 el comando kill se utiliza para mandar **cualquier señal* a un proceso cuando se conoce su pid. Si no se indica el número de señal, se manda SIGTERM. 
 
 ```bash
+kill <pid>                     # envía SIGTERM al prceso <pid>
 kill -<número_señal> <pid>     # ej. kill -9 1234: envía la señal 9 (SIGKILL) al proceso 1234
 kill -s <nombre_señal> <pid>   # ej. kill -s SIGUSR1 1234: envía SIGUSR1 al proceso 1234
-killall <nombre_proceso>       # envía la señal (SIGTERM por defecto) a todos los procesos con ese nombre
+killall <nombre_proceso>       # envía la señal SIGTERM a todos los procesos con ese nombre
 ```
 
 ## Función C: `kill`
 
-Para mandar señales a otros procesos desde un programa en C se utiliza la función kill.
+Para mandar señales a otros procesos desde C se utiliza la función kill.
 
 ```c
 #include <sys/types.h>
@@ -24,41 +25,54 @@ Para mandar señales a otros procesos desde un programa en C se utiliza la funci
 int kill(pid_t pid, int sig);
 ```
 
-Envía la señal `sig` al proceso `pid`, o un grupo de procesos. **Si**:
+Envía la señal `sig` al proceso `pid`.
+O a un grupo de procesos, **si**:
 - `pid == 0`: a todos los procesos del grupo del proceso actual.
-- `pid == -1`: a todos los procesos salvo `init`.
+- `pid == -1`: a todos los procesos (salvo `init` pid=1).
 - `pid < -1`: a todos los del grupo `-pid`.
 - `sig == 0`: no envía nada, sólo comprueba errores.
 - **Devuelve** `0` si correcto, `-1` y `errno` si hay error. No se puede señalar a `init` (pid 1).
 
 ## Captura de señales: `signal`
 
-Para que un proceso atienda a las señales que se le envían utilizar `signal()´:
+Para que un proceso atienda a determinadas señales, se utiliza `signal()`:
 
 ```c
 #include <signal.h>
 typedef void (*sighandler_t)(int); //sighandler_t es un puntero a una función
+
 sighandler_t signal(int signum, sighandler_t handler);
 ```
 
-Instala `handler` como manejador de la señal `signum`: a partir de ese momento, cuando le llega la señal `signum`, el proceso interrumpe lo que esté haciendo, ejecuta `handler` y, al terminar, continúa por donde iba.
+Fija `handler` como manejador de la señal `signum`: a partir de ese momento, cuando al proceso le llega la señal `signum`, el proceso interrumpe lo que esté haciendo, ejecuta `handler` y, al terminar, continúa por donde iba.
 
 - **Devuelve** el manejador anterior, o `SIG_ERR` si hay error.
 
-Dentro de `handler`, **no** hay que hacer: llamar a `malloc`/`free` o a `printf` (riesgo de interbloqueo). Por qué: ver [`TEORIA/08`](../../TEORIA/08-ipc-senales/#qué-no-hacer-dentro-de-un-manejador).
+Dentro de `handler`, **no** no se debería llamar a `malloc`/`free` (riesgo de interbloqueo). Por qué: ver [`TEORIA/08`](../../TEORIA/08-ipc-senales/#qué-no-hacer-dentro-de-un-manejador).
 
-## Espera de señales
+## Espera pasiva
+
+A veces un proceso tiene que esperar a que ocurra algo. La forma ingenua es la **espera activa** como `while (!recibida);`. Funciona, pero el proceso ocupa el 100 % de la CPU sin hacer nada útil y le quita ese tiempo al resto de procesos.
+
+En la **espera pasiva**, el proceso le pide al SO que lo bloquee (estado *bloqueado*) y que lo despierte cuando ocurra el evento. Mientras tanto no consume CPU y el planificador puede dar ese tiempo a otros procesos.
 
 ```c
 #include <unistd.h>
-unsigned int alarm(unsigned int s);   /* programa que se generé un SIGALRM dentro de s segundos, la ejecución sigue.*/
+
 unsigned int sleep(unsigned int s);   /* espera s segundos, o hasta recibir una señal */
-int pause(void);                             /* bloquea hasta recibir una señal */
+
+int pause(void);                      /* bloquea hasta recibir una señal */
 ```
 
-- `alarm` **no bloquea** la ejecución, simplemente le dice al SO que te mandé una señal SIGALRM después de `s` segundos, pero la ejecución sigue.  
-- `sleep` y `pause` **sí bloquean**: `sleep` hasta que pasan los segundos indicados o llega cualquier señal, y `pause` hasta que llega cualquier señal (sin límite de tiempo).
+## Temporizadores: `alarm`
 
+```c
+#include <unistd.h>
+
+unsigned int alarm(unsigned int s);   /* pide un SIGALRM dentro de s segundos */
+```
+
+`alarm` **no bloquea**: le pide al SO que mande un `SIGALRM` al proceso dentro de `s` segundos, y la ejecución continúa inmediatamente. Sirve para poner un límite de tiempo a otra operación que puede bloquearse, por ejemplo un `scanf` o un `read` (ver ejercicio 4), o para seguir trabajando y recibir un aviso cuando pase el plazo.
 
 ## Captura avanzada: `sigaction`
 
@@ -75,7 +89,9 @@ struct sigaction {
 };
 ```
 
-Recibe `signum` igual que `signal`; `act`, una estructura con el manejador (`sa_handler`), señales adicionales que se bloquean mientras se ejecuta el manejador (`sa_mask`, aquí la dejamos vacía) y una flags (`sa_flags`). `oldact` recupera la configuración anterior (aquí no nos hace falta, pasamos `NULL`). El flag que nos interesa es `SA_NOCLDSTOP`: con `SIGCHLD`, hace que sólo se reciba la señal cuando el hijo **termina**, ignorando sus paradas y reanudaciones.
+`sigaction` tiene como parámetros: `signum` (igual que `signal`); `act`, una estructura con el manejador (`sa_handler`), `sa_mask` señales adicionales que se bloquean mientras se ejecuta el manejador, y flags para configurar opciones(`sa_flags`). `oldact` recupera la configuración anterior (aquí no nos hace falta, pasamos `NULL`). 
+
+El flag que nos interesa es `SA_NOCLDSTOP`: con `SIGCHLD`, hace que sólo se reciba la señal cuando el hijo **termina**, ignorando sus paradas y reanudaciones.
 
 Mismo manejador instalado con `signal` (avisa también de paradas y reanudaciones):
 ```c
@@ -93,10 +109,9 @@ sigaction(SIGCHLD, &accion, NULL);
 ```
 
 
-
 ## Ejercicios propuestos
 
-1. Programa que se queda esperando sin hacer nada (en un bucle con `pause()`) hasta que se pulsa `Ctrl-C`. En vez de morir en seco, que es la acción por defecto de `SIGINT`, captúrala e imprime un mensaje de despedida antes de terminar.
+1. Programa que se queda esperando sin hacer nada (en un bucle con `pause()`) hasta que se pulsa `Ctrl-C`. En vez de morir directamente, que es la acción por defecto de `SIGINT`, captúrala e imprime un mensaje de despedida antes de terminar.
 
    Ejemplo de ejecución:
    ```
@@ -105,29 +120,34 @@ sigaction(SIGCHLD, &accion, NULL);
    adiós
    ```
 
-2. Crea un programa **contador.c** que en bucle infinito hace: imprime `cuenta`, duerme 1 segundo, `cuenta += 1`. Si recibe `SIGUSR1`, pone a 0 el valor del contador. Ejecútalo en segundo plano y prueba a mandarle las señales `SIGUSR1`, `SIGSTOP` y `SIGCONT`.
+2. Crea un programa **contador.c** que en bucle infinito hace: imprime `cuenta`, duerme 1 segundo, `cuenta += 1`. Si recibe `SIGUSR1`, pone a 0 el valor del contador. Ejecútalo en una terminal, desde otra terminal averigua su PID con `pgrep contador` y mándale las señales `SIGUSR1`, `SIGSTOP`, `SIGCONT` y `SIGTERM`.
 
-   Ejemplo de ejecución:
+   Ejemplo de ejecución. Terminal 1:
    ```
    $ gcc contador.c -o contador
-   $ ./contador & #lo pone en ejecución en segundo plano y te dice su pid
-   [1] 4021
+   $ ./contador
    0
    1
    2
-   $ kill -USR1 4021
-   0
+   0        <- tras SIGUSR1
    1
-   $ kill -STOP 4021
-   [1]+  Stopped                 ./contador
-   $ kill -CONT 4021
-   2
+            <- parado tras SIGSTOP, no imprime nada
+   2        <- tras SIGCONT sigue por donde iba
    3
-   $ kill 4021
-   [1]+  Terminated              ./contador
+   Terminated
    ```
 
-3. Programa que cree dos hijos: uno hijo autoenvía `SIGSTOP` (queda parado), el otro hijo duerme 1 segundo y luego se autoenvía `SIGKILL` (muere). El padre instala un manejador de `SIGCHLD` que simplemente incrementa una variable global. Después de crear los hijos, el padre espera 2 segundos y luego imprime el valor de la variable global.
+   Terminal 2:
+   ```
+   $ pgrep contador
+   4021
+   $ kill -USR1 4021
+   $ kill -STOP 4021
+   $ kill -CONT 4021
+   $ kill 4021
+   ```
+
+3. Programa que cree dos hijos: un hijo se autoenvía `SIGSTOP` (queda parado), el otro hijo duerme 1 segundo y luego se autoenvía `SIGKILL` (muere). El padre instala un manejador de `SIGCHLD` que simplemente incrementa una variable global. Después de crear los hijos, el padre espera 2 segundos y luego imprime el valor de la variable global.
 
    Repite la prueba instalando el manejador con `sigaction` y `SA_NOCLDSTOP`, y compara el valor final de `llamadas_sigchld`. Sin el flag debería salir `2` (una por la parada, otra por la muerte); con `SA_NOCLDSTOP` debería salir `1` (sólo llega la muerte).
 
@@ -140,9 +160,9 @@ sigaction(SIGCHLD, &accion, NULL);
    sigaction(SIGALRM, &accion, NULL);
    ```
 
-   No sirve `signal()` para esto: en Linux instala el manejador con `SA_RESTART` activado, así que el `scanf` interrumpido se reanudaría solo en vez de devolver el control, y el timeout nunca llegaría a detectarse. Con `sa_flags = 0` (sin `SA_RESTART`), al llegar `SIGALRM` el `scanf` bloqueado se interrumpe y retorna sin haber leído nada.
+   No sirve `signal()` para esto: en Linux instala el manejador con `SA_RESTART` activado, así que el `scanf` interrumpido se reanudaría solo, y el timeout nunca llegaría a detectarse. Con `sa_flags = 0` (sin `SA_RESTART`), al llegar `SIGALRM` el `scanf` bloqueado se interrumpe y retorna sin haber leído nada.
 
-   Llama a `alarm(5)` justo antes del `scanf`. El manejador sólo pone a `1` una variable global `timeout`. Justo después del `scanf`, comprueba `timeout`: si vale `0`, el valor leído es correcto y cancela la alarma pendiente con `alarm(0)`; si vale `1`, no se ha leído nada y ha pasado el plazo, así que imprime `tiempo agotado`.
+   Llama a `alarm(5)` justo antes del `scanf`. El manejador sólo pone a `1` una variable global `timeout`. Justo después del `scanf`, comprueba `timeout`: si vale `0`, el valor leído es correcto y cancela la alarma pendiente con `alarm(0)`; si vale `1`, no se ha leído nada y ha pasado el tiempo, así que imprime `tiempo agotado`.
 
    Ejemplo de ejecución (a tiempo):
    ```
