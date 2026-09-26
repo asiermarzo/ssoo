@@ -1,0 +1,11 @@
+# Set 1: Round Robin entre procesos de cálculo (nivel 3)
+# Cuatro procesos de cálculo con la misma prioridad deben repartirse la CPU a partes iguales.
+# Qué observar:
+#   - los dos buddhabrot acumulan muestras al mismo ritmo (título) y se revelan igual de rápido
+#   - mandelbrot baja a ~1/4 de los fps que da cuando se ejecuta solo
+#   - el barrido del raytracer avanza a ~1/4 de su ritmo en solitario
+# En las estadísticas: el nivel 3 recibe casi el 100 % de la CPU.
+3 ./buddhabrot 0 0
+3 ./buddhabrot 340 0
+3 ./mandelbrot 680 0
+3 ./raytracer 0 240

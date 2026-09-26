@@ -1,0 +1,16 @@
+# Set 2: latencia de los interactivos (nivel 2) frente a procesos de cálculo (nivel 3)
+# Seis procesos de cálculo compiten con dos interactivos, con turnos de 15 ms.
+# Qué observar:
+#   - arkanoid y pintar van razonablemente fluidos: el "hueco max" de su título ronda la
+#     latencia (33 ms) y no pasa de latencia + turno (48 ms)
+#   - los de cálculo siguen avanzando, más despacio que en el set 1
+# Prueba de control: cambia la prioridad de arkanoid y pintar a 3. Ahora compiten en Round Robin
+# con los seis de cálculo: esperan 7 turnos (~105 ms) y el lag es evidente.
+3 ./mandelbrot 0 0
+3 ./buddhabrot 340 0
+3 ./raytracer 680 0
+3 ./mandelbrot 0 240
+3 ./buddhabrot 340 240
+3 ./raytracer 680 240
+2 ./arkanoid 0 480
+2 ./pintar 340 480

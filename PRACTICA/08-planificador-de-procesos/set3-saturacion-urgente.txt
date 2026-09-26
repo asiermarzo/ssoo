@@ -1,0 +1,21 @@
+# Set 3: saturación de interactivos (nivel 2) y llegada de un urgente (nivel 1)
+# Fase 1: con n interactivos, el nivel 3 deja de entrar cuando (n - 1) * turno >= 33 ms.
+#         Con cuatro interactivos y turnos de 15 ms: 3 * 15 = 45 >= 33.
+#   - mandelbrot y buddhabrot se congelan (inanición)
+#   - los interactivos esperan 45 ms entre turnos: más de los 33 ms buscados
+#   - con tres interactivos (quita uno): 2 * 15 = 30 < 33, y los de cálculo vuelven a moverse
+# Fase 2: a los 5 s llega un mandelbrot de prioridad 1 (200 fotogramas, guarda un .ppm y termina):
+#   - se ejecuta hasta el final y todo lo demás se congela, interactivos incluidos
+#   - al terminar, los demás vuelven a la situación de la fase 1
+# Fase 3: 5 s después llega un factoriza de prioridad 1 (~3 s de CPU y termina):
+#   - otra vez se congela todo; en la terminal imprime los factores, con tiempo real ~= tiempo de CPU
+2 ./arkanoid 0 0
+2 ./pintar 340 0
+2 ./arkanoid 680 0
+2 ./pintar 0 240
+3 ./mandelbrot 340 240
+3 ./buddhabrot 680 240
+espera 5000
+1 ./mandelbrot 340 480 200
+espera 5000
+1 ./factoriza 1000000016000000063
