@@ -46,16 +46,21 @@ typedef struct {
 } peticion_t;
 ```
 
-`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms`, el instante en que salió de CPU) y una cola sobre un array con `cola_mete` (al final) y `cola_saca` (de cualquier posición):
+`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms`, el instante en que salió de CPU) y una cola sobre un array con `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y `COLA_FOR_EACH` para recorrerla. Primero se recorre para elegir y después se desencola:
 
 ```c
 cola_t listos = { .n = 0 };
-cola_mete(&listos, p);
-for (int i = 0; i < listos.n; i++) {            // recorrerla para elegir
-    if (listos.procesos[i].prioridad == 3) {
-        proceso_t elegido = cola_saca(&listos, i);
-        ...
+cola_encolar(&listos, p);
+
+proceso_t *elegido = NULL;
+COLA_FOR_EACH(&listos, q) {                      // recorrerla para elegir
+    if (q->prioridad == 2 && (elegido == NULL || q->ultimo_ms < elegido->ultimo_ms)) {
+        elegido = q;                             // el de nivel 2 que más lleva sin ejecutarse
     }
+}
+if (elegido != NULL) {
+    proceso_t actual = cola_desencolar(&listos, elegido);   // fuera del bucle
+    ...
 }
 ```
 
@@ -239,8 +244,8 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 | `mandelbrot [x y [fotogramas]]` | cálculo / urgente | Mandelbrot que gira y hace zoom; en inanición se congela. Con `fotogramas` especificado, termina y guarda el último en `mandelbrot_AAAAMMDD_HHMMSS.ppm`. | fps |
 | `buddhabrot [x y]` | cálculo | La imagen se revela al acumular órbitas. | miles de muestras |
 | `raytracer [x y]` | cálculo | Esferas con sombras; cada píxel sale en cuanto está calculado. | fotograma |
-| `arkanoid [x y]` | interactivo | Pala con el ratón, pelota a 60 fps. Con lag va a cámara lenta y a saltos. | mayor hueco entre fotogramas |
-| `pintar [x y]` | interactivo | Estela que sigue al ratón. Con lag se queda atrás. | mayor hueco entre fotogramas |
+| `arkanoid [x y]` | interactivo | Pala con el ratón, pelota a 60 fps. Con lag va a cámara lenta y a saltos. | fps |
+| `pintar [x y]` | interactivo | Estela que sigue al ratón. Con lag se queda atrás. | fps |
 | `factoriza n` | urgente | Sin ventana. Factoriza `n` (64 bits) por división por tentativa e imprime el tiempo de CPU y el real. | — |
 
 La prioridad la decide la petición, no el programa.
@@ -269,13 +274,13 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 
 Después lanza el set 1 y, desde otro `encolador`, manda `3 ./factoriza 1000000016000000063` (factoriza pero con la menor prioridad posible). ¿Cuánto tiempo tarda en ejecutarse ahora?
 
-3. **Latencia de los interactivos.** Lanza el set 2 y mira el "hueco max" en el título de `arkanoid` y `pintar`. ¿Se queda por debajo de 33 ms? Si no, explica por qué (pista: un proceso de nivel 3 puede empezar su turno de 15 ms justo antes de que un interactivo llegue a 33 ms). Manda `latencia 18` (33 − 15) y comprueba si ahora el hueco se queda por debajo de 33 ms. ¿Qué les pasa a los de cálculo?
+3. **Latencia de los interactivos.** Lanza el set 2 y mira los fps en el título de `arkanoid` y `pintar`. ¿Llegan a 30 fps (un fotograma cada 33 ms)? Si no, explica por qué (pista: un proceso de nivel 3 puede empezar su turno de 15 ms justo antes de que un interactivo llegue a 33 ms de espera). Manda `latencia 18` (33 − 15) y comprueba si ahora llegan a 30 fps. ¿Qué les pasa a los de cálculo?
 
 4. **Inanición.** Lanza el set 3 y observa la fase 1 (cuatro interactivos, turno de 15 ms): los de cálculo de nivel 3 se congelan. 
    - Manda `turno 5`. ¿Vuelven a moverse los de cálculo? ¿Cuántos interactivos podría haber con `turno 5` antes de que se congelen?
    - Vuelve a `turno 15` y busca el valor más pequeño de `latencia ms` con el que los de cálculo vuelven a moverse.
 
-5. **Tamaño del turno.** Con el set 2 en marcha, manda desde otro `encolador` `turno 1`, `turno 15` y `turno 200`, y unos segundos después de cada uno, `estadisticas`. Compara los cambios de contexto y el "hueco max" de `arkanoid`. ¿Qué inconveniente tiene un turno muy pequeño? ¿Y uno muy grande?
+5. **Tamaño del turno.** Con el set 2 en marcha, manda desde otro `encolador` `turno 1`, `turno 15` y `turno 200`, y unos segundos después de cada uno, `estadisticas`. Compara los cambios de contexto y los fps de `arkanoid`. ¿Qué inconveniente tiene un turno muy pequeño? ¿Y uno muy grande?
 
 ## Llamadas al sistema útiles
 

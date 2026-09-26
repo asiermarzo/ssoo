@@ -5,20 +5,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "ventana.h"
 
-#define ANCHO    300
-#define ALTO     200
 #define MAX_ITER 256
 #define CENTRO_X -0.6
 #define CENTRO_Y 0.0
-
-long ahora_ms(void) {
-    struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    return t.tv_sec * 1000 + t.tv_nsec / 1000000;
-}
 
 // guarda la imagen en PPM (P6): una cabecera de texto y después 3 bytes RGB por píxel
 void guarda_ppm(unsigned int pixeles[]) {
@@ -39,16 +30,12 @@ int main(int argc, char *argv[]) {
     int fotogramas_max = argc > 3 ? atoi(argv[3]) : 0;
     Display *d = XOpenDisplay(NULL);
     int s = DefaultScreen(d);
-    XSizeHints h = { .flags = USPosition | USSize, .x = argc > 1 ? atoi(argv[1]) : 0, .y = argc > 2 ? atoi(argv[2]) : 0, .width = ANCHO, .height = ALTO };
-    Window w = XCreateSimpleWindow(d, RootWindow(d, s), h.x, h.y, ANCHO, ALTO, 0, 0, 0);
-    XSetWMNormalHints(d, w, &h);
-    XMapWindow(d, w);
+    Window w = abre_ventana(d, argc, argv);
 
     unsigned int pixeles[ALTO * ANCHO];
     XImage *img = XCreateImage(d, DefaultVisual(d, s), DefaultDepth(d, s), ZPixmap, 0, (char *)pixeles, ANCHO, ALTO, 32, 0);
 
-    long inicio = ahora_ms();
-    int fotogramas = 0;
+    fps_t fps = { .inicio = ahora_ms() };
     for (int f = 1; fotogramas_max == 0 || f <= fotogramas_max; f++) {
         double angulo = f * 0.03;
         double radio = 0.8 + 0.5 * sin(angulo / 3);   // zoom que va y viene
@@ -71,15 +58,7 @@ int main(int argc, char *argv[]) {
         }
         XPutImage(d, w, DefaultGC(d, s), img, 0, 0, 0, 0, ANCHO, ALTO);
         XFlush(d);
-
-        fotogramas++;
-        if (ahora_ms() - inicio >= 1000) {
-            char titulo[64];
-            snprintf(titulo, sizeof(titulo), "mandelbrot %d fps", fotogramas);
-            XStoreName(d, w, titulo);
-            fotogramas = 0;
-            inicio = ahora_ms();
-        }
+        medir_fps(d, w, &fps, "mandelbrot");
     }
     guarda_ppm(pixeles);
     return 0;

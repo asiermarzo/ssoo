@@ -3,40 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "ventana.h"
 
-#define ANCHO      300
-#define ALTO       200
 #define PUNTOS     64
 #define PERIODO_US 10000   // 100 fotogramas por segundo
 
-long ahora_ms(void) {
-    struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    return t.tv_sec * 1000 + t.tv_nsec / 1000000;
-}
-
 int main(int argc, char *argv[]) {
     Display *d = XOpenDisplay(NULL);
-    int s = DefaultScreen(d);
-    XSizeHints h = { .flags = USPosition | USSize, .x = argc > 1 ? atoi(argv[1]) : 0, .y = argc > 2 ? atoi(argv[2]) : 0, .width = ANCHO, .height = ALTO };
-    Window w = XCreateSimpleWindow(d, RootWindow(d, s), h.x, h.y, ANCHO, ALTO, 0, 0, 0);
-    XSetWMNormalHints(d, w, &h);
-    XMapWindow(d, w);
+    Window w = abre_ventana(d, argc, argv);
     GC gc = XCreateGC(d, w, 0, NULL);
     XSetLineAttributes(d, gc, 3, LineSolid, CapRound, JoinRound);
-    Pixmap buffer = XCreatePixmap(d, w, ANCHO, ALTO, DefaultDepth(d, s));   // doble buffer: sin parpadeo
+    Pixmap buffer = XCreatePixmap(d, w, ANCHO, ALTO, DefaultDepth(d, DefaultScreen(d)));   // doble buffer: sin parpadeo
 
     XPoint estela[PUNTOS];
     for (int i = 0; i < PUNTOS; i++) {
         estela[i] = (XPoint){ ANCHO / 2, ALTO / 2 };
     }
 
-    long inicio = ahora_ms();
-    long anterior = inicio;
-    long max_hueco = 0;
+    fps_t fps = { .inicio = ahora_ms() };
     for (;;) {
         Window raiz, hijo;
         int rx, ry, wx, wy;
@@ -52,19 +36,7 @@ int main(int argc, char *argv[]) {
         XCopyArea(d, buffer, w, gc, 0, 0, ANCHO, ALTO, 0, 0);
         XFlush(d);
 
-        // hueco = tiempo entre dos fotogramas; lo normal es ~PERIODO_US
-        long ahora = ahora_ms();
-        if (ahora - anterior > max_hueco) {
-            max_hueco = ahora - anterior;
-        }
-        anterior = ahora;
-        if (ahora - inicio >= 1000) {
-            char titulo[64];
-            snprintf(titulo, sizeof(titulo), "pintar hueco max %ld ms", max_hueco);
-            XStoreName(d, w, titulo);
-            max_hueco = 0;
-            inicio = ahora;
-        }
+        medir_fps(d, w, &fps, "pintar");
         usleep(PERIODO_US);
     }
 }

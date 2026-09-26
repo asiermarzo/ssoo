@@ -2,11 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "ventana.h"
 
-#define ANCHO     300
-#define ALTO      200
 #define MUESTRAS  8     // MUESTRAS x MUESTRAS rayos por píxel (suavizado): súbelo o bájalo según la máquina
 #define N_ESFERAS 3
 
@@ -95,10 +92,7 @@ vec traza(esfera_t esferas[], vec o, vec dir) {
 int main(int argc, char *argv[]) {
     Display *d = XOpenDisplay(NULL);
     int s = DefaultScreen(d);
-    XSizeHints h = { .flags = USPosition | USSize, .x = argc > 1 ? atoi(argv[1]) : 0, .y = argc > 2 ? atoi(argv[2]) : 0, .width = ANCHO, .height = ALTO };
-    Window w = XCreateSimpleWindow(d, RootWindow(d, s), h.x, h.y, ANCHO, ALTO, 0, 0, 0);
-    XSetWMNormalHints(d, w, &h);
-    XMapWindow(d, w);
+    Window w = abre_ventana(d, argc, argv);
 
     unsigned int pixeles[ALTO * ANCHO];
     XImage *img = XCreateImage(d, DefaultVisual(d, s), DefaultDepth(d, s), ZPixmap, 0, (char *)pixeles, ANCHO, ALTO, 32, 0);
@@ -128,8 +122,6 @@ int main(int argc, char *argv[]) {
                 XFlush(d);
             }
         }
-        char titulo[64];
-        snprintf(titulo, sizeof(titulo), "raytracer fotograma %d", f);
-        XStoreName(d, w, titulo);
+        pon_titulo(d, w, "raytracer fotograma %d", f);
     }
 }

@@ -3,21 +3,15 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "ventana.h"
 
-#define ANCHO       300
-#define ALTO        200
 #define MAX_ITER    500
 #define POR_DIBUJO  20000   // muestras entre dos redibujados
 
 int main(int argc, char *argv[]) {
     Display *d = XOpenDisplay(NULL);
     int s = DefaultScreen(d);
-    XSizeHints h = { .flags = USPosition | USSize, .x = argc > 1 ? atoi(argv[1]) : 0, .y = argc > 2 ? atoi(argv[2]) : 0, .width = ANCHO, .height = ALTO };
-    Window w = XCreateSimpleWindow(d, RootWindow(d, s), h.x, h.y, ANCHO, ALTO, 0, 0, 0);
-    XSetWMNormalHints(d, w, &h);
-    XMapWindow(d, w);
+    Window w = abre_ventana(d, argc, argv);
 
     unsigned int cuenta[ALTO * ANCHO] = {0};   // veces que una órbita pasa por cada píxel
     unsigned int pixeles[ALTO * ANCHO];
@@ -58,9 +52,7 @@ int main(int argc, char *argv[]) {
                 pixeles[i] = b << 16 | b << 8 | b;
             }
             XPutImage(d, w, DefaultGC(d, s), img, 0, 0, 0, 0, ANCHO, ALTO);
-            char titulo[64];
-            snprintf(titulo, sizeof(titulo), "buddhabrot %ld mil muestras", muestras / 1000);
-            XStoreName(d, w, titulo);
+            pon_titulo(d, w, "buddhabrot %ld mil muestras", muestras / 1000);
             XFlush(d);
         }
     }

@@ -16,8 +16,13 @@ typedef struct {
     int       n;                   // procesos en la cola
 } cola_t;
 
+// recorre la cola del primero al último; p es un proceso_t * a cada elemento.
+// No encolar ni desencolar dentro del bucle: elegir primero, desencolar después.
+#define COLA_FOR_EACH(c, p) \
+    for (proceso_t *p = (c)->procesos; p < (c)->procesos + (c)->n; p++)
+
 // añade p al final; devuelve 0, o -1 si la cola está llena
-int cola_mete(cola_t *c, proceso_t p) {
+static int cola_encolar(cola_t *c, proceso_t p) {
     if (c->n == MAX_PROCESOS) {
         return -1;
     }
@@ -25,12 +30,12 @@ int cola_mete(cola_t *c, proceso_t p) {
     return 0;
 }
 
-// saca el proceso de la posición i (0 = el primero) y desplaza los siguientes
-proceso_t cola_saca(cola_t *c, int i) {
-    proceso_t p = c->procesos[i];
-    for (int j = i; j < c->n - 1; j++) {
+// saca el proceso al que apunta p (obtenido con COLA_FOR_EACH), desplaza los siguientes y lo devuelve
+static proceso_t cola_desencolar(cola_t *c, proceso_t *p) {
+    proceso_t sacado = *p;
+    for (int j = p - c->procesos; j < c->n - 1; j++) {
         c->procesos[j] = c->procesos[j + 1];
     }
     c->n--;
-    return p;
+    return sacado;
 }

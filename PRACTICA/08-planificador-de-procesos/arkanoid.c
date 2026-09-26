@@ -2,12 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "ventana.h"
 
-#define ANCHO       300
-#define ALTO        200
 #define FILAS       3
 #define COLUMNAS    10
 #define LADRILLO_AN (ANCHO / COLUMNAS)
@@ -17,21 +13,11 @@
 #define PALA_Y      (ALTO - 10)
 #define PERIODO_US  16000     // ~60 fotogramas por segundo
 
-long ahora_ms(void) {
-    struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    return t.tv_sec * 1000 + t.tv_nsec / 1000000;
-}
-
 int main(int argc, char *argv[]) {
     Display *d = XOpenDisplay(NULL);
-    int s = DefaultScreen(d);
-    XSizeHints h = { .flags = USPosition | USSize, .x = argc > 1 ? atoi(argv[1]) : 0, .y = argc > 2 ? atoi(argv[2]) : 0, .width = ANCHO, .height = ALTO };
-    Window w = XCreateSimpleWindow(d, RootWindow(d, s), h.x, h.y, ANCHO, ALTO, 0, 0, 0);
-    XSetWMNormalHints(d, w, &h);
-    XMapWindow(d, w);
+    Window w = abre_ventana(d, argc, argv);
     GC gc = XCreateGC(d, w, 0, NULL);
-    Pixmap buffer = XCreatePixmap(d, w, ANCHO, ALTO, DefaultDepth(d, s));   // doble buffer: sin parpadeo
+    Pixmap buffer = XCreatePixmap(d, w, ANCHO, ALTO, DefaultDepth(d, DefaultScreen(d)));   // doble buffer: sin parpadeo
     unsigned long colores[FILAS] = { 0xe04040, 0xe0a040, 0x40a0e0 };
 
     int ladrillos[FILAS][COLUMNAS];
@@ -40,9 +26,7 @@ int main(int argc, char *argv[]) {
     double by = ALTO / 2;
     double vx = 2;
     double vy = -2;
-    long inicio = ahora_ms();
-    long anterior = inicio;
-    long max_hueco = 0;
+    fps_t fps = { .inicio = ahora_ms() };
     for (;;) {
         if (quedan == 0) {   // nivel nuevo
             for (int f = 0; f < FILAS; f++) {
@@ -105,19 +89,7 @@ int main(int argc, char *argv[]) {
         XCopyArea(d, buffer, w, gc, 0, 0, ANCHO, ALTO, 0, 0);
         XFlush(d);
 
-        // hueco = tiempo entre dos fotogramas; lo normal es ~PERIODO_US
-        long ahora = ahora_ms();
-        if (ahora - anterior > max_hueco) {
-            max_hueco = ahora - anterior;
-        }
-        anterior = ahora;
-        if (ahora - inicio >= 1000) {
-            char titulo[64];
-            snprintf(titulo, sizeof(titulo), "arkanoid hueco max %ld ms", max_hueco);
-            XStoreName(d, w, titulo);
-            max_hueco = 0;
-            inicio = ahora;
-        }
+        medir_fps(d, w, &fps, "arkanoid");
         usleep(PERIODO_US);
     }
 }
