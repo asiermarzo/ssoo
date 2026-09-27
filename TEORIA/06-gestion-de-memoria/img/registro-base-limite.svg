@@ -1,34 +1,95 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" font-family="sans-serif" font-size="12" role="img" aria-label="Traducción con registro base y límite: la CPU genera una dirección lógica que se compara con el límite; si no lo supera se le suma la base para obtener la dirección física dentro del programa en memoria">
-  <rect width="760" height="320" fill="#ffffff"/>
-  <text x="65" y="120" text-anchor="middle" font-size="11">dirección lógica</text>
-  <rect x="20" y="130" width="90" height="60" fill="#eef2f7" stroke="#333"/>
-  <text x="65" y="165" text-anchor="middle" font-weight="bold">CPU</text>
-  <line x1="110" y1="160" x2="168" y2="160" stroke="#333"/><path d="M168 160 l-9 -4 l0 8 z" fill="#333"/>
-  <polygon points="230,120 292,160 230,200 168,160" fill="#ffffff" stroke="#333"/>
-  <text x="230" y="164" text-anchor="middle" font-size="11">&lt; Límite?</text>
-  <rect x="195" y="40" width="70" height="30" fill="#cfe0f2" stroke="#2b6f99"/>
-  <text x="230" y="60" text-anchor="middle">Límite</text>
-  <line x1="230" y1="70" x2="230" y2="118" stroke="#333"/><path d="M230 118 l-4 -9 l8 0 z" fill="#333"/>
-  <line x1="292" y1="160" x2="326" y2="160" stroke="#333"/><path d="M326 160 l-9 -4 l0 8 z" fill="#333"/>
-  <text x="300" y="150" text-anchor="middle" font-size="10">Sí</text>
-  <line x1="230" y1="200" x2="230" y2="255" stroke="#333"/><path d="M230 255 l-4 -9 l8 0 z" fill="#333"/>
-  <text x="242" y="222" font-size="10">No</text>
-  <text x="230" y="272" text-anchor="middle" fill="#b3261e" font-size="11">Error de direccionamiento</text>
-  <text x="230" y="286" text-anchor="middle" fill="#b3261e" font-size="11">(excepción)</text>
-  <circle cx="350" cy="160" r="22" fill="#ffffff" stroke="#333"/>
-  <text x="350" y="165" text-anchor="middle" font-weight="bold">+</text>
-  <rect x="315" y="40" width="70" height="30" fill="#cfe0f2" stroke="#2b6f99"/>
-  <text x="350" y="60" text-anchor="middle">Base</text>
-  <line x1="350" y1="70" x2="350" y2="136" stroke="#333"/><path d="M350 136 l-4 -9 l8 0 z" fill="#333"/>
-  <line x1="372" y1="160" x2="456" y2="160" stroke="#333"/><path d="M456 160 l-9 -4 l0 8 z" fill="#333"/>
-  <text x="414" y="150" text-anchor="middle" font-size="10">dirección física</text>
-  <text x="515" y="22" text-anchor="middle" font-weight="bold">MEMORIA</text>
-  <rect x="460" y="30" width="110" height="250" fill="#f5f5f5" stroke="#333"/>
-  <rect x="460" y="130" width="110" height="90" fill="#b9e6c9" stroke="#2f9e58"/>
-  <text x="515" y="180" text-anchor="middle">Programa</text>
-  <line x1="580" y1="130" x2="590" y2="130" stroke="#333"/>
-  <line x1="580" y1="220" x2="590" y2="220" stroke="#333"/>
-  <line x1="590" y1="130" x2="590" y2="220" stroke="#333"/>
-  <text x="598" y="178" font-size="10" fill="#777">Límite</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" role="img" aria-label="Animación de la traducción con registro base y límite: la dirección lógica 200 se compara con el límite y se le suma la base (1200); la 700 supera el límite y provoca una excepción">
+<style>
+text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
+.m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
+.d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
+.c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
+.cap{font-size:14px}
+.f{opacity:0}.fin{opacity:1}
+.f0{animation:s3 15s linear 0s infinite}
+.f1{animation:s3 15s linear -12s infinite}
+.f2{animation:s3 15s linear -9s infinite}
+.f3{animation:s3 15s linear -6s infinite}
+.f4{animation:s3l 15s linear -3s infinite}
+@keyframes s3{0%{opacity:0}2.33%{opacity:1}20.00%{opacity:1}22.33%{opacity:0}100%{opacity:0}}
+@keyframes s3l{0%{opacity:0}2.33%{opacity:1}17.67%{opacity:1}20.00%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.f{animation:none}}
+</style>
+<defs>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4cc26a"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef5350"/></marker>
+<marker id="ay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4d03f"/></marker>
+<marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e8804a"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb5c9"/></marker>
+<marker id="ap0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5aa9e6"/></marker>
+<marker id="ap1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5cc97a"/></marker>
+<marker id="ap2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e2c044"/></marker>
+<marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
+<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
+</defs>
+<rect width="720" height="340" rx="10" fill="#121417"/>
+<rect x="24" y="130" width="100" height="60" rx="4" fill="#1c1f24" stroke="#8b949e" stroke-width="1.5"/>
+<text x="74" y="165" class="c b">CPU</text>
+<rect x="205" y="36" width="90" height="44" rx="4" fill="#1c1f24" stroke="#f4d03f" stroke-width="1.5"/>
+<text x="250" y="54" class="c s d">límite</text>
+<text x="250" y="73" class="c m b">500</text>
+<rect x="325" y="36" width="90" height="44" rx="4" fill="#1c1f24" stroke="#f4d03f" stroke-width="1.5"/>
+<text x="370" y="54" class="c s d">base</text>
+<text x="370" y="73" class="c m b">1000</text>
+<line x1="250" y1="80" x2="250" y2="115" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
+<line x1="124" y1="160" x2="197" y2="160" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
+<line x1="370" y1="80" x2="370" y2="135" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
+<polygon points="250,118 300,160 250,202 200,160" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
+<text x="250" y="164" class="c s">&lt; límite?</text>
+<line x1="300" y1="160" x2="345" y2="160" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
+<text x="320" y="150" class="c s ok">sí</text>
+<circle cx="370" cy="160" r="22" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
+<text x="370" y="167" class="c b l">+</text>
+<line x1="392" y1="160" x2="496" y2="138" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
+<text x="445" y="184" class="c s d">dirección física</text>
+<line x1="250" y1="202" x2="250" y2="244" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
+<text x="262" y="228" class="s er">no</text>
+<text x="250" y="266" class="c er b">excepción</text>
+<text x="250" y="294" class="c s d">(el SO toma el control)</text>
+<text x="160" y="118" class="c s d">dirección lógica</text>
+<rect x="500" y="30" width="180" height="60" rx="0" fill="#3d3718" stroke="#c9a227" stroke-width="1.5"/>
+<text x="590" y="65" class="c y b">SO</text>
+<rect x="500" y="90" width="180" height="120" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<text x="590" y="190" class="c o b">P1</text>
+<rect x="500" y="210" width="180" height="80" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<text x="590" y="255" class="c d s">otros procesos</text>
+<text x="492" y="34" class="m s d e">0</text>
+<text x="492" y="94" class="m s d e">1000</text>
+<text x="492" y="214" class="m s d e">1500</text>
+<line x1="20" y1="300" x2="700" y2="300" stroke="#2a2e35"/>
+<g class="f f0">
+<text x="160" y="148" class="c m b y l">200</text>
+<text x="24" y="324" class="cap"><tspan class="d">1/5</tspan><tspan dx="10">La CPU genera la dirección lógica 200</tspan></text>
+</g>
+<g class="f f1">
+<text x="160" y="148" class="c m b y l">200</text>
+<polygon points="250,118 300,160 250,202 200,160" fill="none" stroke="#4cc26a" stroke-width="3"/>
+<line x1="300" y1="160" x2="345" y2="160" stroke="#4cc26a" stroke-width="3" marker-end="url(#ag)"/>
+<text x="24" y="324" class="cap"><tspan class="d">2/5</tspan><tspan dx="10">200 &lt; 500: la dirección está dentro del límite</tspan></text>
+</g>
+<g class="f f2 fin">
+<text x="160" y="148" class="c m b y l">200</text>
+<circle cx="370" cy="160" r="22" fill="none" stroke="#4cc26a" stroke-width="3"/>
+<line x1="392" y1="160" x2="496" y2="138" stroke="#4cc26a" stroke-width="3" marker-end="url(#ag)"/>
+<text x="440" y="132" class="c m b ok">1200</text>
+<rect x="500" y="136" width="180" height="4" rx="0" fill="#4cc26a" stroke="#4cc26a" stroke-width="1.5"/>
+<text x="24" y="324" class="cap"><tspan class="d">3/5</tspan><tspan dx="10">Se suma la base: 200 + 1000 = 1200 es la dirección física</tspan></text>
+</g>
+<g class="f f3">
+<text x="160" y="148" class="c m b y l">700</text>
+<text x="24" y="324" class="cap"><tspan class="d">4/5</tspan><tspan dx="10">Ahora la CPU genera la dirección lógica 700</tspan></text>
+</g>
+<g class="f f4">
+<text x="160" y="148" class="c m b y l">700</text>
+<polygon points="250,118 300,160 250,202 200,160" fill="none" stroke="#ef5350" stroke-width="3"/>
+<line x1="250" y1="202" x2="250" y2="244" stroke="#ef5350" stroke-width="3" marker-end="url(#ar)"/>
+<rect x="196" y="249" width="108" height="24" rx="4" fill="none" stroke="#ef5350" stroke-width="2"/>
+<text x="24" y="324" class="cap"><tspan class="d">5/5</tspan><tspan dx="10">700 ≥ 500: no se traduce; excepción y el SO termina el proceso</tspan></text>
+</g>
 </svg>

@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 412" role="img" aria-label="Animación de un fallo de página: el acceso a la página 3 encuentra V=0, la MMU lanza una excepción, el SO lee la página del disco al marco libre 7, pone V=1 y reejecuta la instrucción">
+<style>
+text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
+.m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
+.d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
+.c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
+.cap{font-size:14px}
+.f{opacity:0}.fin{opacity:1}
+.f0{animation:s3 18s linear 0s infinite}
+.f1{animation:s3 18s linear -15s infinite}
+.f2{animation:s3 18s linear -12s infinite}
+.f3{animation:s3 18s linear -9s infinite}
+.f4{animation:s3 18s linear -6s infinite}
+.f5{animation:s3l 18s linear -3s infinite}
+@keyframes s3{0%{opacity:0}1.94%{opacity:1}16.67%{opacity:1}18.61%{opacity:0}100%{opacity:0}}
+@keyframes s3l{0%{opacity:0}1.94%{opacity:1}14.72%{opacity:1}16.67%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.f{animation:none}}
+</style>
+<defs>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4cc26a"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef5350"/></marker>
+<marker id="ay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4d03f"/></marker>
+<marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e8804a"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb5c9"/></marker>
+<marker id="ap0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5aa9e6"/></marker>
+<marker id="ap1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5cc97a"/></marker>
+<marker id="ap2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e2c044"/></marker>
+<marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
+<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
+</defs>
+<rect width="720" height="412" rx="10" fill="#121417"/>
+<rect x="24" y="40" width="170" height="70" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="109" y="64" class="c b o">Proceso</text>
+<text x="320" y="30" class="c s d">Tabla de páginas</text>
+<text x="270" y="52" class="c s d">pág</text>
+<text x="325" y="52" class="c s d">marco</text>
+<text x="375" y="52" class="c s d">V</text>
+<rect x="240" y="230" width="160" height="56" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="320" y="254" class="c b">SO</text>
+<text x="320" y="274" class="c s d">manejador de fallos</text>
+<text x="600" y="30" class="c s d">Memoria física</text>
+<rect x="530" y="300" width="140" height="64" rx="10" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="522" y="336" class="e s d">Disco</text>
+<rect x="560" y="326" width="80" height="28" rx="4" fill="#552222" stroke="#ef6b6b" stroke-width="1.5"/>
+<text x="600" y="345" class="c s">página 3</text>
+<line x1="20" y1="372" x2="700" y2="372" stroke="#2a2e35"/>
+<text x="522" y="56" class="e m s d">0</text>
+<rect x="530" y="38" width="140" height="26" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="600" y="56" class="c s d">SO</text>
+<text x="522" y="86" class="e m s d">1</text>
+<rect x="530" y="68" width="140" height="26" rx="0" fill="#1f4a2c" stroke="#5cc97a" stroke-width="1.5"/>
+<text x="600" y="86" class="c s">página 1</text>
+<text x="522" y="116" class="e m s d">2</text>
+<rect x="530" y="98" width="140" height="26" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="600" y="116" class="c s d">otro</text>
+<text x="522" y="146" class="e m s d">3</text>
+<rect x="530" y="128" width="140" height="26" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="600" y="146" class="c s d">otro</text>
+<text x="522" y="176" class="e m s d">4</text>
+<rect x="530" y="158" width="140" height="26" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="600" y="176" class="c s d">otro</text>
+<text x="522" y="206" class="e m s d">5</text>
+<rect x="530" y="188" width="140" height="26" rx="0" fill="#1f3b57" stroke="#5aa9e6" stroke-width="1.5"/>
+<text x="600" y="206" class="c s">página 0</text>
+<text x="522" y="236" class="e m s d">6</text>
+<rect x="530" y="218" width="140" height="26" rx="0" fill="#4d4216" stroke="#e2c044" stroke-width="1.5"/>
+<text x="600" y="236" class="c s">página 2</text>
+<text x="522" y="266" class="e m s d">7</text>
+<rect x="240" y="60" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="79" class="c m d">0</text>
+<text x="325" y="79" class="c m">5</text>
+<text x="375" y="79" class="c m">1</text>
+<rect x="240" y="92" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="111" class="c m d">1</text>
+<text x="325" y="111" class="c m">1</text>
+<text x="375" y="111" class="c m">1</text>
+<rect x="240" y="124" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="143" class="c m d">2</text>
+<text x="325" y="143" class="c m">6</text>
+<text x="375" y="143" class="c m">1</text>
+<g class="f f0">
+<rect x="240" y="156" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="175" class="c m d">3</text>
+<text x="325" y="175" class="c m ">–</text>
+<text x="375" y="175" class="c m b ">0</text>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="600" y="266" class="c s d">libre</text>
+<text x="109" y="92" class="c m s ">load [pág 3]</text>
+<line x1="194" y1="80" x2="237" y2="170" stroke="#cfd4da" stroke-width="2.5" marker-end="url(#aw)"/>
+<text x="24" y="396" class="cap"><tspan class="d">1/6</tspan><tspan dx="10">El proceso accede a una dirección de la página 3</tspan></text>
+</g>
+<g class="f f1">
+<rect x="240" y="156" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="175" class="c m d">3</text>
+<text x="325" y="175" class="c m er">–</text>
+<text x="375" y="175" class="c m b er">0</text>
+<rect x="240" y="156" width="160" height="28" rx="0" fill="none" stroke="#ef5350" stroke-width="2.5"/>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="600" y="266" class="c s d">libre</text>
+<text x="109" y="92" class="c m s ">load [pág 3]</text>
+<line x1="320" y1="186" x2="320" y2="227" stroke="#ef5350" stroke-width="2.5" marker-end="url(#ar)"/>
+<text x="330" y="212" class="s er">excepción</text>
+<text x="24" y="396" class="cap"><tspan class="d">2/6</tspan><tspan dx="10">La tabla dice V = 0: la página no está en memoria. La MMU lanza una excepción</tspan></text>
+</g>
+<g class="f f2">
+<rect x="240" y="156" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="175" class="c m d">3</text>
+<text x="325" y="175" class="c m ">–</text>
+<text x="375" y="175" class="c m b ">0</text>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="600" y="266" class="c s d">libre</text>
+<text x="109" y="92" class="c m s y">bloqueado</text>
+<rect x="240" y="230" width="160" height="56" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
+<path d="M400,258 C470,258 470,261 527,261" fill="none" stroke="#f4d03f" stroke-width="2.5" marker-end="url(#ay)"/>
+<text x="24" y="396" class="cap"><tspan class="d">3/6</tspan><tspan dx="10">El SO bloquea al proceso y busca un marco libre: el 7</tspan></text>
+</g>
+<g class="f f3">
+<rect x="240" y="156" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="175" class="c m d">3</text>
+<text x="325" y="175" class="c m ">–</text>
+<text x="375" y="175" class="c m b ">0</text>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="#552222" stroke="#ef6b6b" stroke-width="1.5"/>
+<text x="600" y="266" class="c s">página 3</text>
+<text x="109" y="92" class="c m s y">bloqueado</text>
+<line x1="600" y1="324" x2="600" y2="278" stroke="#f4d03f" stroke-width="2.5" marker-end="url(#ay)"/>
+<text x="610" y="294" class="s y">page in</text>
+<text x="24" y="396" class="cap"><tspan class="d">4/6</tspan><tspan dx="10">Lee la página 3 del disco al marco 7 (page in)</tspan></text>
+</g>
+<g class="f f4">
+<rect x="240" y="156" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="175" class="c m d">3</text>
+<text x="325" y="175" class="c m ok">7</text>
+<text x="375" y="175" class="c m b ok">1</text>
+<rect x="240" y="156" width="160" height="28" rx="0" fill="none" stroke="#4cc26a" stroke-width="2.5"/>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="#552222" stroke="#ef6b6b" stroke-width="1.5"/>
+<text x="600" y="266" class="c s">página 3</text>
+<text x="109" y="92" class="c m s y">bloqueado</text>
+<rect x="240" y="230" width="160" height="56" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
+<line x1="320" y1="228" x2="320" y2="188" stroke="#f4d03f" stroke-width="2.5" marker-end="url(#ay)"/>
+<text x="24" y="396" class="cap"><tspan class="d">5/6</tspan><tspan dx="10">Actualiza la tabla de páginas: marco 7, V = 1</tspan></text>
+</g>
+<g class="f f5 fin">
+<rect x="240" y="156" width="160" height="28" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="270" y="175" class="c m d">3</text>
+<text x="325" y="175" class="c m ok">7</text>
+<text x="375" y="175" class="c m b ok">1</text>
+<rect x="530" y="248" width="140" height="26" rx="0" fill="#552222" stroke="#ef6b6b" stroke-width="1.5"/>
+<text x="600" y="266" class="c s">página 3</text>
+<text x="109" y="92" class="c m s ok">load [pág 3] ✓</text>
+<line x1="194" y1="80" x2="237" y2="170" stroke="#4cc26a" stroke-width="2.5" marker-end="url(#ag)"/>
+<path d="M400,170 C463.5,170 463.5,261 527,261" fill="none" stroke="#4cc26a" stroke-width="2.5" marker-end="url(#ag)"/>
+<text x="24" y="396" class="cap"><tspan class="d">6/6</tspan><tspan dx="10">Reejecuta la instrucción: ahora la traducción funciona</tspan></text>
+</g>
+</svg>

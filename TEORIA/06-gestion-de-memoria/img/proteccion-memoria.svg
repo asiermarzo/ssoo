@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 366" role="img" aria-label="Animación: sin protección P1 puede leer la memoria de P2; con registros base y límite el acceso provoca una excepción">
+<style>
+text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
+.m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
+.d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
+.c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
+.cap{font-size:14px}
+.f{opacity:0}.fin{opacity:1}
+.f0{animation:s3_5 10.5s linear 0s infinite}
+.f1{animation:s3_5 10.5s linear -7s infinite}
+.f2{animation:s3_5l 10.5s linear -3.5s infinite}
+@keyframes s3_5{0%{opacity:0}3.33%{opacity:1}33.33%{opacity:1}36.67%{opacity:0}100%{opacity:0}}
+@keyframes s3_5l{0%{opacity:0}3.33%{opacity:1}30.00%{opacity:1}33.33%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.f{animation:none}}
+</style>
+<defs>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4cc26a"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef5350"/></marker>
+<marker id="ay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4d03f"/></marker>
+<marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e8804a"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb5c9"/></marker>
+<marker id="ap0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5aa9e6"/></marker>
+<marker id="ap1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5cc97a"/></marker>
+<marker id="ap2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e2c044"/></marker>
+<marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
+<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
+</defs>
+<rect width="720" height="366" rx="10" fill="#121417"/>
+<text x="590" y="24" class="c d s">Memoria física</text>
+<rect x="500" y="36" width="180" height="90" rx="0" fill="#3d3718" stroke="#c9a227" stroke-width="1.5"/>
+<rect x="500" y="126" width="180" height="45" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<rect x="500" y="171" width="180" height="45" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<rect x="500" y="216" width="180" height="45" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
+<rect x="500" y="261" width="180" height="45" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<text x="590" y="86" class="c y b">SO</text>
+<text x="590" y="154" class="c o b">P1</text>
+<text x="590" y="198" class="c d s">libre</text>
+<text x="590" y="234" class="c t b">P2</text>
+<text x="590" y="252" class="c m s">tarjeta 4321 1234 …</text>
+<text x="590" y="288" class="c d s">libre</text>
+<text x="492" y="40" class="m s d e">0</text>
+<text x="492" y="130" class="m s d e">1000</text>
+<text x="492" y="175" class="m s d e">1500</text>
+<text x="492" y="220" class="m s d e">2000</text>
+<text x="492" y="265" class="m s d e">2500</text>
+<text x="492" y="310" class="m s d e">3000</text>
+<rect x="40" y="110" width="170" height="110" rx="4" fill="#1c1f24" stroke="#8b949e" stroke-width="1.5"/>
+<text x="125" y="136" class="c b">CPU</text>
+<text x="125" y="156" class="c o s">ejecuta P1</text>
+<line x1="20" y1="326" x2="700" y2="326" stroke="#2a2e35"/>
+<g class="f f0">
+<text x="125" y="196" class="c m">load [1200]</text>
+<line x1="212" y1="165" x2="496" y2="149" stroke="#4cc26a" stroke-width="2.5" marker-end="url(#ag)"/>
+<text x="700" y="155" class="c ok b l">✓</text>
+<text x="24" y="350" class="cap"><tspan class="d">1/3</tspan><tspan dx="10">P1 lee una dirección de su propia zona de memoria</tspan></text>
+</g>
+<g class="f f1">
+<text x="125" y="190" class="c m">load [2300]</text>
+<text x="125" y="210" class="c m s er">→ 4321 1234 …</text>
+<line x1="212" y1="165" x2="496" y2="238" stroke="#ef5350" stroke-width="2.5" marker-end="url(#ar)"/>
+<rect x="500" y="216" width="180" height="45" rx="4" fill="none" stroke="#ef5350" stroke-width="3"/>
+<text x="24" y="350" class="cap"><tspan class="d">2/3</tspan><tspan dx="10">Sin protección, nada impide que P1 lea (o escriba) la memoria de P2</tspan></text>
+</g>
+<g class="f f2 fin">
+<text x="125" y="196" class="c m">load [2300]</text>
+<rect x="40" y="236" width="170" height="62" rx="4" fill="#1c1f24" stroke="#f4d03f" stroke-width="1.5"/>
+<text x="56" y="261" class="s d">base</text>
+<text x="194" y="261" class="m e">1000</text>
+<text x="56" y="285" class="s d">límite</text>
+<text x="194" y="285" class="m e">500</text>
+<rect x="500" y="126" width="180" height="45" rx="4" fill="none" stroke="#4cc26a" stroke-width="3" stroke-dasharray="5 4"/>
+<line x1="212" y1="170" x2="318" y2="196" stroke="#ef5350" stroke-width="2.5" marker-end="url(#ar)"/>
+<text x="345" y="214" class="c er xl b">✕</text>
+<text x="345" y="238" class="c er s m">2300 ≥ límite</text>
+<text x="345" y="256" class="c er s">excepción: el SO termina P1</text>
+<text x="24" y="350" class="cap"><tspan class="d">3/3</tspan><tspan dx="10">Con registros base y límite, el hardware comprueba cada acceso: fuera de su zona, excepción</tspan></text>
+</g>
+</svg>

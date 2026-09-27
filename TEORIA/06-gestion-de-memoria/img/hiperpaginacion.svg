@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" role="img" aria-label="Gráfica del uso de la CPU frente al grado de multiprogramación: crece hasta un máximo y cae en picado cuando empieza la hiperpaginación">
+<style>
+text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
+.m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
+.d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
+.c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
+.cap{font-size:14px}
+</style>
+<defs>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4cc26a"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef5350"/></marker>
+<marker id="ay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4d03f"/></marker>
+<marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e8804a"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb5c9"/></marker>
+<marker id="ap0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5aa9e6"/></marker>
+<marker id="ap1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5cc97a"/></marker>
+<marker id="ap2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e2c044"/></marker>
+<marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
+<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
+</defs>
+<rect width="640" height="340" rx="10" fill="#121417"/>
+<rect x="420" y="40" width="190" height="260" rx="0" fill="#3a1a1a" stroke="none" stroke-width="1.5"/>
+<text x="515" y="62" class="c er b">hiperpaginación</text>
+<text x="515" y="80" class="c er s">(thrashing)</text>
+<line x1="60" y1="300" x2="612" y2="300" stroke="#cfd4da" stroke-width="1.5" marker-end="url(#aw)"/>
+<line x1="60" y1="300" x2="60" y2="34" stroke="#cfd4da" stroke-width="1.5" marker-end="url(#aw)"/>
+<path d="M70,290 C200,120 320,70 400,80 C450,86 490,200 560,284" fill="none" stroke="#f4d03f" stroke-width="3"/>
+<line x1="400" y1="80" x2="400" y2="300" stroke="#8b949e" stroke-dasharray="4 4"/>
+<text x="392" y="70" class="e s d">máximo</text>
+<text x="336" y="328" class="c s d">grado de multiprogramación (procesos en memoria)</text>
+<text x="34" y="170" class="c s d" transform="rotate(-90 34 170)">uso de la CPU</text>
+<text x="230" y="250" class="s d">más procesos,</text>
+<text x="230" y="266" class="s d">más uso de CPU</text>
+<text x="602" y="112" class="e s">los marcos no bastan:</text>
+<text x="602" y="128" class="e s">la CPU espera al disco</text>
+</svg>

@@ -1,6 +1,6 @@
 # Temas 5 y 6: Gestión de la memoria principal y memoria virtual
 
-**Tema 5** — Conceptos básicos · esquemas de gestión de memoria · asignación contigua (registro base y límite) · memoria particionada (MFT, MVT) · fragmentación · paginación · segmentación · segmentación paginada. **Tema 6** — Concepto de memoria virtual · Paginación bajo demanda · Copy‑on‑write · Fallos de página · Algoritmos de reemplazo.
+**Tema 5** — Conceptos básicos · asignación contigua (registro base y límite) · memoria particionada (MFT, MVT) · fragmentación · paginación · segmentación. **Tema 6** — Concepto de memoria virtual · paginación bajo demanda y fallos de página · memoria de intercambio · copy‑on‑write · lazy allocation · algoritmos de reemplazo · hiperpaginación.
 
 ---
 
@@ -36,25 +36,6 @@ flowchart LR
 
 Para que un programa se ejecute debe estar **cargado en memoria principal**. El sistema operativo gestiona la memoria: carga y descarga bloques desde y hacia el almacenamiento secundario minimizando el efecto de la E/S sobre el rendimiento. La información permanente se guarda en almacenamiento secundario.
 
-### Objetivos del sistema de gestión de memoria
-
-- Ofrecer a cada proceso un **espacio lógico propio** (reubicar).
-- Proporcionar **protección y aislamiento** entre procesos.
-- Permitir que los procesos **compartan** memoria.
-- Dar soporte a las distintas **regiones** del proceso.
-- **Maximizar el rendimiento** del sistema.
-- Proporcionar a los procesos **grandes mapas de memoria**.
-
-### Modelos de gestión de la memoria
-
-| Eje | Opciones |
-|-----|----------|
-| Uniprogramado / Multiprogramado | 1 / más de 1 programa en memoria a la vez |
-| Residente / No residente | La información ha de estar en memoria toda la ejecución, o no |
-| Inmóvil / Móvil | La traducción de dirección lógica a física es siempre la misma, o cambia |
-| Contigua / No contigua | Las direcciones lógicas contiguas son físicas contiguas, o no |
-| Entero / No entero | El programa ha de estar completo en memoria física para ejecutarse, o no |
-
 ### Ubicación y reubicación
 
 En un sistema multiprogramado de propósito general **no se conoce a priori** la posición de memoria que ocupará un programa; dependerá de la ocupación de la memoria y podrá variar entre ejecuciones. Es necesario **reubicar** las direcciones a las que hacen referencia las instrucciones (**direcciones lógicas**) para que se correspondan con las **direcciones físicas** asignadas. La **MMU** (*Memory Management Unit*) realiza la reubicación.
@@ -65,14 +46,6 @@ En un sistema multiprogramado de propósito general **no se conoce a priori** la
 | Direccionamiento indirecto a partir de la dirección de carga | El direccionamiento se resuelve dinámicamente según se producen las referencias |
 | Los programas no pueden reubicarse una vez iniciados | La traducción lógica→física se hace en tiempo de ejecución; necesita hardware adicional (MMU) |
 
-## Esquemas de gestión de memoria
-
-Máquina desnuda · monitor monolítico o residente · asignación particionada contigua · asignación particionada no contigua · paginación · segmentación · segmentación paginada · paginación segmentada · memoria virtual.
-
-- **Máquina desnuda**: la forma más sencilla; no existe gestor, el usuario controla toda la memoria.
-- **Monitor monolítico o residente**: el SO ocupa una zona fija (RAM baja o ROM) y necesita **protección** frente a los programas de usuario.
-- **Sistema monoprogramado**: memoria dividida entre el SO (parte en ROM, parte en RAM, a veces con los controladores de dispositivos) y un único programa de usuario.
-
 ## Asignación contigua: registro base y registro límite
 
 Se asigna a cada proceso una **zona contigua** de memoria para su mapa. Elementos:
@@ -80,7 +53,9 @@ Se asigna a cada proceso una **zona contigua** de memoria para su mapa. Elemento
 - **Registro límite**: el procesador comprueba que cada dirección generada por el proceso no sea mayor que su valor; si lo es, se genera una **excepción**.
 - **Registro base**: comprobado el límite, el procesador **suma** el valor de este registro a la dirección lógica y obtiene la **dirección física**.
 
-<img src="img/registro-base-limite.svg" width="560" alt="Traducción con registro base y límite: la CPU genera una dirección lógica que se compara con el límite; si no lo supera se le suma la base para obtener la dirección física dentro del programa en memoria">
+<img src="img/proteccion-memoria.svg" width="640" alt="Animación: sin protección P1 puede leer la memoria de P2; con registros base y límite el acceso provoca una excepción">
+
+<img src="img/registro-base-limite.svg" width="640" alt="Animación de la traducción con registro base y límite: la dirección lógica 200 se compara con el límite y se le suma la base (1200); la 700 supera el límite y provoca una excepción">
 
 ## Memoria particionada
 
@@ -89,8 +64,6 @@ El SO ocupa siempre una zona; el resto se reserva para procesos de usuario, divi
 ### MFT — Multiprogramación con número Fijo de Tareas
 
 - La memoria de usuario se divide en un **número fijo** de particiones, de tamaño posiblemente **heterogéneo**. Número y tamaño se establecen en el **arranque** y no varían.
-- Asignación con particiones **homogéneas**: una única cola; se asigna la primera zona disponible. Problemas: **fragmentación interna** y programas demasiado grandes.
-- Asignación con particiones **heterogéneas**: una única cola (primera zona en la que quepa el proceso) o varias colas (la zona en la que se desaproveche menos espacio).
 
 ### MVT — Multiprogramación con número Variable de Tareas
 
@@ -101,27 +74,16 @@ El SO ocupa siempre una zona; el resto se reserva para procesos de usuario, divi
   - **Mejor ajuste** (*best‑fit*): la zona libre más pequeña donde quepa el proceso; genera muchos espacios libres pequeños; comprobar cada hueco u ordenarlos por tamaño ⇒ algoritmo ineficiente.
   - **Peor ajuste** (*worst‑fit*): el hueco más grande, para no generar huecos pequeños; exige recorrer u ordenar toda la lista de huecos.
 
+<img src="img/ajuste-huecos.svg" width="640" alt="Animación de las políticas de asignación: una petición de 80 KB va al primer hueco (primer ajuste), al más pequeño donde cabe (mejor ajuste) o al más grande (peor ajuste)">
+
 ### Fragmentación de memoria
 
 - **Fragmentación interna**: particiones de tamaño **fijo** cuyo tamaño no coincide con la información que se almacena en ellas.
 - **Fragmentación externa**: particiones de tamaño **variable**; desaprovechamiento del espacio **entre** particiones. Relacionada con la contigüidad entre espacios libres.
 
-<img src="img/fragmentacion.svg" width="560" alt="Fragmentación externa: huecos libres dispersos que no bastan aunque su suma alcance el tamaño pedido. Fragmentación interna: espacio sobrante dentro de una misma partición">
+<img src="img/fragmentacion.svg" width="640" alt="Animación de la fragmentación externa: tras salir un proceso quedan dos huecos que suman 450 MB, pero uno de 350 MB no cabe hasta compactar. Abajo, fragmentación interna: 100 MB sin usar dentro de una partición fija de 300 MB">
 
 *La fragmentación deja memoria libre en huecos que pueden resultar inutilizables aunque su suma parezca suficiente.*
-
-### Tabla de descripción de particiones
-
-Ejemplo con el SO en `0K–100K` y 1000K de memoria:
-
-| Nº de partición | Base | Tamaño | Estado |
-|---|---|---|---|
-| 0 | 0K | 100K | ASIGNADA |
-| 1 | 100K | 300K | LIBRE |
-| 2 | 400K | 100K | ASIGNADA |
-| 3 | 500K | 250K | ASIGNADA |
-| 4 | 700K | 150K | ASIGNADA |
-| 5 | 900K | 100K | LIBRE |
 
 ## Paginación
 
@@ -129,71 +91,29 @@ Surge para solucionar los problemas de fragmentación del particionado. La memor
 
 - El trozo del proceso se denomina **página**; el de la memoria principal, **marco**.
 - Al cargar un proceso, sus páginas se colocan en los marcos libres **aunque no estén contiguos**. Se elimina la **fragmentación externa** y la interna se limita a, como máximo, algo menos que el tamaño de una página.
-- Se mantiene información sobre los marcos libres; para un programa de `n` páginas se necesitan `n` marcos.
+- El SO lleva la cuenta de los marcos libres (con un mapa de bits o una lista); para un programa de `n` páginas se necesitan `n` marcos.
 - Se establece una **tabla de páginas** para traducir direcciones lógicas a físicas.
+
+<img src="img/paginas-marcos.svg" width="640" alt="Animación: las páginas 0 a 3 de un proceso se cargan en los marcos libres 5, 1, 7 y 3, y la tabla de páginas guarda la correspondencia">
+
+*La paginación divide la memoria lógica y física en bloques del mismo tamaño. Las páginas de un proceso pueden ocupar marcos no contiguos.*
 
 ### Traducción de direcciones
 
 La dirección se parte en dos campos. El **número de página / marco** se traduce con la tabla de páginas; el **desplazamiento** dentro de la página/marco no cambia:
 
-<img src="img/traduccion-paginacion.svg" width="560" alt="La dirección lógica (página, desplazamiento) se traduce a dirección física (marco, desplazamiento) mediante la tabla de páginas">
+<img src="img/traduccion-paginacion.svg" width="640" alt="Animación: la dirección lógica 0x2ABC se parte en página 2 y desplazamiento ABC; la tabla de páginas da el marco 7 y la dirección física es 0x7ABC">
 
 El SO mantiene **una tabla de páginas por proceso**, que relaciona cada página con el marco en el que se encuentra.
 
-```mermaid
-flowchart LR
-    subgraph L["Documento lógico · proceso"]
-        P0[Página 0]
-        P1[Página 1]
-        P2[Página 2]
-        P3[Página 3]
-    end
-    PT["Tabla de páginas<br/>0→5 · 1→1 · 2→7 · 3→3"]
-    subgraph F["Casilleros físicos · RAM"]
-        F1[Marco 1]
-        F3[Marco 3]
-        F5[Marco 5]
-        F7[Marco 7]
-    end
-    P0 --> PT --> F5
-    P1 --> PT --> F1
-    P2 --> PT --> F7
-    P3 --> PT --> F3
-
-    classDef tabla fill:#d9d9d9,stroke:#555555,color:#222222;
-    classDef par0 fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef par1 fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
-    classDef par2 fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef par3 fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
-    class PT tabla;
-    class P0,F5 par0;
-    class P1,F1 par1;
-    class P2,F7 par2;
-    class P3,F3 par3;
-    style L fill:none,stroke-dasharray: 5 5;
-    style F fill:none,stroke-dasharray: 5 5;
-```
-
-*La paginación divide la memoria lógica y física en bloques del mismo tamaño. Las páginas de un proceso pueden ocupar marcos no contiguos.*
-
 ### Paginación: MMU
 
-- La **MMU** (elemento **hardware**) traduce la dirección lógica a física con ayuda de la tabla de páginas, que rellena en la asignación de memoria. La **protección** se establece en la tabla de páginas mediante **bits de acceso**.
-- Para gestionar la paginación se emplean **mapas de bits** o **listas enlazadas**.
-- La MMU usa **dos** tablas de páginas: una de **usuario** (direcciones del espacio de usuario) y una del **sistema** (direcciones del espacio del sistema, usables solo en modo privilegiado).
+La **MMU** (elemento **hardware**) traduce la dirección lógica a física con ayuda de la tabla de páginas, que el SO rellena al asignar memoria. La **protección** se establece en la tabla de páginas mediante **bits de acceso**.
 
-### Ventajas de la paginación
+### Ventajas e inconvenientes
 
-- **Carga parcial**: se puede empezar a ejecutar cargando solo una parte del programa; el resto se carga bajo demanda.
-- **Discontinuidad**: las páginas no necesitan estar contiguas ⇒ no hacen falta procesos de compactación.
-- Fácil de controlar (todas las páginas tienen el mismo tamaño).
-- **Inmune a la fragmentación externa.**
-- El mecanismo de traducción de direcciones (**DAT**) separa los conceptos de espacio de direcciones y espacio de memoria: libera al programador del tamaño físico de memoria (mayor productividad) y permite aumentar el grado de multiprogramación.
-
-### Desventajas de la paginación
-
-- Se incrementa el coste de hardware y software (nueva información y mecanismo de traducción).
-- Aparece la **fragmentación interna**: si un programa necesita 5 KB y las páginas son de 4 KB, se le asignan 2 páginas (8 KB) y quedan 3 KB sin utilizar; la suma de estos espacios puede superar el tamaño de varias páginas, pero no se pueden usar.
+- **Ventajas**: sin fragmentación externa ni compactación (las páginas no necesitan estar contiguas); permite la **carga parcial** del programa y es la base de la memoria virtual.
+- **Inconvenientes**: más coste de hardware y software (tabla de páginas y traducción en cada acceso) y **fragmentación interna** en la última página: 5 KB con páginas de 4 KB ocupan 2 páginas (8 KB).
 
 ### Tabla de páginas
 
@@ -205,37 +125,6 @@ Cada entrada contiene:
 - **Página accedida**: la MMU lo activa al acceder a una dirección de esa página.
 - **Página modificada** (*dirty bit*): la MMU lo activa al escribir en una dirección de esa página.
 - **Desactivación de caché**: indica que no debe usarse la caché de MP para acelerar el acceso a esa página.
-
-### Responsabilidades
-
-| Hardware | Sistema operativo |
-|----------|-------------------|
-| Traducción de direcciones lógicas a físicas | Resolución de problemas |
-| Detección de problemas: fallo de página, acceso inválido, falta de privilegios | Gestión del espacio libre/ocupado |
-
-### Gestión de la memoria disponible
-
-| Mapa de bits | Lista de libres |
-|--------------|-----------------|
-| Sencillo; ocupa poco espacio | Organizada por zonas libres y ocupadas |
-| Difícil/costoso encontrar huecos | Fácil encontrar huecos, pero costosa de construir |
-
-### Políticas de búsqueda
-
-- **Bajo demanda**: cuando se pide una página y no está en MP, se va a buscar.
-- **Prepaginación**: al cargar el programa se cargan varias páginas contiguas, para reducir el tiempo de arranque.
-
-### Políticas de reemplazo (paginación)
-
-Si toda la memoria está ocupada y hace falta desalojar una página: escoger una **víctima**, paginarla (*page out*) si se ha modificado, y traer la nueva (*page in*) o crearla.
-
-| Algoritmo | Comentario |
-|-----------|-----------|
-| **FIFO** | Fácil de implementar; no tiene en cuenta la localidad temporal |
-| **LRU** (*Least Recently Used*) | Excelente algoritmo; difícil de implementar |
-| **NRU** (*Non Recently Used*) | Se basa en los bits de modificado (M) y referencia (R); orden de preferencia para expulsar: `¬R,¬M > ¬R,M > R,¬M > R,M`; en empate, FIFO. Simple y bastante eficiente |
-| **Segunda oportunidad** | Mejora sobre FIFO: si el bit R está a 1, la página se coloca al final de la cola en lugar de elegirla |
-| **Envejecimiento** (*aging*) | Cada página tiene un número de `n` bits; se elige la de número más bajo. En cada ciclo de reloj: `valor = (R << n) + (valor_actual >> 1)`. Muy eficiente, se aproxima a LRU |
 
 ## Segmentación
 
@@ -253,32 +142,6 @@ Vista de la traducción por la MMU (segmentos dispersos en la memoria física, d
 
 <img src="img/segmentacion-mmu.svg" width="600" alt="Cada segmento del espacio virtual se traduce mediante la MMU a una zona de memoria física distinta y no contigua; los datos compartidos son accesibles desde varios procesos">
 
-## Segmentación paginada
-
-Combina lo mejor de la paginación y la segmentación:
-
-- **Segmentación**: soporte directo a las regiones del proceso.
-- **Paginación**: mejor aprovechamiento de la memoria y base para la memoria virtual.
-
-Un segmento está formado por un **conjunto de páginas** y no tiene que estar contiguo. La dirección lógica = **número de segmento + número de página dentro del segmento + desplazamiento dentro de la página**. La MMU usa una **tabla de segmentos** en la que cada entrada apunta a una **tabla de páginas**.
-
-<img src="img/segmentacion-paginada.svg" width="560" alt="Segmentación paginada: la dirección segmento, página, desplazamiento se resuelve con la tabla de segmentos y luego la tabla de páginas para llegar a la memoria principal">
-
-**Paginación segmentada**: consiste en segmentar las tablas de páginas adecuándolas al tamaño del programa; cada página se divide en segmentos. **No se emplea.**
-
-## Casos prácticos
-
-Windows y Linux usan **segmentación paginada** (Windows 10 incluido). El estado de la gestión de memoria se observa con las herramientas del sistema.
-
-### Bibliografía (Tema 5)
-
-[Silb09] cap. 7 · [Silb12] cap. 8 · [Silb18] cap. 9 · [Tan15] cap. 3 · [Stal05] cap. 7 · [Stal97] cap. 6 · [Nutt04] cap. 11.
-
-### Actividades complementarias
-
-- Ejercicios de la Parte 3 (Memoria): 1‑13, 17, 19, 20, 22, 25, 26, 29, 32, 35, 36, 39, 40, 44, 47, 48, 52, 53, 55, 57, 58, 62.
-- Programación: desarrollar un simulador de las políticas de primer, mejor y peor ajuste para evaluar su bondad en distintos escenarios.
-
 ---
 
 # Tema 6 — Memoria virtual
@@ -291,133 +154,46 @@ La **memoria virtual** es una técnica que permite **ejecutar procesos que no ca
 - Cuando escasea la memoria se crea un **espacio de intercambio (SWAP)** en disco (particiones dedicadas o ficheros de intercambio) que amplía la memoria auxiliar y permite simular más memoria principal de la real.
 - Método **transparente** a los procesos. La memoria máxima simulable depende del **tamaño de palabra**: en un sistema de 32 bits el máximo es 2³² = **4 GB**.
 - El programa se divide en **bloques** que no necesitan ocupar posiciones consecutivas. La traducción de direcciones es **dinámica**; es posible reubicar el proceso en memoria.
-- Se implementa normalmente mediante **paginación bajo demanda** (también posible con segmentación). Los sistemas siguen un esquema de **segmentación paginada** con los segmentos divididos en páginas.
+- Se implementa normalmente mediante **paginación bajo demanda** (también posible con segmentación).
 
 <img src="img/memoria-virtual.svg" width="560" alt="La memoria lógica se traduce mediante la MMU a memoria física; el área de swap actúa como respaldo de la memoria física para las páginas que no caben en ella">
 
-Correspondencia de espacios (programa fuente → programa absoluto → imagen ejecutable):
+## Paginación bajo demanda y fallos de página
 
-```mermaid
-flowchart LR
-    PF[Programa fuente] --> EN[Espacio de nombres]
-    PA[Programa absoluto] --> EV["Espacio de direcciones virtuales de Pᵢ"]
-    IE[Imagen ejecutable] --> EF[Espacio de direcciones físicas]
+La memoria virtual se implementa normalmente con **paginación bajo demanda**: los procesos residen en disco y un **paginador perezoso** (*lazy swapper*) solo lleva una página a memoria cuando se hace referencia a ella. Un *intercambiador* maneja procesos enteros; un *paginador*, páginas sueltas. La alternativa es la **prepaginación**: cargar por adelantado varias páginas contiguas para reducir el tiempo de arranque.
 
-    classDef nombres fill:#d9d9d9,stroke:#555555,color:#222222;
-    classDef virtual fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef fisica fill:#6ba3d6,stroke:#2b6f99,color:#0d2a3f;
-    class PF,EN nombres;
-    class PA,EV virtual;
-    class IE,EF fisica;
-```
+Soporte hardware y estructuras de datos:
 
-### Ventajas de la memoria virtual
+- **MMU**: traduce en cada acceso la dirección virtual a física consultando la tabla de páginas.
+- **TLB** (*Translation Lookaside Buffer*): caché con las entradas de la tabla de páginas usadas más recientemente. Si acierta, la MMU no tiene que leer la tabla en memoria.
+- En cada entrada de la tabla de páginas, el **bit de validez (V)** (o de presencia) indica si la página está en un marco; los bits de **referenciada (R)** y **modificada (M)** sirven para elegir víctima y para saber si hay que escribirla en disco.
+- **Espacio de swap** en disco y un **mapa de archivos** que indica dónde está guardada cada página.
 
-- Ejecutar programas mayores que la memoria física disponible.
-- Alojar en MP más procesos (mayor multiprogramación).
-- Reducir la latencia de ejecución (no hay que cargar el programa completo para empezar).
-- Gestionar más eficientemente la memoria física: cualquier espacio libre, incluso una única página, puede aprovecharse.
-- Aumentar el grado de multiprogramación reduciendo el número de páginas cargadas de cada programa ⇒ mayor eficiencia de la CPU.
-- Independencia completa de los programas respecto de la máquina.
+<img src="img/tlb.svg" width="640" alt="Animación: la MMU busca el número de página en la TLB; si acierta obtiene el marco al momento; si falla consulta la tabla de páginas en memoria y guarda la entrada en la TLB">
 
-### Soporte hardware
+*La TLB evita leer la tabla de páginas en casi todos los accesos.*
 
-- Traducción de direcciones de los sistemas paginados.
-- Espacio para paginación en un dispositivo de almacenamiento secundario.
-- **Bit de validez (V)** en cada entrada de la tabla de páginas: indica si la página está cargada en memoria.
-- **Trap de fallo de página**: cuando la página referenciada no está en MP, el mecanismo de interrupciones salta a la rutina de tratamiento del fallo (que promueve la carga). El fallo puede ocurrir en cualquier referencia a memoria durante la ejecución de la instrucción, así que la arquitectura debe poder dejar el procesador en un estado consistente antes de saltar.
-- Información adicional para gestionar el fallo (bits de página modificada, referenciada…).
+Un **fallo de página** ocurre cuando el proceso accede a una dirección de su espacio cuya página no está en memoria principal (V = 0). La MMU no puede traducirla y lanza una excepción; el **manejador de fallos de página** del SO:
 
-### Aspectos de diseño del gestor de memoria virtual
+1. Comprueba que la dirección pertenece al espacio del proceso. Si no, es un acceso inválido y el proceso recibe una señal (`SIGSEGV`).
+2. Busca un marco libre. Si no hay, el **algoritmo de reemplazo** elige una víctima y, si su bit M está activo, la escribe en disco (*page out*).
+3. Lee la página del disco al marco (*page in*). Mientras dura la E/S, el proceso queda bloqueado.
+4. Actualiza la tabla de páginas: V = 1 y número de marco.
+5. Reejecuta la instrucción que falló. El proceso continúa como si el fallo no hubiera ocurrido.
 
-1. **Técnica**: paginación, segmentación o mezcla.
-2. **Política de lectura** (cuándo cargar una página):
-   - **Bajo demanda pura**: se carga solo al referenciar una dirección de esa página.
-   - **Bajo demanda previa**: se carga antes de referenciarla.
-3. **Política de ubicación** (dónde cargar el bloque): solo tiene sentido en segmentación (en paginación todos los bloques son iguales).
-4. **Política de asignación**: número de marcos que se asigna a un proceso.
-5. **Política de reemplazo**: qué página reemplazar cuando no hay marcos disponibles. La **cadena de referencia** (lista de referencias de un proceso) se usa para evaluar la calidad de los algoritmos:
-   - **FIFO**: sustituye la primera página que entró.
-   - **LRU**: sustituye la que hace más tiempo que no se utiliza; aproximación al óptimo.
-   - **Óptimo**: sustituye la página que tardará más en ser utilizada; **no implementable** (no se conoce a priori).
-6. **Conjunto de trabajo**: conjunto de páginas a las que el proceso ha hecho referencia en las últimas `N` unidades de tiempo (para un instante `T`).
+El fallo puede darse al leer la instrucción, al leer sus operandos o al escribir el resultado, así que la CPU debe poder dejar la instrucción en un estado consistente y reiniciarla.
 
-### Hardware de la memoria virtual basada en paginación
+No todos los fallos van a disco. El manejador también puede encontrar la página ya en memoria (por ejemplo, compartida con otro proceso) y solo asignarla, o apuntar a una página especial de **ceros** y reservar una nueva cuando el proceso escriba (ver *Copy‑on‑write*, más abajo).
 
-- **Dispositivo de memoria auxiliar**: normalmente el disco duro, donde se almacenan las páginas.
-- **MMU**: traduce dinámicamente las direcciones virtuales a reales consultando la tabla de páginas.
-- **TLB** (*Translation Lookaside Buffer*, búfer de traducción adelantada): caché especial para las entradas de la tabla de páginas usadas más recientemente.
+<img src="img/fallo-pagina.svg" width="640" alt="Animación de un fallo de página: el acceso encuentra V=0, la MMU lanza una excepción, el SO lee la página del disco a un marco libre, pone V=1 y la instrucción se reejecuta">
 
-Dos estructuras de datos: la **tabla de páginas** (una entrada por página, con la dirección del marco y los bits de acceso) y el **mapa de archivos** (dónde están almacenadas las páginas en el dispositivo auxiliar).
-
-### Funcionamiento
-
-- Las páginas residentes en memoria secundaria se cargan en marcos conforme se necesitan. La MMU comprueba el **bit de presencia** en la tabla de páginas antes de traducir, para evitar traducciones innecesarias.
-- Si la página está en un marco: se verifica que el acceso es a una dirección **permitida**; si es válido, se traduce y se accede a la dirección física.
-- Si la página **no está** en memoria: se comprueba que la dirección está dentro del espacio del proceso y que hay un marco disponible.
-  - Si hay **marco libre**: se consulta el mapa de archivos y se carga la página de la memoria auxiliar.
-  - Si **no hay marcos libres**: el **algoritmo de reemplazo** elige una víctima; se comprueba su **bit sucio**; si está activado, se escribe la página en memoria auxiliar (E/S).
-  - En ambos casos, una vez cargada, se activa el **bit de presencia** y se guarda la dirección del marco.
-
-```mermaid
-flowchart LR
-    VA["dirección lógica: nº de página + desplazamiento"] --> MMU
-    MMU -->|"nº de página"| TLB{"¿en la TLB?"}
-    TLB -->|acierto| FR["nº de marco"]
-    TLB -->|fallo| PT["tabla de páginas"]
-    PT -->|"bit de validez = 1"| FR
-    PT -->|"bit de validez = 0"| PF["fallo de página: traer de disco / reemplazo"]
-    FR --> PA["dirección física: nº de marco + desplazamiento"]
-
-    classDef entrada fill:#d9d9d9,stroke:#555555,color:#222222;
-    classDef activo fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef decision fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef exito fill:#d9ead3,stroke:#38761d,color:#1b4d1b;
-    classDef error fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
-    class VA entrada;
-    class MMU activo;
-    class TLB,PT decision;
-    class FR,PA exito;
-    class PF error;
-```
+*Si una página necesaria no está en memoria, el kernel detiene el proceso, la carga desde disco y reejecuta la instrucción.*
 
 ## Memoria de intercambio
 
-El **intercambio** usa un disco o parte de un disco (**dispositivo de swap**) como respaldo de la memoria principal.
+El **área de intercambio** (*swap*) es una partición o un fichero en disco que respalda la memoria principal. Cuando no quedan marcos libres, las páginas expulsadas se escriben en swap (*page out*) si se han modificado, y vuelven a memoria cuando se referencian (*page in*). El espacio en swap puede reservarse al crear el proceso (**preasignación**) o solo al expulsar páginas (**sin preasignación**).
 
-- Cuando no caben todos los procesos activos, se elige un proceso residente y se copia su imagen a swap (*swap out*). El criterio de selección puede considerar la **prioridad**, el **tamaño de su mapa de memoria**, el **tiempo que lleva ejecutando** y su **estado**. Se intenta expulsar procesos **bloqueados**.
-- Un proceso expulsado tarde o temprano vuelve a MP (*swap in*). Solo se recargan procesos **listos para ejecutar**, cuando hay memoria disponible o cuando llevan cierto tiempo expulsados. **No debe expulsarse** un proceso mientras realiza operaciones de E/S.
-- Asignación de espacio en el dispositivo de swap: **preasignación** (se reserva espacio al crear el proceso) o **sin preasignación** (solo al expulsar el proceso).
-- Al **desalojar** un proceso se copia toda su imagen ejecutable a memoria secundaria; al **realojar** en memoria primaria, la imagen se copia sobre el nuevo bloque asignado por el gestor de memoria.
-
-<img src="img/intercambio-swap.svg" width="520" alt="El intercambio copia la imagen de un proceso de memoria primaria a memoria secundaria (desalojo) y de vuelta (realojo)">
-
-- Sin hardware de reubicación, el intercambio sería difícil por el problema del enlazado de direcciones; con él, se copia la imagen a la nueva memoria y se carga el registro de reubicación.
-- Los sistemas de tiempo compartido usan intercambio para dar servicio equitativo en un sistema sobrecargado: cuando el número de usuarios activos supera cierto umbral, el gestor de memoria empieza a intercambiar. El efecto lo percibe el usuario como un **incremento del tiempo de respuesta**.
-
-## Paginación bajo demanda
-
-- Similar a un sistema de paginación con intercambios: los procesos residen en disco y, al ejecutar un proceso, se lleva a memoria — pero con un **intercambiador perezoso** (*lazy swapper*) que nunca incorpora una página a memoria a menos que se necesite.
-- Un **intercambiador** manipula procesos enteros; un **paginador** trata individualmente las páginas de un proceso.
-- Si una instrucción direcciona una página que no está en MP, no se puede ejecutar en ese momento: es un **fallo de página**. Al producirse hay tres aspectos:
-  1. **Servicio a la interrupción de página**: el proceso se detiene.
-  2. **Incorporación de la página**: mediante una instrucción de E/S se transfiere la página a un marco.
-  3. **Reinicio del proceso**: se comunica a la CPU que la página ya está en MP y el proceso continuará cuando el *dispatcher* lo estime oportuno.
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso · mesa
-    participant SO as Sistema operativo
-    participant D as Disco · archivo
-    P->>SO: necesito la página 12
-    SO->>SO: no está en RAM · elige un marco
-    SO->>D: trae la página 12
-    D-->>SO: contenido de la página
-    SO->>SO: actualiza la tabla de páginas
-    SO-->>P: reejecuta la instrucción
-```
-
-*Si una página necesaria no está en memoria, el kernel detiene temporalmente el proceso, la carga desde disco y reanuda la instrucción.*
+<img src="img/intercambio-swap.svg" width="640" alt="Animación: con la memoria llena, una página de un proceso inactivo se escribe en el fichero de swap y su marco se usa para la página que se necesita; más tarde vuelve a memoria">
 
 ## Copy‑on‑write
 
@@ -429,129 +205,88 @@ sequenceDiagram
 
 En memoria virtual: cuando un proceso crea una copia de sí mismo (`fork`), las páginas que puedan modificarse se marcan **copy‑on‑write**. Cuando un proceso escribe, el kernel interviene y crea una copia. `calloc` puede aprovechar esta estrategia con una única página física de ceros a la que refieren todas las páginas devueltas, marcadas COW; la memoria real no aumenta hasta que se escribe.
 
+<img src="img/copy-on-write.svg" width="640" alt="Animación de copy-on-write: tras fork, padre e hijo apuntan a los mismos marcos marcados de solo lectura; cuando el hijo escribe en una página, el kernel copia ese marco y cambia la entrada de la tabla del hijo">
+
 Implementación: se marcan ciertas páginas como **solo lectura** en la MMU. Al intentar escribir, la MMU lanza una **excepción** que captura el kernel, que decide **emitir una señal de violación de acceso** o **reservar nueva memoria** y escribir en ella la página modificada. El principal problema a nivel de kernel es su **complejidad**: al escribir en una página, debe copiarla si está marcada COW.
 
-**Ejemplo de reserva de memoria** (efecto de COW y de la reserva perezosa):
+## Lazy allocation
+
+**Reserva perezosa** (*lazy allocation*): `malloc` solo reserva direcciones virtuales; la memoria física (RSS) crece al escribir en las páginas. Ejemplo (`memalloc.c`):
 
 ```c
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #define MEGABYTE (1024*1024)
-#define USED_MEMORY 512
-char *mem[USED_MEMORY];
+#define NUM_BLOQUES 512
 
 int main(int argc, char *argv[]) {
-    int i;
-    /* (I)  solo malloc                          -> RSS mínimo (~316 KB) */
-    for (i = 0; i < USED_MEMORY; i++) mem[i] = malloc(MEGABYTE);
-
-    /* (II) malloc + tocar 1 byte por bloque     -> RSS medio (~2364 KB) */
-    /* for (i = 0; i < USED_MEMORY; i++) { mem[i] = malloc(MEGABYTE); mem[i][0] = 0xff; } */
-
-    /* (III) malloc + escribir todo el bloque    -> RSS completo (~524604 KB) */
-    /* for (i = 0; i < USED_MEMORY; i++) { mem[i] = malloc(MEGABYTE);
-           for (j = 0; j < MEGABYTE; j++) mem[i][j] = 0xff; } */
-
-    for (;;) sleep(1);
+    if (argc != 2) { fprintf(stderr, "Uso: %s <1|2|3>\n", argv[0]); return 1; }
+    char *mem[NUM_BLOQUES];
+    switch (argv[1][0]) {
+    case '1': /* (I)   solo malloc                      -> RSS mínimo (~316 KB) */
+        for (int i = 0; i < NUM_BLOQUES; i++) 
+            mem[i] = malloc(MEGABYTE);
+        break;
+    case '2': /* (II)  malloc + tocar 1 byte por bloque -> RSS medio (~2364 KB) */
+        for (int i = 0; i < NUM_BLOQUES; i++) { 
+            mem[i] = malloc(MEGABYTE); 
+            mem[i][MEGABYTE/2] = 0xff; 
+        }
+        break;
+    case '3': /* (III) malloc + escribir todo el bloque -> RSS completo (~524604 KB) */
+        for (int i = 0; i < NUM_BLOQUES; i++) { 
+            mem[i] = malloc(MEGABYTE); 
+            memset(mem[i], 0xff, MEGABYTE); 
+        }
+        break;
+    }
+    pause();
     return 0;
 }
 ```
 
 ```console
-$ ps -a -ocomm,rssize | grep memalloc
-./memalloc      316       # (I)  solo malloc
-./memalloc     2364       # (II) tocando 1 byte por bloque
-./memalloc   524604       # (III) escribiendo todo
+$ gcc memalloc.c -Wall -o memalloc
+$ ./memalloc 1 & ./memalloc 2 & ./memalloc 3 &
+$ ps -C memalloc -o pid,vsz,rss,args
+    PID    VSZ   RSS COMMAND
+   4101 528876   316 ./memalloc 1        # (I)   solo malloc
+   4102 528876  2364 ./memalloc 2        # (II)  tocando 1 byte por bloque
+   4103 528876 524604 ./memalloc 3       # (III) escribiendo todo
+$ pkill memalloc                  # mata de golpe los tres
 ```
 
-## Fallos de página
+Qué está pasando:
 
-Un **fallo de página** es la secuencia de eventos que ocurre cuando un programa intenta acceder a datos o código que están en su espacio de direcciones pero **no están en la memoria principal**. El SO lo maneja haciendo residentes los datos accedidos, de modo que el programa continúa como si el fallo nunca hubiera ocurrido.
+- **(I) solo `malloc`**: un bloque de 1 MB supera el umbral de glibc (128 KB), así que `malloc` pide al kernel una región nueva con `mmap`. El kernel solo anota las direcciones virtuales, sin asignar marcos. Lo único que se escribe es la cabecera de `malloc` (16 bytes al inicio del bloque), que ocupa una página por bloque: 512 × 4 KB ≈ 2 MB, más lo que ocupa el propio proceso (código, libc, pila).
+- **(II) tocar 1 byte**: `mem[i][MEGABYTE/2]` cae en otra página del bloque, provoca un fallo de página y el kernel le asigna un marco: ≈ 2 MB más que (I). Si se tocase `mem[i][0]` no se notaría, porque cae en la misma página que la cabecera.
+- **(III) escribir todo**: `memset` escribe las 256 páginas de cada bloque; cada primera escritura en una página provoca un fallo de página: ≈ 512 MB residentes.
 
-Se produce al **obtener una instrucción**, al **leer los operandos** o al **escribir los resultados**. Soluciones:
+Los tres procesos reservan el mismo espacio virtual (columna VSZ, ≈ 512 MB); la memoria física se asigna página a página, solo cuando se escribe.
 
-- Interrumpir la ejecución, guardar el estado, solucionar, restaurar el estado y continuar.
-- Eliminar la instrucción, solucionar y reejecutarla.
-
-Si se produce un fallo, la MMU **no tiene traducción** para la dirección: interrumpe a la CPU y se ejecuta el **manejador de fallos de página**, que determina qué hacer:
-
-- Encontrar dónde reside la página en disco y leerla (a menudo el fallo es por una página de **código**).
-- Determinar que la página ya está en MP pero no asignada al proceso actual, y asignársela.
-- Apuntar a una página especial de **ceros** y asignar una página nueva si el proceso intenta escribir (página COW para datos inicializados a cero).
-- Obtener la página desde otro lugar.
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso
-    participant MMU as MMU
-    participant SO as Manejador de fallos
-    participant D as Disco
-    P->>MMU: acceso a dirección virtual
-    MMU->>SO: fallo de página (trap): no hay traducción
-    SO->>SO: ¿referencia válida? elegir marco (reemplazo si no hay libre)
-    SO->>D: leer la página al marco (page in)
-    D-->>SO: página cargada
-    SO->>SO: actualizar tabla de páginas (bit de presencia = 1, dirección del marco)
-    SO-->>P: reejecutar la instrucción
-```
+<img src="img/reserva-perezosa.svg" width="640" alt="Animación de memalloc: los tres procesos reservan 512 MB virtuales; con 1 el RSS apenas crece, con 2 crece una página por bloque y con 3 llega a 512 MB">
 
 ## Algoritmos de reemplazo
 
-Ver la tabla de la sección de paginación (Tema 5): **FIFO**, **LRU**, **NRU**, **segunda oportunidad**, **envejecimiento**.
+Si no hay marcos libres hay que escoger una **víctima**, escribirla en disco (*page out*) si se ha modificado y traer la nueva página (*page in*). Los algoritmos se comparan contando los fallos que producen con una misma **cadena de referencia** (la secuencia de páginas a las que accede un proceso).
+
+| Algoritmo | Comentario |
+|-----------|-----------|
+| **Óptimo** | Sustituye la página que tardará más en usarse. **No implementable** (no se conoce el futuro); sirve de referencia para comparar |
+| **FIFO** | Sustituye la primera página que entró. Fácil de implementar; no tiene en cuenta la localidad temporal |
+| **LRU** (*Least Recently Used*) | Sustituye la que hace más tiempo que no se usa; se aproxima al óptimo. Excelente algoritmo; difícil de implementar |
+| **NRU** (*Non Recently Used*) | Se basa en los bits de modificado (M) y referencia (R); orden de preferencia para expulsar: `¬R,¬M > ¬R,M > R,¬M > R,M`; en empate, FIFO. Simple y bastante eficiente |
+| **Segunda oportunidad** | Mejora sobre FIFO: si el bit R está a 1, la página se coloca al final de la cola en lugar de elegirla |
+| **Envejecimiento** (*aging*) | Cada página tiene un número de `n` bits; se elige la de número más bajo. En cada ciclo de reloj: `valor = (R << n) + (valor_actual >> 1)`. Muy eficiente, se aproxima a LRU |
+
+<img src="img/reemplazo-fifo.svg" width="640" alt="Animación de FIFO con 3 marcos: las referencias entran una a una; cuando no hay marco libre se expulsa la página que lleva más tiempo en memoria y se cuentan los fallos">
 
 ### Hiperpaginación (*thrashing*)
 
-Cuando el número de marcos asignados a los procesos activos es insuficiente para su conjunto de trabajo, cada pocas instrucciones provocan un fallo de página que expulsa otra página aún necesaria. El sistema entra en un ciclo en el que invierte más tiempo intercambiando páginas con el disco que ejecutando instrucciones útiles.
+Cuando el número de marcos asignados a los procesos activos es insuficiente para su **conjunto de trabajo** (las páginas que han usado recientemente), cada pocas instrucciones provocan un fallo de página que expulsa otra página aún necesaria. El sistema entra en un ciclo en el que invierte más tiempo intercambiando páginas con el disco que ejecutando instrucciones útiles.
 
-```mermaid
-flowchart LR
-    A[Ejecutar unas pocas instrucciones] --> F[Fallo de página]
-    F --> O[Expulsar otra página]
-    O --> C[Cargar desde disco]
-    C --> A
-    C -. la CPU espera mientras el disco domina el tiempo .-> T((THRASHING))
-
-    classDef ejecutar fill:#cfe2f3,stroke:#2b6f99,color:#1b3a4b;
-    classDef ciclo fill:#fce5a8,stroke:#b8860b,color:#5c4600;
-    classDef alerta fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
-    class A ejecutar;
-    class F,O,C ciclo;
-    class T alerta;
-```
+<img src="img/hiperpaginacion.svg" width="560" alt="Gráfica del uso de la CPU frente al grado de multiprogramación: crece hasta un máximo y cae en picado cuando empieza la hiperpaginación">
 
 *Cuando faltan marcos, el sistema puede invertir más tiempo intercambiando páginas que ejecutando instrucciones útiles.*
-
-### Anomalía de Belady
-
-Muestra que, con **FIFO**, es posible tener **más fallos de página al aumentar el número de marcos**. Referencia: L. A. Belady, R. A. Nelson, G. S. Shedler, «An anomaly in space‑time characteristics of certain programs running in a paging machine», *Communications of the ACM* 12(6):349‑353, junio de 1969.
-
-Secuencia de peticiones `1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5` con FIFO:
-
-| Nº de marcos | Fallos de página |
-|--------------|------------------|
-| **3** | **9** |
-| **4** | **10** |
-
-Con 3 marcos (`PF` = fallo, `X` = acierto):
-
-| Ref | 1 | 2 | 3 | 4 | 1 | 2 | 5 | 1 | 2 | 3 | 4 | 5 |
-|-----|---|---|---|---|---|---|---|---|---|---|---|---|
-| m1 | 1 | 1 | 1 | 4 | 4 | 4 | 5 | 5 | 5 | 5 | 5 | 5 |
-| m2 |   | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 3 | 3 | 3 |
-| m3 |   |   | 3 | 3 | 3 | 2 | 2 | 2 | 2 | 2 | 4 | 4 |
-|    | PF | PF | PF | PF | PF | PF | PF | X | X | PF | PF | X |
-
-Con 4 marcos:
-
-| Ref | 1 | 2 | 3 | 4 | 1 | 2 | 5 | 1 | 2 | 3 | 4 | 5 |
-|-----|---|---|---|---|---|---|---|---|---|---|---|---|
-| m1 | 1 | 1 | 1 | 1 | 1 | 1 | 2 | 3 | 4 | 5 | 1 | 2 |
-| m2 |   | 2 | 2 | 2 | 2 | 2 | 3 | 4 | 5 | 1 | 2 | 3 |
-| m3 |   |   | 3 | 3 | 3 | 3 | 4 | 5 | 1 | 2 | 3 | 4 |
-| m4 |   |   |   | 4 | 4 | 4 | 5 | 1 | 2 | 3 | 4 | 5 |
-|    | PF | PF | PF | PF | X | X | PF | PF | PF | PF | PF | PF |
-
----
-
-## Material gráfico
-
-Las figuras de los Temas 5 y 6 están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo): el símil del aparcamiento y las capturas de las herramientas de gestión de memoria de Windows y Linux.

@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" role="img" aria-label="Animación de copy-on-write: tras fork, padre e hijo comparten los marcos 3, 5 y 6 en solo lectura; cuando el hijo escribe en datos, el kernel copia el marco 5 al 8 y actualiza la tabla del hijo">
+<style>
+text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
+.m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
+.d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
+.c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
+.cap{font-size:14px}
+.f{opacity:0}.fin{opacity:1}
+.f0{animation:s3_5 14s linear 0s infinite}
+.f1{animation:s3_5 14s linear -10.5s infinite}
+.f2{animation:s3_5 14s linear -7s infinite}
+.f3{animation:s3_5l 14s linear -3.5s infinite}
+@keyframes s3_5{0%{opacity:0}2.50%{opacity:1}25.00%{opacity:1}27.50%{opacity:0}100%{opacity:0}}
+@keyframes s3_5l{0%{opacity:0}2.50%{opacity:1}22.50%{opacity:1}25.00%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.f{animation:none}}
+</style>
+<defs>
+<marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
+<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4cc26a"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef5350"/></marker>
+<marker id="ay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f4d03f"/></marker>
+<marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e8804a"/></marker>
+<marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb5c9"/></marker>
+<marker id="ap0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5aa9e6"/></marker>
+<marker id="ap1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5cc97a"/></marker>
+<marker id="ap2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e2c044"/></marker>
+<marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
+<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
+</defs>
+<rect width="720" height="380" rx="10" fill="#121417"/>
+<rect x="24" y="36" width="210" height="140" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="40" y="60" class="b o">Padre</text>
+<rect x="24" y="206" width="210" height="140" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="40" y="230" class="b t">Hijo</text>
+<text x="580" y="22" class="c s d">Memoria física</text>
+<line x1="20" y1="340" x2="700" y2="340" stroke="#2a2e35"/>
+<text x="70" y="80" class="c s d">pág</text>
+<text x="130" y="80" class="c s d">marco</text>
+<text x="190" y="80" class="c s d">permiso</text>
+<rect x="510" y="32" width="140" height="30" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="580" y="52" class="c s d">SO</text>
+<rect x="510" y="66" width="140" height="30" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="580" y="86" class="c s d">otro</text>
+<rect x="510" y="100" width="140" height="30" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="580" y="120" class="c s d">otro</text>
+<rect x="510" y="134" width="140" height="30" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<text x="580" y="154" class="c s">código</text>
+<rect x="510" y="168" width="140" height="30" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="580" y="188" class="c s d">otro</text>
+<rect x="510" y="202" width="140" height="30" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<text x="580" y="222" class="c s">datos</text>
+<rect x="510" y="236" width="140" height="30" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<text x="580" y="256" class="c s">pila</text>
+<rect x="510" y="270" width="140" height="30" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="580" y="290" class="c s d">otro</text>
+<g class="f f0">
+<rect x="40" y="88" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="105" class="c s d">código</text>
+<text x="130" y="105" class="c m s">3</text>
+<text x="190" y="105" class="c m s ">R</text>
+<rect x="40" y="116" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="133" class="c s d">datos</text>
+<text x="130" y="133" class="c m s">5</text>
+<text x="190" y="133" class="c m s ">RW</text>
+<rect x="40" y="144" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="161" class="c s d">pila</text>
+<text x="130" y="161" class="c m s">6</text>
+<text x="190" y="161" class="c m s ">RW</text>
+<path d="M222,100 C364.5,100 364.5,149 507,149" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,128 C364.5,128 364.5,217 507,217" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,156 C364.5,156 364.5,251 507,251" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<rect x="510" y="304" width="140" height="30" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="580" y="324" class="c s d">libre</text>
+<text x="129" y="300" class="c s d">(todavía no existe)</text>
+<text x="517" y="52" class="m s d">0</text>
+<text x="517" y="86" class="m s d">1</text>
+<text x="517" y="120" class="m s d">2</text>
+<text x="517" y="154" class="m s d">3</text>
+<text x="517" y="188" class="m s d">4</text>
+<text x="517" y="222" class="m s d">5</text>
+<text x="517" y="256" class="m s d">6</text>
+<text x="517" y="290" class="m s d">7</text>
+<text x="517" y="324" class="m s d">8</text>
+<text x="24" y="364" class="cap"><tspan class="d">1/4</tspan><tspan dx="10">Antes de fork: las páginas del padre están en los marcos 3, 5 y 6</tspan></text>
+</g>
+<g class="f f1">
+<text x="70" y="250" class="c s d">pág</text>
+<text x="130" y="250" class="c s d">marco</text>
+<text x="190" y="250" class="c s d">permiso</text>
+<rect x="40" y="88" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="105" class="c s d">código</text>
+<text x="130" y="105" class="c m s">3</text>
+<text x="190" y="105" class="c m s y">R</text>
+<rect x="40" y="116" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="133" class="c s d">datos</text>
+<text x="130" y="133" class="c m s">5</text>
+<text x="190" y="133" class="c m s y">R</text>
+<rect x="40" y="144" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="161" class="c s d">pila</text>
+<text x="130" y="161" class="c m s">6</text>
+<text x="190" y="161" class="c m s y">R</text>
+<rect x="40" y="258" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="275" class="c s d">código</text>
+<text x="130" y="275" class="c m s">3</text>
+<text x="190" y="275" class="c m s y">R</text>
+<rect x="40" y="286" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="303" class="c s d">datos</text>
+<text x="130" y="303" class="c m s">5</text>
+<text x="190" y="303" class="c m s y">R</text>
+<rect x="40" y="314" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="331" class="c s d">pila</text>
+<text x="130" y="331" class="c m s">6</text>
+<text x="190" y="331" class="c m s y">R</text>
+<path d="M222,100 C364.5,100 364.5,149 507,149" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,128 C364.5,128 364.5,217 507,217" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,156 C364.5,156 364.5,251 507,251" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,270 C364.5,270 364.5,149 507,149" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<path d="M222,298 C364.5,298 364.5,217 507,217" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<path d="M222,326 C364.5,326 364.5,251 507,251" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<rect x="510" y="304" width="140" height="30" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="580" y="324" class="c s d">libre</text>
+<text x="517" y="52" class="m s d">0</text>
+<text x="517" y="86" class="m s d">1</text>
+<text x="517" y="120" class="m s d">2</text>
+<text x="517" y="154" class="m s d">3</text>
+<text x="517" y="188" class="m s d">4</text>
+<text x="517" y="222" class="m s d">5</text>
+<text x="517" y="256" class="m s d">6</text>
+<text x="517" y="290" class="m s d">7</text>
+<text x="517" y="324" class="m s d">8</text>
+<text x="24" y="364" class="cap"><tspan class="d">2/4</tspan><tspan dx="10">fork: el hijo recibe una copia de la tabla, no de la memoria; todo pasa a solo lectura</tspan></text>
+</g>
+<g class="f f2">
+<text x="70" y="250" class="c s d">pág</text>
+<text x="130" y="250" class="c s d">marco</text>
+<text x="190" y="250" class="c s d">permiso</text>
+<rect x="40" y="88" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="105" class="c s d">código</text>
+<text x="130" y="105" class="c m s">3</text>
+<text x="190" y="105" class="c m s y">R</text>
+<rect x="40" y="116" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="133" class="c s d">datos</text>
+<text x="130" y="133" class="c m s">5</text>
+<text x="190" y="133" class="c m s y">R</text>
+<rect x="40" y="144" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="161" class="c s d">pila</text>
+<text x="130" y="161" class="c m s">6</text>
+<text x="190" y="161" class="c m s y">R</text>
+<rect x="40" y="258" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="275" class="c s d">código</text>
+<text x="130" y="275" class="c m s">3</text>
+<text x="190" y="275" class="c m s y">R</text>
+<rect x="40" y="286" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="303" class="c s d">datos</text>
+<text x="130" y="303" class="c m s">5</text>
+<text x="190" y="303" class="c m s y">R</text>
+<rect x="40" y="314" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="331" class="c s d">pila</text>
+<text x="130" y="331" class="c m s">6</text>
+<text x="190" y="331" class="c m s y">R</text>
+<rect x="40" y="286" width="180" height="24" rx="0" fill="none" stroke="#ef5350" stroke-width="2.5"/>
+<path d="M222,100 C364.5,100 364.5,149 507,149" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,128 C364.5,128 364.5,217 507,217" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,156 C364.5,156 364.5,251 507,251" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,270 C364.5,270 364.5,149 507,149" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<path d="M222,298 C364.5,298 364.5,251 507,251" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<path d="M222,298 C364.5,298 364.5,217 507,217" fill="none" stroke="#ef5350" stroke-width="2.5" marker-end="url(#ar)"/>
+<rect x="510" y="304" width="140" height="30" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="580" y="324" class="c s d">libre</text>
+<text x="240" y="282" class="s er">escribe</text>
+<text x="410" y="318" class="c s er">✕ excepción: página de solo lectura</text>
+<text x="517" y="52" class="m s d">0</text>
+<text x="517" y="86" class="m s d">1</text>
+<text x="517" y="120" class="m s d">2</text>
+<text x="517" y="154" class="m s d">3</text>
+<text x="517" y="188" class="m s d">4</text>
+<text x="517" y="222" class="m s d">5</text>
+<text x="517" y="256" class="m s d">6</text>
+<text x="517" y="290" class="m s d">7</text>
+<text x="517" y="324" class="m s d">8</text>
+<text x="24" y="364" class="cap"><tspan class="d">3/4</tspan><tspan dx="10">El hijo escribe en su página de datos: la MMU lanza una excepción</tspan></text>
+</g>
+<g class="f f3 fin">
+<text x="70" y="250" class="c s d">pág</text>
+<text x="130" y="250" class="c s d">marco</text>
+<text x="190" y="250" class="c s d">permiso</text>
+<rect x="40" y="88" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="105" class="c s d">código</text>
+<text x="130" y="105" class="c m s">3</text>
+<text x="190" y="105" class="c m s y">R</text>
+<rect x="40" y="116" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="133" class="c s d">datos</text>
+<text x="130" y="133" class="c m s">5</text>
+<text x="190" y="133" class="c m s y">R</text>
+<rect x="40" y="144" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="161" class="c s d">pila</text>
+<text x="130" y="161" class="c m s">6</text>
+<text x="190" y="161" class="c m s y">R</text>
+<rect x="40" y="258" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="275" class="c s d">código</text>
+<text x="130" y="275" class="c m s">3</text>
+<text x="190" y="275" class="c m s ">R</text>
+<rect x="40" y="286" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="303" class="c s d">datos</text>
+<text x="130" y="303" class="c m s">8</text>
+<text x="190" y="303" class="c m s ok">RW</text>
+<rect x="40" y="314" width="180" height="24" rx="0" fill="#121417" stroke="#3a4048" stroke-width="1.5"/>
+<text x="70" y="331" class="c s d">pila</text>
+<text x="130" y="331" class="c m s">6</text>
+<text x="190" y="331" class="c m s ">R</text>
+<rect x="40" y="286" width="180" height="24" rx="0" fill="none" stroke="#4cc26a" stroke-width="2.5"/>
+<path d="M222,100 C364.5,100 364.5,149 507,149" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,128 C364.5,128 364.5,217 507,217" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,156 C364.5,156 364.5,251 507,251" fill="none" stroke="#e8804a" stroke-width="1.8" marker-end="url(#ao)"/>
+<path d="M222,270 C364.5,270 364.5,149 507,149" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<path d="M222,298 C364.5,298 364.5,251 507,251" fill="none" stroke="#3fb5c9" stroke-width="1.8" marker-end="url(#at)"/>
+<path d="M222,298 C364.5,298 364.5,319 507,319" fill="none" stroke="#4cc26a" stroke-width="2.5" marker-end="url(#ag)"/>
+<rect x="510" y="304" width="140" height="30" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
+<text x="580" y="324" class="c s">datos (copia)</text>
+<path d="M652,217 C700,217 700,319 653,319" fill="none" stroke="#f4d03f" stroke-width="2" marker-end="url(#ay)"/>
+<text x="517" y="52" class="m s d">0</text>
+<text x="517" y="86" class="m s d">1</text>
+<text x="517" y="120" class="m s d">2</text>
+<text x="517" y="154" class="m s d">3</text>
+<text x="517" y="188" class="m s d">4</text>
+<text x="517" y="222" class="m s d">5</text>
+<text x="517" y="256" class="m s d">6</text>
+<text x="517" y="290" class="m s d">7</text>
+<text x="517" y="324" class="m s d">8</text>
+<text x="24" y="364" class="cap"><tspan class="d">4/4</tspan><tspan dx="10">El kernel copia el marco 5 al 8 y se lo da al hijo; código y pila siguen compartidos</tspan></text>
+</g>
+</svg>
