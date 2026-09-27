@@ -1,4 +1,4 @@
-# Tema 8: Sistema de ficheros
+# Tema 7: Sistema de ficheros
 
 Abstracción del sistema de ficheros · Conceptos de fichero y directorio · Nombrado del fichero, propietarios y permisos · Estructura y almacenamiento del fichero · Seguridad en los sistemas de ficheros · Sistemas de ficheros.
 

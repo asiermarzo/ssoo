@@ -1,4 +1,4 @@
-# Temas 5 y 6 material adicional
+# Tema 5 material adicional
 
 ## Modelos de gestión de la memoria
 
@@ -56,6 +56,22 @@ El mecanismo de traducción de direcciones (**DAT**, *Dynamic Address Translatio
 | Traducción de direcciones lógicas a físicas | Resolución de problemas |
 | Detección de problemas: fallo de página, acceso inválido, falta de privilegios | Gestión del espacio libre/ocupado |
 
+## Segmentación
+
+Los procesos se dividen en **segmentos** de longitud distinta, nunca superior al **tamaño máximo de segmento** de la arquitectura. Segmentos habituales: **código**, **datos**, **pila**. Cada segmento se almacena en una zona cuyo tamaño coincide con el del segmento, y no necesariamente de forma consecutiva. Se evita la fragmentación interna pero **no la externa** (aunque menor que con MVT); requiere **compactación**.
+
+- La **dirección lógica** = número de segmento + desplazamiento dentro del segmento.
+- La **dirección física** = dirección de comienzo del segmento en MP + desplazamiento.
+- Al cargar el proceso se le asignan tantas zonas como segmentos tenga y se rellena la **tabla de segmentos**. La **protección** se realiza según el **límite** del segmento.
+
+<img src="img/traduccion-segmentacion.svg" width="520" alt="Traducción en segmentación: número de segmento más desplazamiento a dirección de comienzo del segmento más desplazamiento">
+
+Ventajas e inconvenientes: el control de acceso se realiza con **bits de acceso** en la tabla de segmentos; **soporta el crecimiento dinámico** de los segmentos. Inconvenientes: requiere **compactación**; algunos procesos pueden necesitar un segmento mayor que el límite.
+
+Vista de la traducción por la MMU (segmentos dispersos en la memoria física, datos compartidos):
+
+<img src="img/segmentacion-mmu.svg" width="600" alt="Cada segmento del espacio virtual se traduce mediante la MMU a una zona de memoria física distinta y no contigua; los datos compartidos son accesibles desde varios procesos">
+
 ## Segmentación paginada
 
 Combina lo mejor de la paginación y la segmentación:
@@ -87,6 +103,16 @@ El fallo se produce al **obtener una instrucción**, al **leer los operandos** o
 
 - Interrumpir la ejecución, guardar el estado, solucionar, restaurar el estado y continuar.
 - Eliminar la instrucción, solucionar y reejecutarla.
+
+## Otros algoritmos de reemplazo
+
+| Algoritmo | Comentario |
+|-----------|-----------|
+| **Óptimo** | Sustituye la página que tardará más en usarse. **No implementable** (no se conoce el futuro); sirve de referencia para comparar |
+| **LRU** (*Least Recently Used*) | Sustituye la que hace más tiempo que no se usa; se aproxima al óptimo. Excelente algoritmo; difícil de implementar |
+| **NRU** (*Non Recently Used*) | Se basa en los bits de modificado (M) y referencia (R); orden de preferencia para expulsar: `¬R,¬M > ¬R,M > R,¬M > R,M`; en empate, FIFO. Simple y bastante eficiente |
+| **Segunda oportunidad** | Mejora sobre FIFO: si el bit R está a 1, la página se coloca al final de la cola en lugar de elegirla |
+| **Envejecimiento** (*aging*) | Cada página tiene un número de `n` bits; se elige la de número más bajo. En cada ciclo de reloj: `valor = (R << n) + (valor_actual >> 1)`. Muy eficiente, se aproxima a LRU |
 
 ## Anomalía de Belady
 
