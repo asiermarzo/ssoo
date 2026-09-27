@@ -74,6 +74,7 @@ Un programa en ejecución es un *proceso*, identificado por un número (PID).
 | `ps` | lista procesos. Habitual: `ps -u $USER` (solo los míos) |
 | `pstree` | muestra en árbol (`pstree -p` añade el pid) |
 | `top` | procesos en tiempo real; `q` sale |
+| `pgrep <nombre>` | pid de los procesos con ese nombre. `pgrep -o <nombre>` da solo el más antiguo |
 | `kill <pid>` | manda `SIGTERM` (15): pide al proceso que termine. `kill -9 <pid>` manda `SIGKILL` (9), termina el proceso |
 | `killall <nombre>` | como `kill` pero por nombre en vez de pid|
 <!--| `jobs` / `fg` / `bg` | procesos lanzados en segundo plano con `&` desde esta terminal |-->
@@ -121,6 +122,19 @@ sort primos.c                # ordena alfabéticamente las líneas del fichero
 diff hola.c saluda.c         # diferencias línea a línea entre dos ficheros
 ```
 </details>
+
+### Ver datos binarios: `od`
+
+`od` muestra los bytes de un fichero, o de lo que le llega por la entrada estándar, como números. Sirve para ver lo que escribe un programa en binario (con `write`) en vez de como texto.
+
+```bash
+od -An -i -w8 fichero        # el fichero como enteros, dos por línea
+programa | od -An -i -w8     # lo mismo con lo que escribe un programa
+```
+
+- `-i`: interpreta los bytes como enteros (`int`, 4 bytes) en decimal.
+- `-w8`: 8 bytes por línea, es decir, dos `int`.
+- `-An`: quita la columna con la posición de cada línea.
 
 ### Compresión
 
