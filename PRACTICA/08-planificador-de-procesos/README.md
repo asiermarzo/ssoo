@@ -5,12 +5,12 @@
 Programar un planificador de procesos a nivel de usuario (`procsched`), apoyándonos en llamadas al sistema, y probarlo con distintos conjuntos de procesos.
 
 - `procsched` recibe por una **cola de mensajes** (*esperando*) las peticiones de programas a ejecutar junto a su **prioridad** (1, 2 o 3).
-- Por cada petición crea el proceso **pausado** y lo guarda en su cola de *listos*.
+- Por cada petición, crea un proceso **pausado** y lo guarda en su cola (`cola.h`) de procesos *listos*.
 - Según las **políticas de planificación**, decide qué proceso de *listos* pasa a ejecución y durante cuánto tiempo.
-- Para detener y reanudar procesos usa señales (`SIGSTOP` / `SIGCONT`), y para los turnos un temporizador (`ualarm` → `SIGALRM`).
-- Un segundo programa, `encolador`, lee de teclado o de un fichero los programas a ejecutar y sus prioridades, y los manda a la cola *esperando* de `procsched`.
+- Para detener y reanudar procesos usa señales (`SIGSTOP` / `SIGCONT`), y para los turnos un temporizador (`ualarm()` → `SIGALRM`).
+- Un segundo programa, `encolador`, lee de teclado o de un fichero los programas a ejecutar y sus prioridades, y los manda a la cola *esperando*.
 
-`procsched` solo tiene un hijo en ejecución; a los demás los mantiene parados.
+`procsched` solo mantiene un hijo (proceso) en ejecución; a los demás los mantiene parados.
 
 ## Arquitectura
 
@@ -23,7 +23,7 @@ flowchart LR
     P -- "SIGCONT / SIGSTOP" --> H3[hijo ...]
 ```
 
-- ***esperando***: cola de mensajes (permisos `0600`). El `mtype` es la prioridad (1–3) de una petición, o `4` para los [comandos especiales](#comandos-especiales-para-procsched). `procsched` lee con `msgtyp = -4`, que saca primero el `mtype` más bajo: los urgentes pasan delante y los comandos van detrás de las peticiones.
+- ***esperando***: cola de mensajes (permisos `0600`). El `mtype` es la prioridad (1–3), o `4` para los [comandos especiales](#comandos-especiales-para-procsched). `procsched` lee con `msgtyp = -4`, que saca primero el `mtype` más bajo.
 - ***listos***: una cola propia de `procsched` que se puede recorrer, implementada en [`cola.h`](cola.h).
 
 Lo común a `procsched` y `encolador` va en `procsched.h`:
@@ -33,27 +33,28 @@ Lo común a `procsched` y `encolador` va en `procsched.h`:
 #define RUTA_CLAVE    "/etc"   //para ftok(RUTA_CLAVE, ID_PROJ)
 #define ID_PROJ       22
 
-#define MAX_COMANDO   256 //longitud máxima de una línea
+#define MAX_COMANDO   256 //longitud máxima de un comando
 
 #define TURNO_MS      15   // duración por defecto de un turno (niveles 2 y 3)
 #define LATENCIA_MS   33   // espera máxima por defecto de los interactivos (nivel 2)
 
-#define MTYPE_COMANDO 4    // mtype de los comandos especiales (mayor que cualquier prioridad)
+#define MTYPE_COMANDO 4    // mtype de los comandos especiales
 
 typedef struct {
-    long mtype;                 // prioridad (1, 2 o 3) o MTYPE_COMANDO=4
+    long mtype;                 // prioridad (1, 2 o 3) o 4 para comandos especiales
     char comando[MAX_COMANDO];  // "programa arg1 arg2 ...", o el comando: "turno 50"
 } peticion_t;
 ```
 
-`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms`, el instante en que salió de CPU) y una cola sobre un array con `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y `COLA_FOR_EACH` para recorrerla. Primero se recorre para elegir y después se desencola:
+`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms` - el instante en que salió de CPU) y una cola sobre un array con `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y `COLA_FOR_EACH` para recorrerla. Primero se recorre para elegir y después se desencola:
 
 ```c
-cola_t listos = { .n = 0 };
+cola_t listos;
+cola_iniciar(&listos);
 cola_encolar(&listos, p);
 
 proceso_t *elegido = NULL;
-COLA_FOR_EACH(&listos, q) {                      // recorrerla para elegir
+COLA_FOR_EACH(&listos, q) { // recorrerla para elegir
     if (q->prioridad == 2 && (elegido == NULL || q->ultimo_ms < elegido->ultimo_ms)) {
         elegido = q;                             // el de nivel 2 que más lleva sin ejecutarse
     }
@@ -66,8 +67,10 @@ if (elegido != NULL) {
 
 ### Bucle de `procsched`
 
-1. **Admitir peticiones**: `msgrcv` sobre *esperando* con `IPC_NOWAIT`, repetido hasta que devuelva `-1` (no quedan mensajes), para admitir todas las pendientes. Si es una petición, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si es un comando, lo aplica. Si *listos* está vacía, antes hace un `msgrcv` bloqueante (sin `IPC_NOWAIT`) que espera hasta que llegue algo.
-2. **Planificar**: elige un proceso de *listos* según las [políticas](#políticas-de-planificación), fija una alarma `ualarm`, le manda `SIGCONT` al proceso elegido y espera con `pause()`.
+1. **Admitir peticiones**: `msgrcv` sobre *esperando* con `IPC_NOWAIT`, repetido hasta que devuelva `-1` (no quedan mensajes), para admitir todas las pendientes. Si es una petición, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si es un comando, lo aplica. Si *listos* está vacía, no hay nada que planificar por lo que hace un `msgrcv` bloqueante (sin `IPC_NOWAIT`) que espera hasta que llegue algo.
+
+2. **Planificar**: elige un proceso de *listos* según las [políticas](#políticas-de-planificación), fija una alarma `ualarm` para el turno, le manda `SIGCONT` al proceso elegido y espera con `pause()`.
+
 3. **Desalojar**. `pause()` retorna por una de estas señales:
    - `SIGALRM`: se ha acabado el turno.
    - `SIGCHLD`: el hijo en ejecución ha terminado.
@@ -89,7 +92,7 @@ Con `Ctrl-C` o el comando `fin`, `procsched` termina ordenadamente: mata a los h
 
 En el paso 2, `procsched` recorre *listos* y elige así:
 
-1. ¿Hay alguno de nivel 1? → el primero, hasta que termine.
+1. El primero que vea de nivel 1.
 2. ¿Algún nivel 2 lleva `>= latencia_ms` sin ejecutarse? → el que más lleve.
 3. ¿Hay alguno de nivel 3? → el primero.
 4. ¿Hay alguno de nivel 2? → el que más lleve sin ejecutarse.
@@ -105,7 +108,7 @@ void despertar(int senal) {}
 pid_t pid = fork();
 if (pid == 0) {
     signal(SIGCONT, despertar);
-    pause();                        // espera al primer SIGCONT de procsched
+    pause();        // espera SIGCONT de procsched
     execvp(args[0], args); 
     exit(127);
 }
@@ -120,9 +123,9 @@ Para trocear `comando` en `args` puedes reutilizar `str_split` de [P5](../05-min
 
 ## Señales en `procsched`
 
-- **Manejadores vacíos**: `pause()` solo retorna si se ejecuta un manejador, así que `procsched` atiende a `SIGALRM` y `SIGCHLD` con un manejador vacío. El qué ha pasado no se deduce de la señal, sino del estado con `waitpid`.
-- **`SIGCHLD` se usa con `SA_NOCLDSTOP`**: si no, cada `SIGSTOP` y `SIGCONT` que manda `procsched` generaría un `SIGCHLD` que lo despierta sin motivo (ver [P4](../04-senales/#captura-avanzada-sigaction)).
-- **`msgrcv` interrumpido**: si llega una señal durante un `msgrcv` bloqueante, devuelve `-1` con `errno == EINTR`. No es un error: hay que repetirlo.
+- **Manejadores vacíos**: `pause()` solo retorna si se ejecuta un manejador, así que `procsched` atiende a `SIGALRM` y `SIGCHLD` con un manejador vacío.
+- **`SIGCHLD` se usa con `SA_NOCLDSTOP`**: si no, cada `SIGSTOP` y `SIGCONT` que manda `procsched` a los hijos generarían un `SIGCHLD` que despierta al planificador sin motivo (ver [P4](../04-senales/#captura-avanzada-sigaction)).
+- **`msgrcv` interrumpido**: si llega una señal durante un `msgrcv` bloqueante, devuelve `-1` con `errno == EINTR`. No es un error: hay que repetir `msgrcv`.
 
 <!--
 - **Carrera entre `ualarm` y `pause`**: con turnos de pocos ms, el `SIGALRM` o el `SIGCHLD` pueden llegar **antes** de que `procsched` llegue a `pause()`. En ese caso se pierde el aviso y el planificador se queda colgado. Para evitarlo, bloquea esas señales con `sigprocmask` antes de `ualarm`/`SIGCONT` y espera con `sigsuspend` en lugar de `pause`.
@@ -135,7 +138,7 @@ Para trocear `comando` en `args` puedes reutilizar `str_split` de [P5](../05-min
 useconds_t ualarm(useconds_t usecs, useconds_t interval);
 ```
 
-Como `alarm`, pero en **microsegundos** (`usecs < 1000000`). Con `interval = 0` avisa una sola vez; `ualarm(0, 0)` cancela. Un turno de 15 ms es `ualarm(15 * 1000, 0)`.
+Como `alarm`, pero en **microsegundos** (`usecs < 1000000`). Con `interval = 0` avisa una sola vez; `ualarm(0, 0)` cancela la alarma. Un turno de 15 ms se puede fijar con `ualarm(15 * 1000, 0)`.
 
 ### Medir el tiempo
 
@@ -153,7 +156,7 @@ long ahora_ms(void) {
 
 ## Registro y estadísticas
 
-`procsched` escribe por consola cuando entra un proceso nuevo, se recibe un comando, la entrada de un proceso urgente y un proceso que termina. Además en
+`procsched` escribe por consola cuando entra un proceso nuevo, se recibe un comando y un proceso que termina:
 
 ```
 NUEVO    pid 4312 (2) ./arkanoid 0 0
@@ -162,7 +165,7 @@ TERMINA  pid 4320 (1) ./factoriza 1000000016000000063
 COMANDO  turno 50
 ```
 
-También cuando recibe el comando stats o antes de terminar muestra estadísticas por nivel:
+También cuando recibe el comando stats o antes de terminar muestra estadísticas por nivel de prioridad:
 
 | Métrica | Qué mide |
 |---|---|
@@ -170,6 +173,8 @@ También cuando recibe el comando stats o antes de terminar muestra estadística
 | Espera media | tiempo medio que espera un proceso del nivel desde que llega o desde su último turno hasta que vuelve a entrar en CPU |
 
 Y en global, el tiempo total y los **cambios de contexto** (cada `SIGCONT` a un proceso distinto del anterior).
+
+Ejemplo de estadísticas:
 
 ```
 === procsched: 12840 ms, 2154 cambios de contexto ===
@@ -199,6 +204,7 @@ encolador [fichero]
 
 Lee líneas del teclado (hasta `Ctrl-D`) o de un [fichero de ejecución](#ficheros-de-ejecución-txt) y las manda a la cola de mensajes *esperando*, que abre con `ftok(RUTA_CLAVE, ID_PROJ)`.
 
+
 ## Ficheros de ejecución (`.txt`)
 
 Describen qué procesos se lanzan, con qué prioridad y cuándo. Cada línea es:
@@ -206,9 +212,9 @@ Describen qué procesos se lanzan, con qué prioridad y cuándo. Cada línea es:
 | Línea | Qué hace |
 |---|---|
 | `# ...` | Comentario: se ignora. |
-| `prioridad programa arg1 ...` | Petición: se encola con `msgsnd`; `mtype = prioridad`. |
+| `prioridad programa arg1 ...` | Petición: se encola con `msgsnd`; `mtype = prioridad` (1–3). |
 | `espera ms` | Espera `ms` milisegundos antes de procesar la siguiente línea. |
-| `turno ms`, `latencia ms`, `estadisticas`, `fin` | Comandos especiales. se mandan con `mtype=4` |
+| `4 turno ms`, `4 latencia ms`, `4 estadisticas`, `4 fin` | Comandos especiales: llevan prioridad 4 y se mandan igual que una petición (`mtype = 4`). |
 
 ```
 # Este archivo pide lanzar 2 procesos de cálculo; espera 3 s y manda un proceso urgente
@@ -220,7 +226,7 @@ espera 3000
 
 ### Comandos especiales para `procsched`
 
-Se mandan a *esperando* como las peticiones, pero con `mtype = MTYPE_COMANDO` (4).
+En el `encolador` se escriben con un 4 delante (`4 turno 50`), así que se mandan a *esperando* como una petición más: `mtype = MTYPE_COMANDO` (4) y `comando = "turno 50"`.
 
 | Comando | Efecto |
 |---|---|
@@ -236,12 +242,12 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 ## Pasos sugeridos
 
 1. **`procsched.c` y la cola *esperando*.** `procsched` crea la cola (`ftok` + `msgget` con `IPC_CREAT | 0600`) y en un bucle hace `msgrcv` bloqueante e imprime `mtype` y `comando` de lo que llega. Con `Ctrl-C`, borra la cola y termina (`IPC_RMID`).
-   *Prueba:* `ipcs -q` muestra la cola mientras se ejecuta y ya no la muestra al salir.
+   *Prueba:* `ipcs -q` muestra la cola mientras se ejecuta y no la muestra después de terminar.
 
-2. **`encolador` desde teclado.** Lee líneas con `fgets`, separa la prioridad del resto y hace `msgsnd`.
+2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver [P5](../05-minishell/#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
    *Prueba:* lo que escribes en el `encolador` aparece en la consola de `procsched`.
 
-3. **`encolador` desde fichero.** Hay que ignorar los `#`, implementar `espera ms` (`usleep`) y mandar los comandos especiales con `mtype = 4`.
+3. **`encolador` desde fichero.** Se lee igual, con `fgets` sobre el `FILE *` de `fopen` (ver [P1](../01-entrada-salida-y-ficheros/#lectura)). Hay que ignorar los `#` e implementar `espera ms` (`usleep`). Los comandos especiales ya llevan el 4 delante, así que se mandan como cualquier petición.
    *Prueba:* `./encolador set1-roundrobin.txt` y en `procsched` salen las líneas en orden, con sus pausas.
 
 4. **Hijos pausados en *listos*.** En vez de imprimir la petición, `procsched` crea el hijo pausado (`fork` + `str_split` + `pause` + `execvp`), lo mete en *listos* con `cola_encolar` e imprime `NUEVO`.
@@ -287,7 +293,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
    *Prueba:* set 2, `arkanoid` y `pintar` se ven fluidos aún con los procesos de cálculo de fondo.
 
 10. **Comandos especiales.** `turno`, `latencia` y `fin` (imprimiendo `COMANDO`).
-    *Prueba:* `turno 200` desde otro `encolador` se nota a simple vista en los procesos interactivos.
+    *Prueba:* `4 turno 200` desde otro `encolador` se nota a simple vista en los procesos interactivos.
 
 11. **Terminación ordenada.** `Ctrl-C` y `fin` hacen lo mismo: `SIGKILL` a los hijos e `IPC_RMID` en la cola.
     *Prueba:* no quedan procesos (`ps`) ni colas (`ipcs -q`).
@@ -296,7 +302,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 
 ## Programas de prueba
 
-`make` compila todos los `.c` de la carpeta, incluidos `procsched.c` y `encolador.c` (necesita `libx11-dev`). Los programas con ventana X11 reciben su posición de forma opcional (`programa [x y]`, por defecto 0 0) y usan 300×200, para una rejilla de 3×3 en 1024×720: `x` ∈ {0, 340, 680}, `y` ∈ {0, 240, 480}. Esto es para que puedas ver todos los procesos a la vez.
+`make` compila todos los `.c` de la carpeta, incluidos `procsched.c` y `encolador.c` (necesita `libx11-dev`). Los programas con ventana X11 reciben su posición de forma opcional (`programa [x y]`, por defecto 0 0) y tienen un tamaño 300×200. Esto es para poder ponerlas que se vean varias a la vez.
 
 | Programa | Tipo previsto | Qué se ve | Título |
 |---|---|---|---|
@@ -333,13 +339,13 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 
 Después lanza el set 1 y, desde otro `encolador`, manda `3 ./factoriza 1000000016000000063` (factoriza pero con la menor prioridad posible). ¿Cuánto tiempo tarda en ejecutarse ahora?
 
-3. **Latencia de los interactivos.** Lanza el set 2 y mira los fps en el título de `arkanoid` y `pintar`. ¿Llegan a 30 fps (un fotograma cada 33 ms)? Si no, explica por qué (pista: un proceso de nivel 3 puede empezar su turno de 15 ms justo antes de que un interactivo llegue a 33 ms de espera). Manda `latencia 18` (33 − 15) y comprueba si ahora llegan a 30 fps. ¿Qué les pasa a los de cálculo?
+3. **Latencia de los interactivos.** Lanza el set 2 y mira los fps en el título de `arkanoid` y `pintar`. ¿Llegan a 30 fps (un fotograma cada 33 ms)? Si no, explica por qué (pista: un proceso de nivel 3 puede empezar su turno de 15 ms justo antes de que un interactivo llegue a 33 ms de espera). Manda `4 latencia 18` (33 − 15) y comprueba si ahora llegan a 30 fps. ¿Qué les pasa a los de cálculo?
 
 4. **Inanición.** Lanza el set 3 y observa la fase 1 (cuatro interactivos, turno de 15 ms): los de cálculo de nivel 3 se congelan. 
-   - Manda `turno 5`. ¿Vuelven a moverse los de cálculo? ¿Cuántos interactivos podría haber con `turno 5` antes de que se congelen?
-   - Vuelve a `turno 15` y busca el valor más pequeño de `latencia ms` con el que los de cálculo vuelven a moverse.
+   - Manda `4 turno 5`. ¿Vuelven a moverse los de cálculo? ¿Cuántos interactivos podría haber con `turno 5` antes de que se congelen?
+   - Vuelve a `4 turno 15` y busca el valor más pequeño de `4 latencia ms` con el que los de cálculo vuelven a moverse.
 
-5. **Tamaño del turno.** Con el set 2 en marcha, manda desde otro `encolador` `turno 1`, `turno 15` y `turno 200`, y unos segundos después de cada uno, `estadisticas`. Compara los cambios de contexto y los fps de `arkanoid`. ¿Qué inconveniente tiene un turno muy pequeño? ¿Y uno muy grande?
+5. **Tamaño del turno.** Con el set 2 en marcha, manda desde otro `encolador` `4 turno 1`, `4 turno 15` y `4 turno 200`, y unos segundos después de cada uno, `4 estadisticas`. Compara los cambios de contexto y los fps de `arkanoid`. ¿Qué inconveniente tiene un turno muy pequeño? ¿Y uno muy grande?
 
 ## Llamadas al sistema útiles
 

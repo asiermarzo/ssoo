@@ -21,6 +21,11 @@ typedef struct {
 #define COLA_FOR_EACH(c, p) \
     for (proceso_t *p = (c)->procesos; p < (c)->procesos + (c)->n; p++)
 
+// deja la cola vacía
+static void cola_iniciar(cola_t *c) {
+    c->n = 0;
+}
+
 // añade p al final; devuelve 0, o -1 si la cola está llena
 static int cola_encolar(cola_t *c, proceso_t p) {
     if (c->n == MAX_PROCESOS) {
