@@ -30,14 +30,11 @@ Escritorio virtual con Linux:
 
 Los archivos desaparecerán cuando desconectes. Puedes copiar y pegar archivos entre la máquina virtual y tu ordenador.
 
-### Máquinas virtuales de la UPNA
+### Máquinas virtuales del departamento
 
-Imagen de disco descargable para ejecutar el Linux del laboratorio en local con **VirtualBox** o **VMware**, sin depender de la conexión.
+- Acceso: [https://eim-laboratoriovirtual.unavarra.es/help/](https://eim-laboratoriovirtual.unavarra.es/help/)
 
-- Descarga de la imagen: *(añadir enlace del portal de la UPNA / Campus Virtual)*.
-- Recursos sugeridos: 2 CPU, 4 GB de RAM, 20 GB de disco.
-- Instala las *Guest Additions* para portapapeles compartido y carpeta compartida con el host.
-- El home es **local** a la VM: haz copias de tu trabajo (git, carpeta compartida, USB).
+Son persistentes y los archivos permancerán en la máquina aunque desconecntes.
 
 ### GitHub Codespaces
 
