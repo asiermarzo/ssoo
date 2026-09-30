@@ -121,7 +121,7 @@ Ejemplo de ejecución:
 ```
 $ ./paso2
 pwd
-/home/alumno/ssoo/PRACTICA/05-minishell
+/home/alumno/ssoo/PRACTICA/04-ejercicio-procesos-y-pipes
 fecha
 execvp: No such file or directory
 date

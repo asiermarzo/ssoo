@@ -207,4 +207,4 @@ El surtidor intenta la primera descarga a los 2 s, antes de que llegue el agua (
 
 ## Llamadas al sistema útiles
 
-`read(2)`, `write(2)` ([P1](../01-entrada-salida-y-ficheros/)); `fork(2)`, `execlp(3)` ([P2](../02-procesos/)); `pipe(2)`, `dup2(2)` ([P3](../03-pipes-y-fifos/)); `signal(2)`, `kill(2)`, `pause(2)`, `sleep(3)` ([P4](../04-senales/)); `ftok(3)`, `shmget(2)`, `shmat(2)`, `shmctl(2)`, `semget(2)`, `semctl(2)`, `semop(2)` ([P6](../06-memoria-compartida-y-semaforos/)); `msgget(2)`, `msgsnd(2)`, `msgrcv(2)`, `msgctl(2)` ([P7](../07-colas-de-mensajes/)). Nuevas en esta práctica: `rand(3)`, `srand(3)` y `time(2)`.
+`read(2)`, `write(2)` ([P1](../01-entrada-salida-y-ficheros/)); `fork(2)`, `execlp(3)` ([P2](../02-procesos/)); `pipe(2)`, `dup2(2)` ([P3](../03-pipes-y-fifos/)); `signal(2)`, `kill(2)`, `pause(2)`, `sleep(3)` ([P5](../05-senales/)); `ftok(3)`, `shmget(2)`, `shmat(2)`, `shmctl(2)`, `semget(2)`, `semctl(2)`, `semop(2)` ([P6](../06-memoria-compartida-y-semaforos/)); `msgget(2)`, `msgsnd(2)`, `msgrcv(2)`, `msgctl(2)` ([P7](../07-colas-de-mensajes/)). Nuevas en esta práctica: `rand(3)`, `srand(3)` y `time(2)`.

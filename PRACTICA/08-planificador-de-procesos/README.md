@@ -115,7 +115,7 @@ if (pid == 0) {
 // rama padre: meter el proceso en listos
 ```
 
-Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell](../05-ejercicio-procesos-y-pipes/minishell.md).
+Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell](../04-ejercicio-procesos-y-pipes/minishell.md).
 
 <!--
 > **Condición de carrera.** Si el `SIGCONT` llega **antes** de que el hijo haya llegado a `pause()`, se pierde y el hijo se queda dormido para siempre. En la práctica es raro, porque `procsched` no lo reanuda hasta que le toca, pero es posible. La solución correcta es que el padre **bloquee** `SIGCONT` con `sigprocmask` antes del `fork`. El hijo hereda la máscara, instala el manejador y espera con `sigsuspend` (que desbloquea y espera de forma atómica). Después vuelve a desbloquear `SIGCONT` antes del `execvp`.
@@ -124,7 +124,7 @@ Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell]
 ## Señales en `procsched`
 
 - **Manejadores vacíos**: `pause()` solo retorna si se ejecuta un manejador, así que `procsched` atiende a `SIGALRM` y `SIGCHLD` con un manejador vacío.
-- **`SIGCHLD` se usa con `SA_NOCLDSTOP`**: si no, cada `SIGSTOP` y `SIGCONT` que manda `procsched` a los hijos generarían un `SIGCHLD` que despierta al planificador sin motivo (ver [P4](../04-senales/#captura-avanzada-sigaction)).
+- **`SIGCHLD` se usa con `SA_NOCLDSTOP`**: si no, cada `SIGSTOP` y `SIGCONT` que manda `procsched` a los hijos generarían un `SIGCHLD` que despierta al planificador sin motivo (ver [P5](../05-senales/#captura-avanzada-sigaction)).
 - **`msgrcv` interrumpido**: si llega una señal durante un `msgrcv` bloqueante, devuelve `-1` con `errno == EINTR`. No es un error: hay que repetir `msgrcv`.
 
 <!--
@@ -244,7 +244,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 1. **`procsched.c` y la cola *esperando*.** `procsched` crea la cola (`ftok` + `msgget` con `IPC_CREAT | 0600`) y en un bucle hace `msgrcv` bloqueante e imprime `mtype` y `comando` de lo que llega. Con `Ctrl-C`, borra la cola y termina (`IPC_RMID`).
    *Prueba:* `ipcs -q` muestra la cola mientras se ejecuta y no la muestra después de terminar.
 
-2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver la [minishell](../05-ejercicio-procesos-y-pipes/minishell.md#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
+2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver la [minishell](../04-ejercicio-procesos-y-pipes/minishell.md#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
    *Prueba:* lo que escribes en el `encolador` aparece en la consola de `procsched`.
 
 3. **`encolador` desde fichero.** Se lee igual, con `fgets` sobre el `FILE *` de `fopen` (ver [P1](../01-entrada-salida-y-ficheros/#lectura)). Hay que ignorar los `#` e implementar `espera ms` (`usleep`). Los comandos especiales ya llevan el 4 delante, así que se mandan como cualquier petición.
@@ -349,4 +349,4 @@ Después lanza el set 1 y, desde otro `encolador`, manda `3 ./factoriza 10000000
 
 ## Llamadas al sistema útiles
 
-`fork(2)`, `execvp(3)`, `waitpid(2)` ([P2](../02-procesos/)); `kill(2)`, `signal(2)`, `sigaction(2)`, `pause(2)` ([P4](../04-senales/)); `msgget(2)`, `msgsnd(2)`, `msgrcv(2)`, `msgctl(2)` ([P7](../07-colas-de-mensajes/)). Nuevas en esta práctica: `ualarm(3)` y `clock_gettime(2)`.
+`fork(2)`, `execvp(3)`, `waitpid(2)` ([P2](../02-procesos/)); `kill(2)`, `signal(2)`, `sigaction(2)`, `pause(2)` ([P5](../05-senales/)); `msgget(2)`, `msgsnd(2)`, `msgrcv(2)`, `msgctl(2)` ([P7](../07-colas-de-mensajes/)). Nuevas en esta práctica: `ualarm(3)` y `clock_gettime(2)`.

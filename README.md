@@ -42,10 +42,9 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
 | P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos/) |
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
-| P4 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/04`](PRACTICA/04-senales/) |
-Se irán añadiendo temas conforme se avance en la asignatura
-<!-- 
-| P5 — Acueducto: ejercicio de procesos y pipes | [`PRACTICA/05`](PRACTICA/05-ejercicio-procesos-y-pipes/) |
+| P4 — Acueducto: ejercicio de procesos y pipes | [`PRACTICA/04`](PRACTICA/04-ejercicio-procesos-y-pipes/) |
+| P5 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/05`](PRACTICA/05-senales/) |
+<!--
 | P6 — Memoria compartida y semáforos | [`PRACTICA/06`](PRACTICA/06-memoria-compartida-y-semaforos/) |
 | P7 — Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`PRACTICA/07`](PRACTICA/07-colas-de-mensajes/) |
 | P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
