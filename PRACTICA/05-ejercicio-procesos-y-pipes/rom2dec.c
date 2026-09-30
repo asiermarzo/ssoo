@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <string.h>
+
+#define MAX_ROMANO 64
 
 int valor(char simbolo) {
     switch (simbolo) {
@@ -26,11 +29,9 @@ int rom2dec(char *str) {
 }
 
 int main(void) {
-    char romano[64];
-
-    while (scanf("%63s", romano) == 1){
-        int dec = rom2dec(romano);
-        printf("%d\n", dec);
+    for (char romano[MAX_ROMANO]; fgets(romano, sizeof(romano), stdin) != NULL; ) {
+        romano[strcspn(romano, "\n")] = '\0';   // quita el salto de línea
+        printf("%d\n", rom2dec(romano));
     }
 
     return 0;
