@@ -1,4 +1,4 @@
-# Tema 3 material adicional
+# Planificación de procesos: material adicional
 
 ## Criterios de planificación
 

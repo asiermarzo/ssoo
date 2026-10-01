@@ -1,10 +1,10 @@
-# Tema 5: Gestión de memoria
+# Gestión de memoria
 
 Protección de memoria (registro base y límite) · direcciones lógicas y físicas · asignación contigua y fragmentación · paginación · memoria virtual · paginación bajo demanda y fallos de página · memoria de intercambio · copy‑on‑write · lazy allocation · reemplazo de páginas · hiperpaginación.
 
 ---
 
-Para que un programa se ejecute debe estar **cargado en memoria principal** (ver la [jerarquía de memoria](../01-introduccion-a-los-sistemas-operativos/README.md#jerarquía-de-memoria) del Tema 1). El sistema operativo reparte la memoria entre los procesos, los **aísla** entre sí y mueve información entre la memoria y el almacenamiento secundario minimizando el efecto de la E/S sobre el rendimiento.
+Para que un programa se ejecute debe estar **cargado en memoria principal** (ver la [jerarquía de memoria](../01-introduccion-a-los-sistemas-operativos/README.md#jerarquía-de-memoria)). El sistema operativo reparte la memoria entre los procesos, los **aísla** entre sí y mueve información entre la memoria y el almacenamiento secundario minimizando el efecto de la E/S sobre el rendimiento.
 
 ## Protección de memoria: registro base y registro límite
 
@@ -213,3 +213,7 @@ Cuando el número de marcos asignados a los procesos activos es insuficiente par
 <img src="img/hiperpaginacion.svg" width="560" alt="Gráfica del uso de la CPU frente al grado de multiprogramación: crece hasta un máximo y cae en picado cuando empieza la hiperpaginación">
 
 *Cuando faltan marcos, el sistema puede invertir más tiempo intercambiando páginas que ejecutando instrucciones útiles.*
+
+---
+
+Más detalle (modelos y esquemas de gestión de memoria, particiones MFT, tablas de páginas, segmentación y segmentación paginada, intercambio de procesos completos, reinicio de la instrucción tras un fallo de página, otros algoritmos de reemplazo y anomalía de Belady): [`material_adicional.md`](material_adicional.md).

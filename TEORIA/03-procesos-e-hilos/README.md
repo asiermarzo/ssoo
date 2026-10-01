@@ -1,4 +1,4 @@
-# Tema 2: Procesos e hilos
+# Procesos e hilos
 
 ## Concepto de proceso
 

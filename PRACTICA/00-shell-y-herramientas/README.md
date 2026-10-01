@@ -184,7 +184,7 @@ chmod 640 datos.txt   # rw-r-----: el propietario lee y escribe, el grupo solo l
 </details>
 
 
-Este sistema de permisos también se usa para directorios, tuberías con nombre ([`mkfifo`](../03-pipes-y-fifos/README.md)) o memoria compartida ([`shm_open`](../06-memoria-compartida-y-semaforos/README.md)). Se verá en esas prácticas.
+Este sistema de permisos también se usa para directorios, tuberías con nombre ([`mkfifo`](../03-pipes-y-fifos/README.md)) o memoria compartida ([`shmget`](../06-memoria-compartida-y-semaforos/README.md#crear--shmget)). Se verá en esas prácticas.
 
 ## Editar archivos de código C
 

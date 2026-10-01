@@ -1,4 +1,4 @@
-# Tema 3: Planificación de procesos
+# Planificación de procesos
 
 ## Conceptos básicos
 

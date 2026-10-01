@@ -1,7 +1,7 @@
 /* division_cero.c — division entera por cero.
  * En x86 la CPU genera la excepcion #DE (divide error); el SO la traduce a
  * la senal SIGFPE y termina SOLO este proceso. La maquina sigue funcionando
- * con normalidad: es una interrupcion de la clase "programa" del Tema 1.
+ * con normalidad: es una interrupcion de la clase "programa" vista en teoria.
  *
  *   gcc division_cero.c -Wall -O0 -o division_cero
  *   ./division_cero        -> "Floating point exception (core dumped)"  (SIGFPE)

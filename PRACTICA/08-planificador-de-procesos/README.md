@@ -115,7 +115,7 @@ if (pid == 0) {
 // rama padre: meter el proceso en listos
 ```
 
-Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell](../04-ejercicio-procesos-y-pipes/minishell.md).
+Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell](../04-ejercicio-procesos-y-pipes/otras-practicas/minishell.md).
 
 <!--
 > **Condición de carrera.** Si el `SIGCONT` llega **antes** de que el hijo haya llegado a `pause()`, se pierde y el hijo se queda dormido para siempre. En la práctica es raro, porque `procsched` no lo reanuda hasta que le toca, pero es posible. La solución correcta es que el padre **bloquee** `SIGCONT` con `sigprocmask` antes del `fork`. El hijo hereda la máscara, instala el manejador y espera con `sigsuspend` (que desbloquea y espera de forma atómica). Después vuelve a desbloquear `SIGCONT` antes del `execvp`.
@@ -244,7 +244,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 1. **`procsched.c` y la cola *esperando*.** `procsched` crea la cola (`ftok` + `msgget` con `IPC_CREAT | 0600`) y en un bucle hace `msgrcv` bloqueante e imprime `mtype` y `comando` de lo que llega. Con `Ctrl-C`, borra la cola y termina (`IPC_RMID`).
    *Prueba:* `ipcs -q` muestra la cola mientras se ejecuta y no la muestra después de terminar.
 
-2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver la [minishell](../04-ejercicio-procesos-y-pipes/minishell.md#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
+2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver la [minishell](../04-ejercicio-procesos-y-pipes/otras-practicas/minishell.md#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
    *Prueba:* lo que escribes en el `encolador` aparece en la consola de `procsched`.
 
 3. **`encolador` desde fichero.** Se lee igual, con `fgets` sobre el `FILE *` de `fopen` (ver [P1](../01-entrada-salida-y-ficheros/#lectura)). Hay que ignorar los `#` e implementar `espera ms` (`usleep`). Los comandos especiales ya llevan el 4 delante, así que se mandan como cualquier petición.
@@ -337,7 +337,7 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 
 2. **Urgentes.** Lanza el set 3 y observa que cuando entra (`mandelbrot` urgente) y (`factoriza` urgente). el resto de ventanas se congelan. El tiempo que `factoriza` pasa en la CPU debe ser parecido a cuando se ejecuta por separado, al ser prioridad 1 se le da toda la CPU.
 
-Después lanza el set 1 y, desde otro `encolador`, manda `3 ./factoriza 1000000016000000063` (factoriza pero con la menor prioridad posible). ¿Cuánto tiempo tarda en ejecutarse ahora?
+   Después lanza el set 1 y, desde otro `encolador`, manda `3 ./factoriza 1000000016000000063` (factoriza pero con la menor prioridad posible). ¿Cuánto tiempo tarda en ejecutarse ahora?
 
 3. **Latencia de los interactivos.** Lanza el set 2 y mira los fps en el título de `arkanoid` y `pintar`. ¿Llegan a 30 fps (un fotograma cada 33 ms)? Si no, explica por qué (pista: un proceso de nivel 3 puede empezar su turno de 15 ms justo antes de que un interactivo llegue a 33 ms de espera). Manda `4 latencia 18` (33 − 15) y comprueba si ahora llegan a 30 fps. ¿Qué les pasa a los de cálculo?
 

@@ -1,4 +1,4 @@
-# Tema 1: Introducción a los sistemas operativos y conceptos básicos
+# Introducción a los sistemas operativos y conceptos básicos
 
 ## Definición de sistema operativo
 

@@ -1,4 +1,4 @@
-# Tema 4 material adicional
+# Sincronización de procesos: material adicional
 
 ## Formas de garantizar la concurrencia
 

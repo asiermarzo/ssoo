@@ -40,7 +40,7 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 |----------|---------|
 | P0 — Shell y herramientas | [`PRACTICA/00`](PRACTICA/00-shell-y-herramientas/) |
 | P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
-| P2 — Procesos e hilos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos/) |
+| P2 — Procesos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos/) |
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
 | P4 — Acueducto: ejercicio de procesos y pipes | [`PRACTICA/04`](PRACTICA/04-ejercicio-procesos-y-pipes/) |
 | P5 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/05`](PRACTICA/05-senales/) |

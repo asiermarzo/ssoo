@@ -1,4 +1,4 @@
-# Tema 1 Extra: tres demostraciones en máquina
+# Material extra: tres demostraciones en máquina
 
 
 ## El sistema operativo gestiona varios procesos a la vez
@@ -69,7 +69,7 @@ ejecuta `htop` en una terminal y **dos o tres** copias de `./primos_cpu`
 - El SO reparte la CPU entre los procesos que están calculando, si hay más procesos que cores CPU, se reparten.
 - Cuando una copia se para en el `ENTER` el SO la pone en espera, las demás **suben** y ocupan el hueco.
 
-Es la multiprogramación del Tema 1: la CPU nunca está ociosa si hay trabajo pendiente.
+Es la multiprogramación vista en teoría: la CPU nunca está ociosa si hay trabajo pendiente.
 
 ---
 
@@ -112,7 +112,7 @@ La constante: para que la CPU haga algo, **siempre** hay que acabar en código m
 
 ### Instrucciones y registros básicos
 
-Con `a = b + c;` el compilador genera 3 o 4 instrucciones de los tipos vistos en el Tema 1 (transferencia y aritmético-lógicas):
+Con `a = b + c;` el compilador genera 3 o 4 instrucciones de los tipos vistos en teoría (transferencia y aritmético-lógicas):
 
 ```asm
 mov     eax, DWORD PTR [rbp-8]     ; transferencia: carga b en el registro eax
@@ -174,7 +174,7 @@ Al ejecutar `syscall` (antiguamente `int 0x80`):
 2. El SO mira `eax` (número de llamada), valida los argumentos y hace la E/S real sobre el dispositivo.
 3. Devuelve el resultado en `rax` y ejecuta `sysret`: la CPU vuelve a **modo usuario** y a la instrucción siguiente al `syscall`.
 
-Es exactamente el «procesamiento de una interrupción» del Tema 1 (guardar contexto → rutina de servicio → restaurar contexto → continuar), y es la única puerta por la que un proceso de usuario obtiene servicios del sistema operativo.
+Es exactamente el «procesamiento de una interrupción» visto en teoría (guardar contexto → rutina de servicio → restaurar contexto → continuar), y es la única puerta por la que un proceso de usuario obtiene servicios del sistema operativo.
 
 ```bash
 strace -e trace=write ./escribe     # ver la llamada al sistema desde fuera

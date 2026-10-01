@@ -1,4 +1,4 @@
-# Tema 4: Sincronización de procesos
+# Sincronización de procesos
 
 ## Conceptos básicos
 

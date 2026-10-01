@@ -1,4 +1,4 @@
-# Tema 5 material adicional
+# Gestión de memoria: material adicional
 
 ## Modelos de gestión de la memoria
 

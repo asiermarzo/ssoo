@@ -1,4 +1,4 @@
-# Tema 6: Dispositivos de Entrada/Salida
+# Dispositivos de Entrada/Salida
 
 Conceptos básicos · Funciones de entrada/salida · Almacenamiento intermedio · Tipos de discos duros · Planificación de discos · Caché de disco · Entrada/salida en Linux.
 

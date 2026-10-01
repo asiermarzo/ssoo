@@ -2,7 +2,7 @@
 
 ## Descripción general
 
-Construir una shell (intérprete de comandos) usando procesos: `fork` y `wait` ([P2](../02-procesos/)) y tuberías `pipe` y `dup2` ([P3](../03-pipes-y-fifos/)). La shell debe ejecutar comandos del sistema, con tuberías (`|`) y redirección de entrada y salida (`<`, `>`).
+Construir una shell (intérprete de comandos) usando procesos: `fork` y `wait` ([P2](../../02-procesos/)) y tuberías `pipe` y `dup2` ([P3](../../03-pipes-y-fifos/)). La shell debe ejecutar comandos del sistema, con tuberías (`|`) y redirección de entrada y salida (`<`, `>`).
 
 
 ## Especificaciones
@@ -121,7 +121,7 @@ Ejemplo de ejecución:
 ```
 $ ./paso2
 pwd
-/home/alumno/ssoo/PRACTICA/04-ejercicio-procesos-y-pipes
+/home/alumno/ssoo/PRACTICA/04-ejercicio-procesos-y-pipes/otras-practicas
 fecha
 execvp: No such file or directory
 date
@@ -347,7 +347,7 @@ waitpid(pid, NULL, 0);
          3      15      98
    ```
 
-2. **Minishell, paso 1 — bucle y ejecución simple.** Bucle con el prompt `minishell> ` que lee una línea (como en el paso 1), la trocea con `str_split` y llama a `ejecuta(palabras, STDIN_FILENO, STDOUT_FILENO)`, esperando con `waitpid` a que termine antes de pedir la siguiente. Todavía sin tuberías ni redirecciones. Termina si la línea es `exit` o al llegar a fin de fichero (`Ctrl-D`).
+2. **Minishell: bucle y ejecución simple.** Bucle con el prompt `minishell> ` que lee una línea (como en el [paso 1](#1-leer-una-línea-de-teclado)), la trocea con `str_split` y llama a `ejecuta(palabras, STDIN_FILENO, STDOUT_FILENO)`, esperando con `waitpid` a que termine antes de pedir la siguiente. Todavía sin tuberías ni redirecciones. Termina si la línea es `exit` o al llegar a fin de fichero (`Ctrl-D`).
 
    Ejemplo de ejecución:
 
@@ -363,7 +363,7 @@ waitpid(pid, NULL, 0);
    $
    ```
 
-3. **Minishell, paso 2 — una sola redirección.** Ya tienes `palabras[]` y su número de elementos `n` (lo que devuelve `str_split`). Recorre `palabras[0..n)` buscando `"<"` o `">"`: al encontrar uno, abre con `open` el fichero indicado en la palabra *siguiente* con las *flags* adecuadas (`O_RDONLY`; `O_WRONLY | O_CREAT | O_TRUNC`), guarda el descriptor en `fd_input` o `fd_output`, y pon `NULL` justo en la posición donde estaba el símbolo. Así `palabras[]` queda cortado ahí mismo y sirve directamente como `argv` para `ejecuta`, sin tocar el resto del array:
+3. **Minishell: una sola redirección.** Ya tienes `palabras[]` y su número de elementos `n` (lo que devuelve `str_split`). Recorre `palabras[0..n)` buscando `"<"` o `">"`: al encontrar uno, abre con `open` el fichero indicado en la palabra *siguiente* con las *flags* adecuadas (`O_RDONLY`; `O_WRONLY | O_CREAT | O_TRUNC`), guarda el descriptor en `fd_input` o `fd_output`, y pon `NULL` justo en la posición donde estaba el símbolo. Así `palabras[]` queda cortado ahí mismo y sirve directamente como `argv` para `ejecuta`, sin tocar el resto del array:
 
    ```c
    int fd_input = STDIN_FILENO, fd_output = STDOUT_FILENO;
@@ -393,7 +393,7 @@ waitpid(pid, NULL, 0);
    5
    ```
 
-4. **Minishell, paso 3 — una sola tubería.** Busca el índice de `"|"` dentro de `palabras[]`. Pon `NULL` ahí: eso parte el array en dos, el propio `palabras` y `&palabras[idx + 1]`. Crea una `pipe()` y llama dos veces a `ejecuta`: la primera con `fd_output` apuntando a la escritura de la pipe, la segunda con `fd_input` apuntando a su lectura. No olvides cerrar ambos extremos en el padre después de pasarlos.
+4. **Minishell: una sola tubería.** Busca el índice de `"|"` dentro de `palabras[]`. Pon `NULL` ahí: eso parte el array en dos, el propio `palabras` y `&palabras[idx + 1]`. Crea una `pipe()` y llama dos veces a `ejecuta`: la primera con `fd_output` apuntando a la escritura de la pipe, la segunda con `fd_input` apuntando a su lectura. No olvides cerrar ambos extremos en el padre después de pasarlos.
 
    Ejemplo de ejecución:
 
@@ -407,7 +407,7 @@ waitpid(pid, NULL, 0);
    3
    ```
 
-5. **Minishell, paso 4 — varias tuberías.** Generaliza el ejercicio anterior para que `palabras[]` pueda tener varios `"|"`. No hace falta localizar todos los `|` de golpe: basta con buscar el *siguiente* a partir del tramo actual, ejecutar ese tramo, y repetir con el resto del array hasta que no quede ningún `|`.
+5. **Minishell: varias tuberías.** Generaliza el ejercicio anterior para que `palabras[]` pueda tener varios `"|"`. No hace falta localizar todos los `|` de golpe: basta con buscar el *siguiente* a partir del tramo actual, ejecutar ese tramo, y repetir con el resto del array hasta que no quede ningún `|`.
 
    ```c
    int fd_input = STDIN_FILENO;
@@ -451,7 +451,7 @@ waitpid(pid, NULL, 0);
    1
    ```
 
-6. **Minishell, paso 5 (ampliación) — redirecciones en cada tramo.** Combina el ejercicio anterior con el paso 2: aplica a cada uno de los tramos la misma búsqueda de `"<"` y `">"` dentro de su propio trozo de `palabras[]`.
+6. **Minishell: redirecciones en cada tramo (ampliación).** Combina el ejercicio anterior con el ejercicio 3: aplica a cada uno de los tramos la misma búsqueda de `"<"` y `">"` dentro de su propio trozo de `palabras[]`.
 
    Pista: el bucle de búsqueda de redirecciones del ejercicio 3 se puede aplicar tal cual a cada tramo, justo antes de llamar a `ejecuta` para ese tramo.
 
