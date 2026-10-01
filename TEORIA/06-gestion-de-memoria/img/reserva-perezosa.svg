@@ -1,18 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-label="Animación de memalloc: cada bloque de 1 MB tiene 256 páginas; con 1 solo se usa la página de la cabecera, con 2 dos páginas y con 3 las 256">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1014" role="img" aria-label="memalloc: cada bloque de 1 MB son 256 páginas virtuales sin marco; con 1 solo se usa la página de la cabecera y con 3 las 256">
 <style>
 text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
 .m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
 .d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
 .c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
 .cap{font-size:14px}
-.f{opacity:0}.fin{opacity:1}
-.f0{animation:s3_2 12.8s linear 0s infinite}
-.f1{animation:s3_2 12.8s linear -9.6s infinite}
-.f2{animation:s3_2 12.8s linear -6.4s infinite}
-.f3{animation:s3_2l 12.8s linear -3.2s infinite}
-@keyframes s3_2{0%{opacity:0}2.73%{opacity:1}25.00%{opacity:1}27.73%{opacity:0}100%{opacity:0}}
-@keyframes s3_2l{0%{opacity:0}2.73%{opacity:1}22.27%{opacity:1}25.00%{opacity:0}100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.f{animation:none}}
 </style>
 <defs>
 <marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
@@ -27,6 +19,7 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
 <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
 </defs>
+<g transform="translate(0,0)">
 <rect width="720" height="330" rx="10" fill="#121417"/>
 <text x="28" y="28" class="s d">Cada fila es uno de los 512 bloques de 1 MB (256 páginas de 4 KB); todos se comportan igual</text>
 <line x1="20" y1="290" x2="700" y2="290" stroke="#2a2e35"/>
@@ -36,33 +29,38 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <rect x="180" y="140" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
 <text x="28" y="241" class="m">./memalloc 3</text>
 <rect x="180" y="224" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
-<g class="f f0">
 <text x="180" y="100" class="s d">reservado (virtual), todavía sin marcos</text>
 <text x="180" y="184" class="s d">reservado (virtual), todavía sin marcos</text>
 <text x="180" y="268" class="s d">reservado (virtual), todavía sin marcos</text>
-<text x="24" y="314" class="cap"><tspan class="d">1/4</tspan><tspan dx="10">Al reservar, el kernel solo anota 512 MB de direcciones virtuales: ningún marco</tspan></text>
+<text x="24" y="314" class="cap"><tspan class="d">1</tspan><tspan dx="10">Al reservar, el kernel solo anota 512 MB de direcciones virtuales: ningún marco</tspan></text>
 </g>
-<g class="f f1">
+<g transform="translate(0,342)">
+<rect width="720" height="330" rx="10" fill="#121417"/>
+<text x="28" y="28" class="s d">Cada fila es uno de los 512 bloques de 1 MB (256 páginas de 4 KB); todos se comportan igual</text>
+<line x1="20" y1="290" x2="700" y2="290" stroke="#2a2e35"/>
+<text x="28" y="73" class="m">./memalloc 1</text>
+<rect x="180" y="56" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<text x="28" y="157" class="m">./memalloc 2</text>
+<rect x="180" y="140" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<text x="28" y="241" class="m">./memalloc 3</text>
+<rect x="180" y="224" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
 <rect x="180" y="56" width="3" height="24" rx="0" fill="#f4d03f" stroke="#f4d03f" stroke-width="1.5"/>
 <text x="181.5" y="52" class="c s y">▾</text>
 <text x="180" y="100" class="s y">RSS ≈ 2 MB: solo la página de la cabecera de malloc (× 512 bloques)</text>
 <text x="180" y="184" class="s d">reservado (virtual), todavía sin marcos</text>
 <text x="180" y="268" class="s d">reservado (virtual), todavía sin marcos</text>
-<text x="24" y="314" class="cap"><tspan class="d">2/4</tspan><tspan dx="10">./memalloc 1: malloc escribe su cabecera al inicio del bloque → 1 página</tspan></text>
+<text x="24" y="314" class="cap"><tspan class="d">2</tspan><tspan dx="10">./memalloc 1: malloc escribe su cabecera al inicio del bloque → 1 página</tspan></text>
 </g>
-<g class="f f2">
-<rect x="180" y="56" width="3" height="24" rx="0" fill="#f4d03f" stroke="#f4d03f" stroke-width="1.5"/>
-<text x="181.5" y="52" class="c s y">▾</text>
-<text x="180" y="100" class="s ">RSS ≈ 2 MB: solo la página de la cabecera de malloc (× 512 bloques)</text>
-<rect x="180" y="140" width="3" height="24" rx="0" fill="#f4d03f" stroke="#f4d03f" stroke-width="1.5"/>
-<text x="181.5" y="136" class="c s y">▾</text>
-<rect x="436" y="140" width="3" height="24" rx="0" fill="#f4d03f" stroke="#f4d03f" stroke-width="1.5"/>
-<text x="437.5" y="136" class="c s y">▾</text>
-<text x="180" y="184" class="s y">RSS ≈ 4 MB: la cabecera y la página de mem[i][MEGABYTE/2]</text>
-<text x="180" y="268" class="s d">reservado (virtual), todavía sin marcos</text>
-<text x="24" y="314" class="cap"><tspan class="d">3/4</tspan><tspan dx="10">./memalloc 2: además 1 byte en medio del bloque → 2 páginas</tspan></text>
-</g>
-<g class="f f3 fin">
+<g transform="translate(0,684)">
+<rect width="720" height="330" rx="10" fill="#121417"/>
+<text x="28" y="28" class="s d">Cada fila es uno de los 512 bloques de 1 MB (256 páginas de 4 KB); todos se comportan igual</text>
+<line x1="20" y1="290" x2="700" y2="290" stroke="#2a2e35"/>
+<text x="28" y="73" class="m">./memalloc 1</text>
+<rect x="180" y="56" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<text x="28" y="157" class="m">./memalloc 2</text>
+<rect x="180" y="140" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
+<text x="28" y="241" class="m">./memalloc 3</text>
+<rect x="180" y="224" width="512" height="24" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5"/>
 <rect x="180" y="56" width="3" height="24" rx="0" fill="#f4d03f" stroke="#f4d03f" stroke-width="1.5"/>
 <text x="181.5" y="52" class="c s y">▾</text>
 <text x="180" y="100" class="s ">RSS ≈ 2 MB: solo la página de la cabecera de malloc (× 512 bloques)</text>
@@ -73,6 +71,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="180" y="184" class="s ">RSS ≈ 4 MB: la cabecera y la página de mem[i][MEGABYTE/2]</text>
 <rect x="180" y="224" width="512" height="24" rx="2" fill="#f4d03f" stroke="#f4d03f" stroke-width="1.5"/>
 <text x="180" y="268" class="s y">RSS ≈ 512 MB: memset escribe las 256 páginas</text>
-<text x="24" y="314" class="cap"><tspan class="d">4/4</tspan><tspan dx="10">./memalloc 3: memset escribe el bloque entero → 256 páginas</tspan></text>
+<text x="24" y="314" class="cap"><tspan class="d">3</tspan><tspan dx="10">./memalloc 3: memset escribe el bloque entero → 256 páginas</tspan></text>
 </g>
 </svg>

@@ -1,18 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 350" role="img" aria-label="Animación de las políticas de asignación: una petición de 80 KB va al primer hueco (primer ajuste), al más pequeño donde cabe (mejor ajuste) o al más grande (peor ajuste)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1074" role="img" aria-label="Políticas de asignación: una petición de 80 KB va al primer hueco donde cabe (primer ajuste), al más pequeño (mejor ajuste) o al más grande (peor ajuste)">
 <style>
 text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
 .m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
 .d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
 .c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
 .cap{font-size:14px}
-.f{opacity:0}.fin{opacity:1}
-.f0{animation:s3_2 12.8s linear 0s infinite}
-.f1{animation:s3_2 12.8s linear -9.6s infinite}
-.f2{animation:s3_2 12.8s linear -6.4s infinite}
-.f3{animation:s3_2l 12.8s linear -3.2s infinite}
-@keyframes s3_2{0%{opacity:0}2.73%{opacity:1}25.00%{opacity:1}27.73%{opacity:0}100%{opacity:0}}
-@keyframes s3_2l{0%{opacity:0}2.73%{opacity:1}22.27%{opacity:1}25.00%{opacity:0}100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.f{animation:none}}
 </style>
 <defs>
 <marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
@@ -27,6 +19,7 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
 <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
 </defs>
+<g transform="translate(0,0)">
 <rect width="720" height="350" rx="10" fill="#121417"/>
 <text x="40" y="40" class="b">Petición:</text>
 <rect x="116" y="22" width="51.2" height="26" rx="4" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
@@ -40,49 +33,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="40" y="78" class="s">Primer ajuste (first-fit)</text>
 <text x="40" y="158" class="s">Mejor ajuste (best-fit)</text>
 <text x="40" y="238" class="s">Peor ajuste (worst-fit)</text>
-<g class="f f0">
-<rect x="40" y="86" width="64" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="104" y="86" width="96" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="152" y="107" class="c s d">150</text>
-<rect x="200" y="86" width="51.2" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="251.2" y="86" width="38.4" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="270.4" y="107" class="c s d">60</text>
-<rect x="289.6" y="86" width="44.8" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="334.4" y="86" width="192" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="430.4" y="107" class="c s d">300</text>
-<rect x="526.4" y="86" width="38.4" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="564.8" y="86" width="57.6" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="593.6" y="107" class="c s d">90</text>
-<rect x="622.4" y="86" width="57.6" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="40" y="166" width="64" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="104" y="166" width="96" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="152" y="187" class="c s d">150</text>
-<rect x="200" y="166" width="51.2" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="251.2" y="166" width="38.4" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="270.4" y="187" class="c s d">60</text>
-<rect x="289.6" y="166" width="44.8" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="334.4" y="166" width="192" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="430.4" y="187" class="c s d">300</text>
-<rect x="526.4" y="166" width="38.4" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="564.8" y="166" width="57.6" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="593.6" y="187" class="c s d">90</text>
-<rect x="622.4" y="166" width="57.6" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="40" y="246" width="64" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="104" y="246" width="96" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="152" y="267" class="c s d">150</text>
-<rect x="200" y="246" width="51.2" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="251.2" y="246" width="38.4" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="270.4" y="267" class="c s d">60</text>
-<rect x="289.6" y="246" width="44.8" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="334.4" y="246" width="192" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="430.4" y="267" class="c s d">300</text>
-<rect x="526.4" y="246" width="38.4" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<rect x="564.8" y="246" width="57.6" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="593.6" y="267" class="c s d">90</text>
-<rect x="622.4" y="246" width="57.6" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<text x="24" y="334" class="cap"><tspan class="d">1/4</tspan><tspan dx="10">Tres políticas para elegir hueco: ¿dónde se coloca una petición de 80 KB?</tspan></text>
-</g>
-<g class="f f1">
 <rect x="40" y="86" width="64" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
 <rect x="104" y="86" width="51.2" height="32" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
 <text x="129.6" y="107" class="c s b">80</text>
@@ -125,9 +75,22 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <rect x="564.8" y="246" width="57.6" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="593.6" y="267" class="c s d">90</text>
 <rect x="622.4" y="246" width="57.6" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<text x="24" y="334" class="cap"><tspan class="d">2/4</tspan><tspan dx="10">Primer ajuste: recorre la lista y usa el primer hueco donde cabe</tspan></text>
+<text x="24" y="334" class="cap"><tspan class="d">1</tspan><tspan dx="10">Primer ajuste: recorre la lista y usa el primer hueco donde cabe</tspan></text>
 </g>
-<g class="f f2">
+<g transform="translate(0,362)">
+<rect width="720" height="350" rx="10" fill="#121417"/>
+<text x="40" y="40" class="b">Petición:</text>
+<rect x="116" y="22" width="51.2" height="26" rx="4" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<text x="141.6" y="40" class="c s">80 KB</text>
+<text x="190" y="40" class="d s">huecos libres: 150, 60, 300 y 90 KB</text>
+<rect x="566" y="28" width="14" height="14" rx="2" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="586" y="40" class="s d">ocupado</text>
+<rect x="640" y="28" width="14" height="14" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="660" y="40" class="s d">libre</text>
+<line x1="20" y1="310" x2="700" y2="310" stroke="#2a2e35"/>
+<text x="40" y="78" class="s">Primer ajuste (first-fit)</text>
+<text x="40" y="158" class="s">Mejor ajuste (best-fit)</text>
+<text x="40" y="238" class="s">Peor ajuste (worst-fit)</text>
 <rect x="40" y="86" width="64" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
 <rect x="104" y="86" width="51.2" height="32" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
 <text x="129.6" y="107" class="c s b">80</text>
@@ -172,9 +135,22 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <rect x="564.8" y="246" width="57.6" height="32" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="593.6" y="267" class="c s d">90</text>
 <rect x="622.4" y="246" width="57.6" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
-<text x="24" y="334" class="cap"><tspan class="d">3/4</tspan><tspan dx="10">Mejor ajuste: usa el hueco más pequeño donde cabe</tspan></text>
+<text x="24" y="334" class="cap"><tspan class="d">2</tspan><tspan dx="10">Mejor ajuste: usa el hueco más pequeño donde cabe</tspan></text>
 </g>
-<g class="f f3 fin">
+<g transform="translate(0,724)">
+<rect width="720" height="350" rx="10" fill="#121417"/>
+<text x="40" y="40" class="b">Petición:</text>
+<rect x="116" y="22" width="51.2" height="26" rx="4" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
+<text x="141.6" y="40" class="c s">80 KB</text>
+<text x="190" y="40" class="d s">huecos libres: 150, 60, 300 y 90 KB</text>
+<rect x="566" y="28" width="14" height="14" rx="2" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
+<text x="586" y="40" class="s d">ocupado</text>
+<rect x="640" y="28" width="14" height="14" rx="2" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="660" y="40" class="s d">libre</text>
+<line x1="20" y1="310" x2="700" y2="310" stroke="#2a2e35"/>
+<text x="40" y="78" class="s">Primer ajuste (first-fit)</text>
+<text x="40" y="158" class="s">Mejor ajuste (best-fit)</text>
+<text x="40" y="238" class="s">Peor ajuste (worst-fit)</text>
 <rect x="40" y="86" width="64" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
 <rect x="104" y="86" width="51.2" height="32" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
 <text x="129.6" y="107" class="c s b">80</text>
@@ -222,6 +198,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="593.6" y="267" class="c s d">90</text>
 <rect x="622.4" y="246" width="57.6" height="32" rx="0" fill="#2a2e35" stroke="#4a5059" stroke-width="1.5"/>
 <text x="40" y="296" class="s y">→ hueco más grande (300): sobran 220 KB, que aún sirven</text>
-<text x="24" y="334" class="cap"><tspan class="d">4/4</tspan><tspan dx="10">Peor ajuste: usa el hueco más grande</tspan></text>
+<text x="24" y="334" class="cap"><tspan class="d">3</tspan><tspan dx="10">Peor ajuste: usa el hueco más grande</tspan></text>
 </g>
 </svg>

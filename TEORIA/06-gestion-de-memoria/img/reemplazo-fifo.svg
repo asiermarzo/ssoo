@@ -1,22 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-label="Animación de FIFO con 3 marcos y la cadena 7 0 1 2 0 3 0 4: cada fallo expulsa la página que lleva más tiempo en memoria; 7 fallos en total">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 672" role="img" aria-label="FIFO con 3 marcos: se expulsa la página que lleva más tiempo en memoria, aunque se acabe de usar; la cadena completa produce 7 fallos">
 <style>
 text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
 .m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
 .d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
 .c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
 .cap{font-size:14px}
-.f{opacity:0}.fin{opacity:1}
-.f0{animation:s2_2 19.9s linear 0s infinite}
-.f1{animation:s2_2 19.9s linear -17.7s infinite}
-.f2{animation:s2_2 19.9s linear -15.5s infinite}
-.f3{animation:s2_2 19.9s linear -13.3s infinite}
-.f4{animation:s2_2 19.9s linear -11.1s infinite}
-.f5{animation:s2_2 19.9s linear -8.9s infinite}
-.f6{animation:s2_2 19.9s linear -6.7s infinite}
-.f7{animation:s4_5l 19.9s linear -4.5s infinite}
-@keyframes s2_2{0%{opacity:0}1.76%{opacity:1}11.06%{opacity:1}12.81%{opacity:0}100%{opacity:0}}
-@keyframes s4_5l{0%{opacity:0}1.76%{opacity:1}20.85%{opacity:1}22.61%{opacity:0}100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.f{animation:none}}
 </style>
 <defs>
 <marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
@@ -31,6 +19,7 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
 <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
 </defs>
+<g transform="translate(0,0)">
 <rect width="720" height="330" rx="10" fill="#121417"/>
 <text x="130" y="54" class="e s d">referencia</text>
 <text x="130" y="230" class="e s d">fallo</text>
@@ -55,149 +44,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="547" y="54" class="c m d">0</text>
 <rect x="584" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
 <text x="609" y="54" class="c m d">4</text>
-<g class="f f0">
-<rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
-<text x="175" y="54" class="c m b y">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="108" class="c m">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
-<text x="175" y="231" class="c b er">F</text>
-<text x="670" y="88" class="c b xl er">1</text>
-<text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
-<text x="390" y="272" class="m">7</text>
-<text x="24" y="314" class="cap"><tspan class="d">1/8</tspan><tspan dx="10">7: fallo; hay un marco libre</tspan></text>
-</g>
-<g class="f f1">
-<rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="54" class="c m b">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="108" class="c m">7</text>
-<text x="175" y="231" class="c b er">F</text>
-<rect x="212" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
-<text x="237" y="54" class="c m b y">0</text>
-<rect x="212" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="108" class="c m">7</text>
-<rect x="212" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="148" class="c m">0</text>
-<rect x="212" y="126" width="50" height="34" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
-<text x="237" y="231" class="c b er">F</text>
-<text x="670" y="88" class="c b xl er">2</text>
-<text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
-<text x="390" y="272" class="m">7  →  0</text>
-<text x="24" y="314" class="cap"><tspan class="d">2/8</tspan><tspan dx="10">0: fallo; hay un marco libre</tspan></text>
-</g>
-<g class="f f2">
-<rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="54" class="c m b">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="108" class="c m">7</text>
-<text x="175" y="231" class="c b er">F</text>
-<rect x="212" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="54" class="c m b">0</text>
-<rect x="212" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="108" class="c m">7</text>
-<rect x="212" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="148" class="c m">0</text>
-<text x="237" y="231" class="c b er">F</text>
-<rect x="274" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
-<text x="299" y="54" class="c m b y">1</text>
-<rect x="274" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="108" class="c m">7</text>
-<rect x="274" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="148" class="c m">0</text>
-<rect x="274" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="188" class="c m">1</text>
-<rect x="274" y="166" width="50" height="34" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
-<text x="299" y="231" class="c b er">F</text>
-<text x="670" y="88" class="c b xl er">3</text>
-<text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
-<text x="390" y="272" class="m">7  →  0  →  1</text>
-<text x="24" y="314" class="cap"><tspan class="d">3/8</tspan><tspan dx="10">1: fallo; hay un marco libre</tspan></text>
-</g>
-<g class="f f3">
-<rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="54" class="c m b">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="108" class="c m">7</text>
-<text x="175" y="231" class="c b er">F</text>
-<rect x="212" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="54" class="c m b">0</text>
-<rect x="212" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="108" class="c m">7</text>
-<rect x="212" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="148" class="c m">0</text>
-<text x="237" y="231" class="c b er">F</text>
-<rect x="274" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="54" class="c m b">1</text>
-<rect x="274" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="108" class="c m">7</text>
-<rect x="274" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="148" class="c m">0</text>
-<rect x="274" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="188" class="c m">1</text>
-<text x="299" y="231" class="c b er">F</text>
-<rect x="336" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
-<text x="361" y="54" class="c m b y">2</text>
-<rect x="336" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="108" class="c m">2</text>
-<rect x="336" y="86" width="50" height="34" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
-<rect x="336" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="148" class="c m">0</text>
-<rect x="336" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="188" class="c m">1</text>
-<text x="361" y="231" class="c b er">F</text>
-<text x="670" y="88" class="c b xl er">4</text>
-<text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
-<text x="390" y="272" class="m">0  →  1  →  2</text>
-<text x="24" y="314" class="cap"><tspan class="d">4/8</tspan><tspan dx="10">2: fallo; sale 7, la que lleva más tiempo en memoria</tspan></text>
-</g>
-<g class="f f4">
-<rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="54" class="c m b">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="108" class="c m">7</text>
-<text x="175" y="231" class="c b er">F</text>
-<rect x="212" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="54" class="c m b">0</text>
-<rect x="212" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="108" class="c m">7</text>
-<rect x="212" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="148" class="c m">0</text>
-<text x="237" y="231" class="c b er">F</text>
-<rect x="274" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="54" class="c m b">1</text>
-<rect x="274" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="108" class="c m">7</text>
-<rect x="274" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="148" class="c m">0</text>
-<rect x="274" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="188" class="c m">1</text>
-<text x="299" y="231" class="c b er">F</text>
-<rect x="336" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="54" class="c m b">2</text>
-<rect x="336" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="108" class="c m">2</text>
-<rect x="336" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="148" class="c m">0</text>
-<rect x="336" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="188" class="c m">1</text>
-<text x="361" y="231" class="c b er">F</text>
-<rect x="398" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
-<text x="423" y="54" class="c m b y">0</text>
-<rect x="398" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="108" class="c m">2</text>
-<rect x="398" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="148" class="c m">0</text>
-<rect x="398" y="126" width="50" height="34" rx="4" fill="none" stroke="#4cc26a" stroke-width="2.5"/>
-<rect x="398" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="188" class="c m">1</text>
-<text x="423" y="231" class="c b ok">✓</text>
-<text x="670" y="88" class="c b xl er">4</text>
-<text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
-<text x="390" y="272" class="m">0  →  1  →  2</text>
-<text x="24" y="314" class="cap"><tspan class="d">5/8</tspan><tspan dx="10">0: acierto, ya está en memoria</tspan></text>
-</g>
-<g class="f f5">
 <rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
 <text x="175" y="54" class="c m b">7</text>
 <rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
@@ -250,73 +96,33 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="670" y="88" class="c b xl er">5</text>
 <text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
 <text x="390" y="272" class="m">1  →  2  →  3</text>
-<text x="24" y="314" class="cap"><tspan class="d">6/8</tspan><tspan dx="10">3: fallo; sale 0 aunque se acaba de usar: FIFO no mira el uso</tspan></text>
+<text x="24" y="314" class="cap"><tspan class="d">1</tspan><tspan dx="10">3: fallo; sale 0 aunque se acaba de usar: FIFO no mira el uso</tspan></text>
 </g>
-<g class="f f6">
+<g transform="translate(0,342)">
+<rect width="720" height="330" rx="10" fill="#121417"/>
+<text x="130" y="54" class="e s d">referencia</text>
+<text x="130" y="230" class="e s d">fallo</text>
+<text x="670" y="52" class="c s d">fallos</text>
+<line x1="20" y1="290" x2="700" y2="290" stroke="#2a2e35"/>
+<text x="130" y="108" class="e s d">marco 0</text>
+<text x="130" y="148" class="e s d">marco 1</text>
+<text x="130" y="188" class="e s d">marco 2</text>
 <rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="54" class="c m b">7</text>
-<rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="175" y="108" class="c m">7</text>
-<text x="175" y="231" class="c b er">F</text>
+<text x="175" y="54" class="c m d">7</text>
 <rect x="212" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="54" class="c m b">0</text>
-<rect x="212" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="108" class="c m">7</text>
-<rect x="212" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="237" y="148" class="c m">0</text>
-<text x="237" y="231" class="c b er">F</text>
+<text x="237" y="54" class="c m d">0</text>
 <rect x="274" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="54" class="c m b">1</text>
-<rect x="274" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="108" class="c m">7</text>
-<rect x="274" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="148" class="c m">0</text>
-<rect x="274" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="299" y="188" class="c m">1</text>
-<text x="299" y="231" class="c b er">F</text>
+<text x="299" y="54" class="c m d">1</text>
 <rect x="336" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="54" class="c m b">2</text>
-<rect x="336" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="108" class="c m">2</text>
-<rect x="336" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="148" class="c m">0</text>
-<rect x="336" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="361" y="188" class="c m">1</text>
-<text x="361" y="231" class="c b er">F</text>
+<text x="361" y="54" class="c m d">2</text>
 <rect x="398" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="54" class="c m b">0</text>
-<rect x="398" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="108" class="c m">2</text>
-<rect x="398" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="148" class="c m">0</text>
-<rect x="398" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="423" y="188" class="c m">1</text>
-<text x="423" y="231" class="c b ok">✓</text>
+<text x="423" y="54" class="c m d">0</text>
 <rect x="460" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="485" y="54" class="c m b">3</text>
-<rect x="460" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="485" y="108" class="c m">2</text>
-<rect x="460" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="485" y="148" class="c m">3</text>
-<rect x="460" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="485" y="188" class="c m">1</text>
-<text x="485" y="231" class="c b er">F</text>
-<rect x="522" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#cfd4da" stroke-width="1.5"/>
-<text x="547" y="54" class="c m b y">0</text>
-<rect x="522" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="547" y="108" class="c m">2</text>
-<rect x="522" y="126" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="547" y="148" class="c m">3</text>
-<rect x="522" y="166" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
-<text x="547" y="188" class="c m">0</text>
-<rect x="522" y="166" width="50" height="34" rx="4" fill="none" stroke="#f4d03f" stroke-width="2.5"/>
-<text x="547" y="231" class="c b er">F</text>
-<text x="670" y="88" class="c b xl er">6</text>
-<text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
-<text x="390" y="272" class="m">2  →  3  →  0</text>
-<text x="24" y="314" class="cap"><tspan class="d">7/8</tspan><tspan dx="10">0: fallo; sale 1, la que lleva más tiempo en memoria</tspan></text>
-</g>
-<g class="f f7 fin">
+<text x="485" y="54" class="c m d">3</text>
+<rect x="522" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="547" y="54" class="c m d">0</text>
+<rect x="584" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
+<text x="609" y="54" class="c m d">4</text>
 <rect x="150" y="30" width="50" height="36" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
 <text x="175" y="54" class="c m b">7</text>
 <rect x="150" y="86" width="50" height="34" rx="4" fill="#1c1f24" stroke="#3a4048" stroke-width="1.5"/>
@@ -387,6 +193,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="670" y="88" class="c b xl er">7</text>
 <text x="150" y="272" class="s d">cola FIFO (la primera es la que sale):</text>
 <text x="390" y="272" class="m">3  →  0  →  4</text>
-<text x="24" y="314" class="cap"><tspan class="d">8/8</tspan><tspan dx="10">4: fallo; sale 2, la que lleva más tiempo en memoria. Total: 7 fallos</tspan></text>
+<text x="24" y="314" class="cap"><tspan class="d">2</tspan><tspan dx="10">4: fallo; sale 2, la que lleva más tiempo en memoria. Total: 7 fallos</tspan></text>
 </g>
 </svg>

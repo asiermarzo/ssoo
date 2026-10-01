@@ -1,19 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 318" role="img" aria-label="Animación de la fragmentación externa: tras salir un proceso quedan dos huecos que suman 450 MB, pero uno de 350 MB no cabe hasta compactar. Abajo, fragmentación interna: 100 MB sin usar dentro de una partición fija de 300 MB">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 978" role="img" aria-label="Fragmentación externa: tras salir A quedan dos huecos que suman 450 MB, pero D (350 MB) no cabe hasta compactar. Abajo, fragmentación interna: 100 MB sin usar dentro de una partición fija de 300 MB">
 <style>
 text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
 .m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
 .d{fill:#8b949e}.ok{fill:#4cc26a}.er{fill:#ef5350}.y{fill:#f4d03f}.o{fill:#f0a070}.t{fill:#6fd3e3}
 .c{text-anchor:middle}.e{text-anchor:end}.b{font-weight:600}.s{font-size:12px}.l{font-size:18px}.xl{font-size:26px}
 .cap{font-size:14px}
-.f{opacity:0}.fin{opacity:1}
-.f0{animation:s3 15s linear 0s infinite}
-.f1{animation:s3 15s linear -12s infinite}
-.f2{animation:s3 15s linear -9s infinite}
-.f3{animation:s3 15s linear -6s infinite}
-.f4{animation:s3l 15s linear -3s infinite}
-@keyframes s3{0%{opacity:0}2.33%{opacity:1}20.00%{opacity:1}22.33%{opacity:0}100%{opacity:0}}
-@keyframes s3l{0%{opacity:0}2.33%{opacity:1}17.67%{opacity:1}20.00%{opacity:0}100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.f{animation:none}}
 </style>
 <defs>
 <marker id="aw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cfd4da"/></marker>
@@ -28,6 +19,7 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <marker id="ap3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ef6b6b"/></marker>
 <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#181b20"/><line x1="0" y1="0" x2="0" y2="8" stroke="#4a5059" stroke-width="3"/></pattern>
 </defs>
+<g transform="translate(0,0)">
 <rect width="720" height="318" rx="10" fill="#121417"/>
 <text x="40" y="28" class="b">Fragmentación externa</text>
 <text x="680" y="28" class="e d s">memoria de usuario: 1000 MB</text>
@@ -41,23 +33,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="306" y="302" class="c s d">100 MB sin usar</text>
 <text x="390" y="258" class="s d">El sobrante queda dentro de la partición</text>
 <text x="390" y="278" class="s d">y ningún otro proceso puede usarlo.</text>
-<g class="f f0">
-<rect x="40" y="40" width="640" height="56" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="360" y="73" class="c s d">1000 MB libres</text>
-<text x="24" y="176" class="cap"><tspan class="d">1/5</tspan><tspan dx="10">Al principio toda la memoria de usuario está libre</tspan></text>
-</g>
-<g class="f f1">
-<rect x="40" y="40" width="128" height="56" rx="0" fill="#5c2f1b" stroke="#e8804a" stroke-width="1.5"/>
-<text x="104" y="73" class="c s b">A · 200</text>
-<rect x="168" y="40" width="192" height="56" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
-<text x="264" y="73" class="c s b">B · 300</text>
-<rect x="360" y="40" width="160" height="56" rx="0" fill="#3b2a55" stroke="#a57be0" stroke-width="1.5"/>
-<text x="440" y="73" class="c s b">C · 250</text>
-<rect x="520" y="40" width="160" height="56" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
-<text x="600" y="73" class="c s d">250 libres</text>
-<text x="24" y="176" class="cap"><tspan class="d">2/5</tspan><tspan dx="10">Entran A (200 MB), B (300 MB) y C (250 MB)</tspan></text>
-</g>
-<g class="f f2">
 <rect x="40" y="40" width="128" height="56" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="104" y="73" class="c s d">200 libres</text>
 <rect x="168" y="40" width="192" height="56" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
@@ -66,9 +41,22 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="440" y="73" class="c s b">C · 250</text>
 <rect x="520" y="40" width="160" height="56" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="600" y="73" class="c s d">250 libres</text>
-<text x="24" y="176" class="cap"><tspan class="d">3/5</tspan><tspan dx="10">A termina: quedan 200 + 250 = 450 MB libres, en dos huecos</tspan></text>
+<text x="24" y="176" class="cap"><tspan class="d">1</tspan><tspan dx="10">A termina: quedan 200 + 250 = 450 MB libres, en dos huecos</tspan></text>
 </g>
-<g class="f f3">
+<g transform="translate(0,330)">
+<rect width="720" height="318" rx="10" fill="#121417"/>
+<text x="40" y="28" class="b">Fragmentación externa</text>
+<text x="680" y="28" class="e d s">memoria de usuario: 1000 MB</text>
+<line x1="20" y1="196" x2="700" y2="196" stroke="#2a2e35"/>
+<text x="40" y="226" class="b">Fragmentación interna</text>
+<rect x="40" y="240" width="213" height="44" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
+<text x="146" y="267" class="c s">proceso: 200 MB</text>
+<rect x="253" y="240" width="107" height="44" rx="0" fill="url(#hatch)" stroke="#8b949e" stroke-width="1.5"/>
+<rect x="40" y="240" width="320" height="44" rx="0" fill="none" stroke="#e6e6e6" stroke-width="2"/>
+<text x="40" y="302" class="s d">partición fija de 300 MB</text>
+<text x="306" y="302" class="c s d">100 MB sin usar</text>
+<text x="390" y="258" class="s d">El sobrante queda dentro de la partición</text>
+<text x="390" y="278" class="s d">y ningún otro proceso puede usarlo.</text>
 <rect x="40" y="40" width="128" height="56" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="104" y="73" class="c s d">200 libres</text>
 <rect x="168" y="40" width="192" height="56" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
@@ -80,9 +68,22 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <rect x="40" y="108" width="224" height="36" rx="4" fill="#2a1414" stroke="#ef5350" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="152" y="131" class="c er s b">D · 350 MB</text>
 <text x="280" y="131" class="er s">no cabe: hay 450 MB libres, pero en dos huecos</text>
-<text x="24" y="176" class="cap"><tspan class="d">4/5</tspan><tspan dx="10">Llega D (350 MB) y no cabe, aunque en total hay memoria de sobra</tspan></text>
+<text x="24" y="176" class="cap"><tspan class="d">2</tspan><tspan dx="10">Llega D (350 MB) y no cabe, aunque en total hay memoria de sobra</tspan></text>
 </g>
-<g class="f f4 fin">
+<g transform="translate(0,660)">
+<rect width="720" height="318" rx="10" fill="#121417"/>
+<text x="40" y="28" class="b">Fragmentación externa</text>
+<text x="680" y="28" class="e d s">memoria de usuario: 1000 MB</text>
+<line x1="20" y1="196" x2="700" y2="196" stroke="#2a2e35"/>
+<text x="40" y="226" class="b">Fragmentación interna</text>
+<rect x="40" y="240" width="213" height="44" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
+<text x="146" y="267" class="c s">proceso: 200 MB</text>
+<rect x="253" y="240" width="107" height="44" rx="0" fill="url(#hatch)" stroke="#8b949e" stroke-width="1.5"/>
+<rect x="40" y="240" width="320" height="44" rx="0" fill="none" stroke="#e6e6e6" stroke-width="2"/>
+<text x="40" y="302" class="s d">partición fija de 300 MB</text>
+<text x="306" y="302" class="c s d">100 MB sin usar</text>
+<text x="390" y="258" class="s d">El sobrante queda dentro de la partición</text>
+<text x="390" y="278" class="s d">y ningún otro proceso puede usarlo.</text>
 <rect x="40" y="40" width="192" height="56" rx="0" fill="#16434d" stroke="#3fb5c9" stroke-width="1.5"/>
 <text x="136" y="73" class="c s b">B · 300</text>
 <rect x="232" y="40" width="160" height="56" rx="0" fill="#3b2a55" stroke="#a57be0" stroke-width="1.5"/>
@@ -92,6 +93,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <rect x="616" y="40" width="64" height="56" rx="0" fill="#181b20" stroke="#3a4048" stroke-width="1.5" stroke-dasharray="5 4"/>
 <text x="648" y="73" class="c s d">100 libres</text>
 <text x="40" y="131" class="y s">compactación: B y C se mueven al principio</text>
-<text x="24" y="176" class="cap"><tspan class="d">5/5</tspan><tspan dx="10">Compactación: se juntan los huecos moviendo B y C, y D ya cabe</tspan></text>
+<text x="24" y="176" class="cap"><tspan class="d">3</tspan><tspan dx="10">Compactación: se juntan los huecos moviendo B y C, y D ya cabe</tspan></text>
 </g>
 </svg>
