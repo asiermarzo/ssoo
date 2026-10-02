@@ -180,7 +180,7 @@ Ejemplo (recortado) del paso 1 (los pids varían en cada ejecución):
 
 ```bash
 strace -f -yy -tt -o traza.txt -e trace=%process,pipe,pipe2,openat,dup2,close ./acueducto
-xdg-open visor-strace.html     # lo abre en el navegador (en WSL: explorer.exe visor-strace.html)
+xdg-open visor-strace.html     # o simplemente hacer doble-click en visor-strace.html
 ```
 
 Carga `traza.txt` con el botón del visor o arrástralo a la página. En el visor:
