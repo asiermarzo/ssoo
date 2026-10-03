@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 692" role="img" aria-label="Traducción con registro base y límite: la dirección lógica 200 es menor que el límite y se le suma la base (1200); la 700 supera el límite y provoca una excepción">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 692" role="img" aria-label="Traducción con registro base y límite: la dirección lógica 200 es menor que el límite y se le suma la base (1200); la 700 supera el límite y provoca una interrupción">
 <style>
 text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6e6}
 .m{font-family:Consolas,"DejaVu Sans Mono",Menlo,monospace}
@@ -42,7 +42,7 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="445" y="184" class="c s d">dirección física</text>
 <line x1="250" y1="202" x2="250" y2="244" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
 <text x="262" y="228" class="s er">no</text>
-<text x="250" y="266" class="c er b">excepción</text>
+<text x="250" y="266" class="c er b">interrupción</text>
 <text x="250" y="294" class="c s d">(el SO toma el control)</text>
 <text x="160" y="118" class="c s d">dirección lógica</text>
 <rect x="500" y="30" width="180" height="60" rx="0" fill="#3d3718" stroke="#c9a227" stroke-width="1.5"/>
@@ -85,7 +85,7 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <text x="445" y="184" class="c s d">dirección física</text>
 <line x1="250" y1="202" x2="250" y2="244" stroke="#cfd4da" stroke-width="2" marker-end="url(#aw)"/>
 <text x="262" y="228" class="s er">no</text>
-<text x="250" y="266" class="c er b">excepción</text>
+<text x="250" y="266" class="c er b">interrupción</text>
 <text x="250" y="294" class="c s d">(el SO toma el control)</text>
 <text x="160" y="118" class="c s d">dirección lógica</text>
 <rect x="500" y="30" width="180" height="60" rx="0" fill="#3d3718" stroke="#c9a227" stroke-width="1.5"/>
@@ -102,6 +102,6 @@ text{font-family:"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;fill:#e6e6
 <polygon points="250,118 300,160 250,202 200,160" fill="none" stroke="#ef5350" stroke-width="3"/>
 <line x1="250" y1="202" x2="250" y2="244" stroke="#ef5350" stroke-width="3" marker-end="url(#ar)"/>
 <rect x="196" y="249" width="108" height="24" rx="4" fill="none" stroke="#ef5350" stroke-width="2"/>
-<text x="24" y="324" class="cap"><tspan class="d">2</tspan><tspan dx="10">700 ≥ 500: no se traduce; excepción y el SO termina el proceso</tspan></text>
+<text x="24" y="324" class="cap"><tspan class="d">2</tspan><tspan dx="10">700 ≥ 500: no se traduce; interrupción y el SO termina el proceso</tspan></text>
 </g>
 </svg>
