@@ -10,7 +10,9 @@
 - Manejo de señales: `signal()`.
 - Espera de señales: `pause()`, `sleep()`.
 - Ejemplo: distinguir con `SIGCHLD` si un hijo ha muerto o solo se ha pausado.
+<!-- 
 - Qué no hacer dentro de un manejador: funciones no reentrantes, `malloc`/`free`, `exit()`.
+-->
 
 ## Concepto de señal
 
@@ -101,8 +103,12 @@ unsigned int sleep(unsigned int segundos);   /* espera o hasta recibir una seña
 int pause(void);                             /* bloquea hasta recibir una señal */
 ```
 
-`pause()` es la forma correcta de esperar una señal sin **espera activa** (sin hacer un bucle comprobando una variable una y otra vez). En variables compartidas con el manejador se usa `volatile sig_atomic_t`, el único tipo cuyo acceso está garantizado como atómico frente a una señal.
+`pause()` es la forma correcta de esperar una señal sin **espera activa** (sin hacer un bucle comprobando una variable una y otra vez). 
+<!-- 
+En variables compartidas con el manejador se usa `volatile sig_atomic_t`, el único tipo cuyo acceso está garantizado como atómico frente a una señal.
+-->
 
+<!-- 
 ## Qué no hacer dentro de un manejador
 
 Una señal puede interrumpir al proceso en **cualquier punto**, incluida mitad de una llamada a `malloc` o de un `printf`. El manejador se ejecuta con lo que hubiera a medio hacer en ese instante, así que solo debe llamar a funciones **reentrantes / async-signal-safe**: funciones que no dejan estado a medias ni comparten estructuras internas (buffers, *locks*) con el resto del programa. La lista exacta está en `man 7 signal-safety`; las más relevantes para estas prácticas:
@@ -113,3 +119,4 @@ Una señal puede interrumpir al proceso en **cualquier punto**, incluida mitad d
 - **Cuidado con `errno`**: si el manejador llama a alguna función que pueda modificarlo, debe guardar su valor al entrar y restaurarlo al salir, porque si no puede corromper el `errno` que estaba comprobando el código interrumpido.
 - **El manejador debe ser corto**: mientras se ejecuta, la señal que lo disparó (y las que se hayan añadido a `sa_mask`) están bloqueadas; un manejador largo retrasa su propia recepción y la de esas señales.
 - Para comunicar información al resto del programa, basta una variable `volatile sig_atomic_t` (vista arriba); no hace falta ninguna de las funciones anteriores.
+-->

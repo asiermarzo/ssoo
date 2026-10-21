@@ -12,14 +12,12 @@ Esta práctica usa la misma familia que [P6](../06-memoria-compartida-y-semaforo
 int msgget(key_t key, int msgflg);
 ```
 
-- `msgflg`: permisos (`0666`) | `IPC_CREAT` (crea la cola si no existe; si no se indica y no existe, error).
+- `msgflg`: `0666` | `IPC_CREAT` , permisos y flag para crear la cola. Si ya existe la cola, se devuelve la existente. Si no se indica el flag y no existe la cola -> error.
 - **Devuelve** el identificador de la cola, o si hay error `-1` y `errno`.
-
-
 
 ## Estructura del mensaje
 
-El mensaje **debe** ser una estructura cuyo primer campo sea un `long` con el tipo:
+El mensaje **debe** ser una estructura cuyo primer campo sea un `long`:
 
 ```c
 typedef struct {
@@ -28,7 +26,7 @@ typedef struct {
     char apellido[32];
     int  edad;
     char telefono[16];
-} msgbuf_t;
+} msg_t;
 ```
 
 ## `msgsnd` — encolar un mensaje
@@ -39,7 +37,7 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 
 - `msqid`: id de la cola
 - `msgp`: puntero a donde empieza el mensaje.
-- `msgsz`: tamaño del mensaje sin contar el long (`sizeof(msgbuf_t) - sizeof(long)`).
+- `msgsz`: tamaño del mensaje sin contar el long (`sizeof(msg_t) - sizeof(long)`).
 - `msgflg`: `0` (bloquea hasta poder enviar; típicamente si la cola está llena) o `IPC_NOWAIT` (retorna siempre, con error si no puede enviar).
 - **Devuelve** `0` o `-1` y `errno`.
 
@@ -50,7 +48,7 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 ```
 - `msqid`: id de la cola.
 - `msgp`: puntero donde se copia el mensaje recibido.
-- `msgsz`: tamaño máximo a copiar en `msgp`, sin contar el `long` (`sizeof(msgbuf_t) - sizeof(long)`).
+- `msgsz`: tamaño máximo a copiar en `msgp`, sin contar el `long` (`sizeof(msg_t) - sizeof(long)`).
 - `msgtyp`: **prioridad** del mensaje a retirar: `> 0` un tipo concreto; `0` cualquier tipo (el más antiguo de la cola).
 - `msgflg`: `0` (bloquea hasta que haya un mensaje del tipo pedido) o `IPC_NOWAIT` (error inmediato si no lo hay).
 - **Devuelve** el nº de bytes recibidos en la carga útil, o `-1` y `errno`.
@@ -83,7 +81,7 @@ typedef struct {
     char apellido[32];
     int  edad;
     char telefono[16];
-} msgbuf_t;
+} msg_t;
 
 int id_cola;
 
@@ -103,7 +101,7 @@ int main(int argc, char *argv[]) {
     id_cola = msgget(clave, 0600 | IPC_CREAT);
     signal(SIGINT, manejador_sigint);
 
-    for (msgbuf_t m;;) {
+    for (msg_t m;;) {
         msgrcv(id_cola, &m, sizeof(m) - sizeof(long), 0, 0);
         printf("%s %s, %d años, tel. %s\n", m.nombre, m.apellido, m.edad, m.telefono);
     }
@@ -125,7 +123,7 @@ typedef struct {
     char apellido[32];
     int  edad;
     char telefono[16];
-} msgbuf_t;
+} msg_t;
 
 int main(int argc, char *argv[]) {
     if (argc != 6) { 
@@ -136,7 +134,7 @@ int main(int argc, char *argv[]) {
     key_t clave = ftok("/etc", atoi(argv[1]));
     int id_cola = msgget(clave, 0600 | IPC_CREAT);
 
-    msgbuf_t m = { .mtype = 1, .edad = atoi(argv[4]) };
+    msg_t m = { .mtype = 1, .edad = atoi(argv[4]) };
     strcpy(m.nombre, argv[2]);
     strcpy(m.apellido, argv[3]);
     strcpy(m.telefono, argv[5]);
@@ -176,6 +174,7 @@ $ kill -CONT 4021 #mandar continuar al lector
 Persona Numero1, 20 años, tel. 600000000
 Persona Numero2, 20 años, tel. 600000000
 Persona Numero3, 20 años, tel. 600000000
+
 $ lsipc           #la cola está vacía
 Message Queues:
 KEY        MSQID      OWNER      PERMS      USED-BYTES   MESSAGES
@@ -185,21 +184,29 @@ KEY        MSQID      OWNER      PERMS      USED-BYTES   MESSAGES
 
 ## Ejercicios propuestos
 
-1. Productor/consumidor con cola de mensajes: `productor` genera un mensaje cada `periodo` segundos (numerados del 1 al 10, `mtype = 1`) y los encola; al mandar el décimo, encola además un mensaje de tipo `mtype = 2` como marca de fin. `consumidor` retira siempre el más antiguo (`msgtyp = 0`), lo imprime y tarda `periodo` segundos en "procesarlo" antes de pedir el siguiente (así el argumento marca tanto el ritmo de producción como el de consumo); en cuanto recibe uno de tipo `2` sabe que no llegarán más, libera la cola (`msgctl` con `IPC_RMID`) y termina.
+1. Productor/consumidor con cola de mensajes. `productor` genera un mensaje cada `periodo` segundos, numerados del 1 al 10, con `mtype = 1` y los encola; al mandar el décimo, encola además un mensaje de tipo `mtype = 999` para indicar al `consumidor` que ha de terminar. `consumidor` retira siempre el mensaje más antiguo (pedir con `msgtyp = 0`), lo imprime y espera `periodo` segundos antes de desencolar el siguiente. Cuando recibe un mensaje con `mtype = 999`, libera la cola (`msgctl` con `IPC_RMID`) y termina.
 
-   `sleep()` solo admite segundos enteros: si quieres poder pasar un `periodo` con decimales (p. ej. `0.25`), duerme con `usleep(periodo_en_segundos * 1000000)` (microsegundos) en su lugar — mismo `#include <unistd.h>`.
+   ```c
+   typedef struct {
+       long mtype;
+       int  numero;
+       int id; //para ej2 y 4
+   } msg_t;
+   ```
 
    ```
    productor  clave periodo
    consumidor clave periodo
    ```
 
-2. Añade a `productor` un argumento más, un identificador (`productor clave periodo id`), y que lo incluya en cada mensaje; en `consumidor`, imprime junto a cada mensaje qué `id` lo mandó. Lanza cinco `productor` contra el mismo `consumidor`.
+2. Añade a `productor` un argumento más, un identificador (`./productor clave periodo id`), este id se manda en cada mensaje; en `consumidor`, imprime junto a cada mensaje el id que lo mandó. Lanza cinco `productor` contra el mismo `consumidor`.
 
-   Prueba primero con los cinco `productor` a `periodo = 1` y el `consumidor` a `periodo = 0.25` (con `usleep`, como en el ejercicio anterior): el `consumidor` por sí solo es mucho más rápido que cualquier `productor` (4 mensajes por segundo frente a 1), pero entre los cinco `productor` encolan 5 mensajes por segundo, más de los que el `consumidor` llega a retirar — la cola debería acumular mensajes poco a poco. Compruébalo con `lsipc`: si `MESSAGES` se queda siempre en 0 o 1, el `consumidor` va al día; si crece sin parar, se está quedando atrás.
+   Prueba primero con los cinco `productor` a `periodo = 3` y el `consumidor` a `periodo = 1`: el `consumidor` es más rápido que los `productor` (1 mensaje por segundo vs  1 cada 3 segundos), pero entre los cinco `productor` la cola acumulará mensajes poco a poco. Compruébalo con `lsipc`: si `MESSAGES` se queda siempre en 0 o 1, el `consumidor` va al día; si crece, se está quedando atrás.
 
-   Repite con periodos de producción distintos (p. ej. 1, 2, 3, 4 y 5 segundos) y mira el orden de los `id` que va imprimiendo `consumidor`: como todos encolan con el mismo `mtype = 1` y `consumidor` siempre pide el más antiguo (`msgtyp = 0`), lo que ves es el orden real de llegada a la cola, no uno fijado por qué productor lo mandó — el `id` con `periodo` más corto aparecerá bastantes más veces que el resto.
+   Repite con periodo de producción 5 segundos y comprueba que el consumidor puede procesar todos los mensajes de los productores.
+   
+   Repite con 3 productores (y periodos de 1, 2 y 3 respectivamente). Mira el orden de los `id` que va imprimiendo `consumidor`: como todos los `productor` encolan con el mismo `mtype = 1` y `consumidor` siempre pide el más antiguo (`msgtyp = 0`), lo que ves es el orden de llegada a la cola — el `id` con `periodo` más corto aparecerá bastantes más veces que el resto.
 
-3. Cola con dos prioridades: `generador` manda una tarea de tipo `1` (normal) cada segundo y, de vez en cuando (al azar, p. ej. 1 de cada 5), manda en su lugar una de tipo `2` (urgente). `procesador` intenta primero `msgrcv(..., 2, IPC_NOWAIT)`: si hay una tarea urgente la procesa; si no la hay (`errno == ENOMSG`), procesa la más antigua de cualquier tipo con `msgrcv(..., 0, 0)` (bloqueante). Comprueba que las tareas urgentes adelantan a las normales que ya llevaban rato esperando en la cola.
+3. Cola con dos prioridades. `generador` manda un mensaje de tipo `1` (normal) cada segundo y, de vez en cuando (al azar, p. ej. 1 de cada 5), manda en su lugar una de tipo `2` (urgente). `procesador` intenta primero `msgrcv(..., 2, IPC_NOWAIT)`, si no hay mensaje urgente, entonces coge uno cualquiera `msgrcv(..., 0, 0)` (bloqueante). Comprueba que las tareas urgentes adelantan a las normales que ya llevaban rato esperando en la cola.
 
-4. Servidor con una única cola para varios clientes: cada `cliente` manda su petición con un tipo fijo (p. ej. `mtype = 100`) e incluye su propio PID en la carga útil; `servidor` las recibe con `msgrcv(..., 100, 0)` y responde por la misma cola usando como tipo el PID que acaba de leer. Cada `cliente`, tras enviar, espera su respuesta con `msgrcv(..., getpid(), 0)`. Lanza varios `cliente` a la vez y comprueba que, aunque sus peticiones y respuestas se entremezclen en la misma cola, cada uno solo recoge la suya.
+4. Servidor con una única cola para varios clientes: cada `cliente` manda su petición con un tipo fijo (p. ej. `mtype = 1`) e incluye su propio PID en el mensaje (por ejemplo en el campo `id`); `servidor` las recibe con `msgrcv(..., 1, 0)` y responde por la misma cola usando como `mtype` el PID del cliente. Cada `cliente`, tras enviar, espera su respuesta con `msgrcv(..., getpid(), 0)`. Lanza varios `cliente` a la vez y comprueba que, aunque sus peticiones y respuestas se entremezclen en la misma cola, cada uno solo recoge la suya.

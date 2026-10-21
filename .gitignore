@@ -16,6 +16,13 @@ PRACTICA/*/extra_0[0-9]
 /Practicas_240304-250304_25-26-anexo.pdf
 /Sistemas Operativos - 240304-25-26.pdf
 
+# Generación de PDF (script y salida)
+/generar_pdfs.py
+/pdf/
+
+# Soluciones de las prácticas
+/PRACTICA/soluciones/
+
 # Editores / sistema
 *.swp
 *~
