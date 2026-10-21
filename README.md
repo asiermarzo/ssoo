@@ -84,6 +84,7 @@ Estílos de código, aunque cada estudiante puede seguir el suyo:
 - Las variables se declaran e inicializan en la misma línea, en el *scope* más interno posible.
 - Se evita el uso de variables globales.
 - Los `struct` se definen con `typedef struct` sin darle nombre al `struct`.
+- Los permisos se indican siempre en octal (`0640`), aunque existan constantes para los permisos de lectura o escritura (`S_IRUSR`, `SHM_R`…).
 
 ## Material adicional
 

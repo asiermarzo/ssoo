@@ -72,3 +72,5 @@ Cada mensaje se etiqueta con un tipo (o una prioridad). Un receptor puede limita
 *Pidiendo un tipo concreto se retira el primer mensaje de ese tipo, aunque no esté en cabeza; pidiendo cualquier tipo se retira siempre el más antiguo.*
 
 La práctica usa la interfaz **System V** (`msgget`, `msgsnd`, `msgrcv`, `msgctl`), donde ese tipo es un `long` (`mtype`) obligatorio en todo mensaje y `msgrcv` decide con él qué retirar. Es la misma familia de recursos que la memoria compartida y los semáforos (ver [`TEORIA/10`](../10-memoria-compartida-y-mutex/)): identificados con una clave `ftok`, y persistentes hasta que se liberan explícitamente. Detalle completo de la API: [`PRACTICA/07`](../../PRACTICA/07-colas-de-mensajes/).
+
+Además de pedir un tipo concreto (`msgtyp > 0`) o el más antiguo (`msgtyp = 0`), `msgrcv` admite `msgtyp < 0`: retira el de **tipo más bajo** entre los que tienen `mtype <= |msgtyp|`. Así el tipo hace de prioridad con `msgrcv(..., -3, ...)` saca los mensajes de tipo 1 a 3, dando prioridad a los más bajos (primero los 1, luego los 2, luego los 3).

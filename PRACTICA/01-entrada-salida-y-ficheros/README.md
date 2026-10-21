@@ -242,7 +242,7 @@ int creat(const char *pathname, mode_t mode);   /* == open con O_WRONLY|O_CREAT|
 ```
 
 - `flags`: uno de `O_RDONLY`, `O_WRONLY`, `O_RDWR`, combinable con OR (`|`) con `O_CREAT` (crea si no existe), `O_EXCL` (error si ya existe), `O_APPEND` (escribe siempre al final), `O_TRUNC` (trunca a 0).
-- `mode`: permisos del fichero si se crea (p. ej. `S_IRUSR|S_IWUSR`, o `0644`).
+- `mode`: permisos del fichero si se crea, en octal (p. ej. `0644`).
 - **Devuelve**: el descriptor (el entero libre más bajo), o `-1` si hay error y fija la variable global `errno` (`<errno.h>`) con el código concreto del fallo.
 
 ### `read` / `write` / `close`
@@ -274,7 +274,7 @@ int main(void) {
     char mensaje[] = "hola\n";
     char buffer[50];
 
-    int fd = open(ruta, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);  /* flags == 00102, mode == 0600 */
+    int fd = open(ruta, O_RDWR | O_CREAT, 0600);  /* flags == 00102 */
     ssize_t n = write(fd, mensaje, strlen(mensaje));
     close(fd);
 
@@ -300,7 +300,7 @@ int main(int argc, char *argv[]) {
 
     int fdold = open(argv[1], 0);      /* 0 == O_RDONLY */
     if (fdold == -1) { perror("open origen"); exit(1); }
-    int fdnew = creat(argv[2], 0666);  /* 0666 == S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH */
+    int fdnew = creat(argv[2], 0666);
     if (fdnew == -1) { perror("creat destino"); exit(1); }
 
     for (int cuenta; (cuenta = read(fdold, buffer, sizeof buffer)) > 0; )
