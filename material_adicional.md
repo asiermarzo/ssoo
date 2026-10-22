@@ -6,7 +6,7 @@ Vídeos de los canales [CoreDump](https://www.youtube.com/@CoreDumpped) y [BitLe
 
 ### Procesos
 
-Relacionado con [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) (procesos e hilos).
+Relacionado con [procesos e hilos](TEORIA/procesos-e-hilos/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -15,7 +15,7 @@ Relacionado con [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) (procesos e hilos).
 
 ### Planificación
 
-Relacionado con [`TEORIA/04`](TEORIA/04-planificacion-de-procesos/) (planificación de procesos).
+Relacionado con [planificación de procesos](TEORIA/planificacion-de-procesos/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -25,7 +25,7 @@ Relacionado con [`TEORIA/04`](TEORIA/04-planificacion-de-procesos/) (planificaci
 
 ### Llamadas al sistema
 
-Relacionado con [`TEORIA/02`](TEORIA/02-espacio-usuario-espacio-kernel/) (espacio usuario y espacio kernel).
+Relacionado con [espacio usuario y espacio kernel](TEORIA/espacio-usuario-espacio-kernel/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -35,7 +35,7 @@ Relacionado con [`TEORIA/02`](TEORIA/02-espacio-usuario-espacio-kernel/) (espaci
 
 ### IPCs (pipes, señales y colas de mensaje)
 
-Relacionado con [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/), [`TEORIA/08`](TEORIA/08-ipc-senales/) y [`TEORIA/09`](TEORIA/09-ipc-colas-de-mensajes/) (comunicación entre procesos).
+Relacionado con [pipes y fifos](TEORIA/ipc-pipes-y-fifos/), [señales](TEORIA/ipc-senales/) y [colas de mensajes](TEORIA/ipc-colas-de-mensajes/) (comunicación entre procesos).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -45,7 +45,7 @@ Relacionado con [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/), [`TEORIA/08`](TEORI
 
 ### Gestión de memoria
 
-Relacionado con [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) (gestión de memoria).
+Relacionado con [gestión de memoria](TEORIA/gestion-de-memoria/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -56,7 +56,7 @@ Relacionado con [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) (gestión de memori
 
 #### Hilos
 
-Relacionado con [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) (procesos e hilos).
+Relacionado con [procesos e hilos](TEORIA/procesos-e-hilos/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -66,7 +66,7 @@ Relacionado con [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) (procesos e hilos).
 
 ### Concurrencia
 
-Relacionado con [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) (concurrencia y sincronización).
+Relacionado con [concurrencia y sincronización](TEORIA/concurrencia-y-sincronizacion/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|
@@ -78,7 +78,7 @@ Relacionado con [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) (concurr
 
 ### E/S
 
-Relacionado con [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) (dispositivos de E/S).
+Relacionado con [dispositivos de E/S](TEORIA/dispositivos-de-es/).
 
 | Vídeo | Traducción | Extra |
 |---|---|---|

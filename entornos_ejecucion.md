@@ -65,7 +65,7 @@ Al crear el codespace, GitHub **abre solo** una pestaña nueva con VS Code para 
 Para volver más tarde: [github.com/codespaces](https://github.com/codespaces) → clic en el codespace (o **Code → Codespaces** en la página del repo → clic en el que aparece en la lista).
 
 ```bash
-cd PRACTICA/00-shell-y-herramientas
+cd PRACTICA/shell-y-herramientas
 gcc hola.c -Wall -o hola
 ./hola
 ```
