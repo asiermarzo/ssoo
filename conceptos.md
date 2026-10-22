@@ -78,7 +78,7 @@ Los conceptos se pueden explicar por niveles, con estas estructuras:
 |---|---|---|
 | 1 | El SO reparte la memoria para los procesos. | Memoria como recurso limitado y compartido. |
 | 2 | Cada proceso ve un espacio de direcciones propio, traducido por hardware. | Direcciones lógicas vs físicas, MMU, base/límite o paginación. |
-| 3 | Linux gestiona memoria virtual por páginas, con swap. | `/proc/<pid>/maps`, `mmap()`, `malloc` vs `sbrk`, `-fsanitize=address` (ya usado en P0), segfault real. |
+| 3 | Linux gestiona memoria virtual por páginas, con swap. | `/proc/<pid>/maps`, `mmap()`, `malloc` vs `sbrk`, `-fsanitize=address` (ya usado en la práctica de shell y herramientas), segfault real. |
 
 
 ---

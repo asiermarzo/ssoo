@@ -13,7 +13,7 @@ En los `README.md` conviven dos formatos de diagrama:
 
 Se generaron mediante la herramienta integrada de generación de imágenes de OpenAI. Los PNG finales están guardados dentro de las carpetas `img/` de los temas que los consumen.
 
-### T01.1 · `01-*/img/dispositivos-con-so.png`
+### `introduccion-a-los-sistemas-operativos/img/dispositivos-con-so.png`
 
 ```text
 Use case: scientific-educational
@@ -28,7 +28,7 @@ Color palette: restrained blues, graphite gray, white, with small amber accents
 Constraints: no people; no brand marks; no flags; no weapons firing; no text; no labels; no watermark; do not merge devices into hybrids
 ```
 
-### T01.6 · `01-*/img/sistemas-tiempo-real.png`
+### `introduccion-a-los-sistemas-operativos/img/sistemas-tiempo-real.png`
 
 ```text
 Use case: scientific-educational
@@ -43,7 +43,7 @@ Color palette: restrained blue and graphite with amber deadline accents
 Constraints: no people; no brand marks; no flags; no weapons; no explosions; no text; no labels; no watermark
 ```
 
-### T03.1 · `03-*/img/procesos-vs-hilos-cocinas.png`
+### `procesos-e-hilos/img/procesos-vs-hilos-cocinas.png`
 
 ```text
 Use case: scientific-educational
@@ -58,7 +58,7 @@ Color palette: restrained blue, sage green, warm wood and graphite
 Constraints: diverse adult cooks in practical neutral clothing; no brand marks; no text; no labels; no watermark; do not show unsafe kitchen behavior
 ```
 
-### T04.1 · `04-*/img/planificador-pista-aeropuerto.png`
+### `planificacion-de-procesos/img/planificador-pista-aeropuerto.png`
 
 ```text
 Use case: scientific-educational
@@ -73,7 +73,7 @@ Color palette: restrained blue, graphite, concrete gray, small amber accents
 Constraints: civilian aircraft only; no airline branding; no readable markings; no military elements; no text; no labels; no watermark; exactly one active runway
 ```
 
-### T05.4 · `05-*/img/interbloqueo-cruce.png`
+### `concurrencia-y-sincronizacion/img/interbloqueo-cruce.png`
 
 ```text
 Use case: scientific-educational
@@ -90,11 +90,11 @@ Constraints: no collision damage; no people visible; no emergency vehicles; no b
 
 ## Fotografías externas y licencias
 
-| Figura | Archivo local | Autor/fuente | Licencia | Página de origen |
-|---|---|---|---|---|
-| T01.2 | `01-*/img/operadora-tarjetas-perforadas.jpg` | U.S. Census Bureau | Dominio público, obra del Gobierno federal de EE. UU. | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg) |
-| T01.3 | `01-*/img/programadoras-eniac.jpg` | Fotógrafo no identificado del U.S. Army | Dominio público, obra del Gobierno federal de EE. UU. | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg) |
-| T11.2 | `11-*/img/disco-duro-abierto.jpg` | © Raimond Spekking | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Seagate_ST9300AG_-_opened._Platter_and_head_mechanics-9324.jpg) |
-| T13.1 | `13-*/img/xerox-alto.jpg` | Maksym Kozlenko | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Xerox_Alto_computer.jpg) |
+| Archivo local | Autor/fuente | Licencia | Página de origen |
+|---|---|---|---|
+| `introduccion-a-los-sistemas-operativos/img/operadora-tarjetas-perforadas.jpg` | U.S. Census Bureau | Dominio público, obra del Gobierno federal de EE. UU. | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Keypunch_operator_1950_census_IBM_016.jpg) |
+| `introduccion-a-los-sistemas-operativos/img/programadoras-eniac.jpg` | Fotógrafo no identificado del U.S. Army | Dominio público, obra del Gobierno federal de EE. UU. | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Two_women_operating_ENIAC_(full_resolution).jpg) |
+| `dispositivos-de-es/img/disco-duro-abierto.jpg` | © Raimond Spekking | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Seagate_ST9300AG_-_opened._Platter_and_head_mechanics-9324.jpg) |
+| `gui/img/xerox-alto.jpg` | Maksym Kozlenko | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Xerox_Alto_computer.jpg) |
 
 Los archivos externos se descargaron a un tamaño máximo aproximado de 1600 píxeles para evitar incorporar originales innecesariamente grandes. No se modificó su contenido; solo se emplea una miniatura generada por Wikimedia cuando corresponde.

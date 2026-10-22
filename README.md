@@ -16,38 +16,38 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 
 ## Teoría
 
-| Tema | Carpeta |
-|------|---------|
-| Introducción a los sistemas operativos | [`TEORIA/01`](TEORIA/01-introduccion-a-los-sistemas-operativos/) |
-| Espacio usuario y espacio kernel. Llamadas al sistema | [`TEORIA/02`](TEORIA/02-espacio-usuario-espacio-kernel/) |
-| Procesos e hilos | [`TEORIA/03`](TEORIA/03-procesos-e-hilos/) |
-| Planificación de procesos | [`TEORIA/04`](TEORIA/04-planificacion-de-procesos/) |
-| IPC: pipes y fifos | [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/) |
-| IPC: señales | [`TEORIA/08`](TEORIA/08-ipc-senales/) |
-| IPC: colas de mensajes | [`TEORIA/09`](TEORIA/09-ipc-colas-de-mensajes/) |
-| Gestión de memoria | [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) |
-| Concurrencia y sincronización | [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) |
+| Nº | Tema | Carpeta |
+|----|------|---------|
+| 1 | Introducción a los sistemas operativos | [`introduccion-a-los-sistemas-operativos`](TEORIA/introduccion-a-los-sistemas-operativos/) |
+| 2 | Espacio usuario y espacio kernel. Llamadas al sistema | [`espacio-usuario-espacio-kernel`](TEORIA/espacio-usuario-espacio-kernel/) |
+| 3 | Procesos e hilos | [`procesos-e-hilos`](TEORIA/procesos-e-hilos/) |
+| 4 | Planificación de procesos | [`planificacion-de-procesos`](TEORIA/planificacion-de-procesos/) |
+| 5 | IPC: pipes y fifos | [`ipc-pipes-y-fifos`](TEORIA/ipc-pipes-y-fifos/) |
+| 6 | IPC: señales | [`ipc-senales`](TEORIA/ipc-senales/) |
+| 7 | IPC: colas de mensajes | [`ipc-colas-de-mensajes`](TEORIA/ipc-colas-de-mensajes/) |
+| 8 | Gestión de memoria | [`gestion-de-memoria`](TEORIA/gestion-de-memoria/) |
+| 9 | Concurrencia y sincronización | [`concurrencia-y-sincronizacion`](TEORIA/concurrencia-y-sincronizacion/) |
 <!-- 
-| Memoria compartida y mutex | [`TEORIA/10`](TEORIA/10-memoria-compartida-y-mutex/) |
-| Dispositivos de E/S | [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) |
-| Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
-| GUI | [`TEORIA/13`](TEORIA/13-gui/) |
+| 10 | Memoria compartida y mutex | [`memoria-compartida-y-mutex`](TEORIA/memoria-compartida-y-mutex/) |
+| 11 | Dispositivos de E/S | [`dispositivos-de-es`](TEORIA/dispositivos-de-es/) |
+| 12 | Sistemas de ficheros | [`sistemas-de-ficheros`](TEORIA/sistemas-de-ficheros/) |
+| 13 | GUI | [`gui`](TEORIA/gui/) |
 -->
 
 ## Prácticas
 
-| Práctica | Carpeta |
-|----------|---------|
-| P0 — Shell y herramientas | [`PRACTICA/00`](PRACTICA/00-shell-y-herramientas/) |
-| P1 — Entrada y salida: consola, ficheros, file descriptors | [`PRACTICA/01`](PRACTICA/01-entrada-salida-y-ficheros/) |
-| P2 — Procesos: `fork`, `execvp`, `wait`, `pstree` | [`PRACTICA/02`](PRACTICA/02-procesos/) |
-| P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
-| P4 — Acueducto: ejercicio de procesos y pipes | [`PRACTICA/04`](PRACTICA/04-ejercicio-procesos-y-pipes/) |
-| P5 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/05`](PRACTICA/05-senales/) |
-| P7 — Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`PRACTICA/07`](PRACTICA/07-colas-de-mensajes/) |
-| P6 — Memoria compartida y semáforos | [`PRACTICA/06`](PRACTICA/06-memoria-compartida-y-semaforos/) |
-| P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
-| P9 — Sistema concurrente | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
+| Nº | Práctica | Carpeta |
+|----|----------|---------|
+| 0 | Shell y herramientas | [`shell-y-herramientas`](PRACTICA/shell-y-herramientas/) |
+| 1 | Entrada y salida: consola, ficheros, file descriptors | [`entrada-salida-y-ficheros`](PRACTICA/entrada-salida-y-ficheros/) |
+| 2 | Procesos: `fork`, `execvp`, `wait`, `pstree` | [`procesos`](PRACTICA/procesos/) |
+| 3 | Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`pipes-y-fifos`](PRACTICA/pipes-y-fifos/) |
+| 4 | Acueducto: ejercicio de procesos y pipes | [`ejercicio-procesos-y-pipes`](PRACTICA/ejercicio-procesos-y-pipes/) |
+| 5 | Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`senales`](PRACTICA/senales/) |
+| 6 | Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`colas-de-mensajes`](PRACTICA/colas-de-mensajes/) |
+| 7 | Memoria compartida y semáforos | [`memoria-compartida-y-semaforos`](PRACTICA/memoria-compartida-y-semaforos/) |
+| 8 | Planificador de procesos (colas multinivel) | [`planificador-de-procesos`](PRACTICA/planificador-de-procesos/) |
+| 9 | Sistema concurrente | [`sistema-concurrente`](PRACTICA/sistema-concurrente/) |
 
 El `README.md` de cada práctica incluye la descripción, los comandos, llamadas al sistema y ejercicios propuestos.
 
@@ -57,6 +57,8 @@ El `README.md` de cada práctica incluye la descripción, los comandos, llamadas
 Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También hay simulaciones interactivas embebidas, normalmente en HTML + JS. Se utilizará un markdown mínimo y el texto estará siempre en una línea.
 
 Se prefieren explicaciones concisas y resumidas.
+
+No se numerarán los contenidos de los temas, la única numeración será la de la tabla raíz para poder reordenarse según disponibilidad de sesiones.
 
 Para prácticas, se utilizan archivos Markdown, `.c`, Makefiles, y scripts bash.
 
