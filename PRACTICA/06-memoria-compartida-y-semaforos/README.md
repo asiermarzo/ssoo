@@ -87,7 +87,7 @@ shmctl(shmid, IPC_RMID, NULL); /* borra la memoria compartida */
 
 ## Semáforos
 
-Concepto de wait/signal, semáforos y las garantías que debe cumplir un semáforo: ver [`TEORIA/10`](../../TEORIA/10-memoria-compartida-y-mutex/#semáforos-wait-y-signal).
+Concepto de semáforo, acquire y release: ver [`TEORIA/05`](../../TEORIA/05-concurrencia-y-sincronizacion/#semáforos).
 
 ### Crear — `semget`
 

@@ -1,17 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 220" font-family="sans-serif" font-size="13" role="img" aria-label="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
-  <rect width="560" height="220" fill="#ffffff"/>
-  <rect x="40" y="80" width="70" height="50" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="75" y="108" text-anchor="middle">Productor</text>
-  <rect x="180" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="224" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="268" y="85" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
-  <rect x="312" y="85" width="42" height="42" fill="#ffffff" stroke="#999"/>
-  <text x="267" y="70" text-anchor="middle" font-size="12">búfer circular (3 llenas, 1 vacía)</text>
-  <rect x="450" y="80" width="70" height="50" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="485" y="108" text-anchor="middle">Consumidor</text>
-  <line x1="112" y1="106" x2="178" y2="106" stroke="#2e7d4f" stroke-width="2"/><path d="M178 106 l-10 -4 l0 8 z" fill="#2e7d4f"/><text x="145" y="96" text-anchor="middle" font-size="11">deposita</text>
-  <line x1="356" y1="106" x2="448" y2="106" stroke="#2b6f99" stroke-width="2"/><path d="M448 106 l-10 -4 l0 8 z" fill="#2b6f99"/><text x="400" y="96" text-anchor="middle" font-size="11">retira</text>
-  <path d="M180 130 Q 110 175 60 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M60 132 l4 12 l10 -6 z" fill="#b03030"/>
-  <text x="120" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está lleno, el productor espera</text>
-  <path d="M354 130 Q 430 175 480 132" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M480 132 l-13 -2 l3 -11 z" fill="#b03030"/>
-  <text x="420" y="185" text-anchor="middle" font-size="11" fill="#b03030">si está vacío, el consumidor espera</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" font-family="sans-serif" font-size="13" role="img" aria-label="Tres productores depositan en un búfer circular de 4 casillas y dos consumidores retiran; los productores esperan si está lleno y los consumidores si está vacío">
+  <defs>
+    <marker id="flecha-verde" viewBox="0 0 10 10" refX="10" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2e7d4f"/></marker>
+    <marker id="flecha-azul" viewBox="0 0 10 10" refX="10" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2b6f99"/></marker>
+    <marker id="flecha-roja" viewBox="0 0 10 10" refX="10" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#b03030"/></marker>
+  </defs>
+  <rect width="600" height="280" fill="#ffffff"/>
+
+  <!-- productores -->
+  <rect x="20" y="50"  width="90" height="40" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="65" y="75"  text-anchor="middle">Productor 1</text>
+  <rect x="20" y="120" width="90" height="40" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="65" y="145" text-anchor="middle">Productor 2</text>
+  <rect x="20" y="190" width="90" height="40" rx="6" fill="#e8f6ee" stroke="#2e7d4f"/><text x="65" y="215" text-anchor="middle">Productor 3</text>
+
+  <!-- búfer -->
+  <text x="287" y="108" text-anchor="middle" font-size="12">búfer (3 llenas, 1 vacía)</text>
+  <rect x="200" y="119" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="244" y="119" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="288" y="119" width="42" height="42" fill="#57c78a" stroke="#2e7d4f"/>
+  <rect x="332" y="119" width="42" height="42" fill="#ffffff" stroke="#999"/>
+
+  <!-- consumidores -->
+  <rect x="480" y="85"  width="100" height="40" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="530" y="110" text-anchor="middle">Consumidor 1</text>
+  <rect x="480" y="155" width="100" height="40" rx="6" fill="#eaf2fa" stroke="#2b6f99"/><text x="530" y="180" text-anchor="middle">Consumidor 2</text>
+
+  <!-- depositan -->
+  <line x1="110" y1="70"  x2="198" y2="128" stroke="#2e7d4f" stroke-width="2" marker-end="url(#flecha-verde)"/>
+  <line x1="110" y1="140" x2="198" y2="140" stroke="#2e7d4f" stroke-width="2" marker-end="url(#flecha-verde)"/>
+  <line x1="110" y1="210" x2="198" y2="152" stroke="#2e7d4f" stroke-width="2" marker-end="url(#flecha-verde)"/>
+  <text x="155" y="133" text-anchor="middle" font-size="11">depositan</text>
+
+  <!-- retiran -->
+  <line x1="376" y1="134" x2="478" y2="105" stroke="#2b6f99" stroke-width="2" marker-end="url(#flecha-azul)"/>
+  <line x1="376" y1="146" x2="478" y2="175" stroke="#2b6f99" stroke-width="2" marker-end="url(#flecha-azul)"/>
+  <text x="428" y="144" text-anchor="middle" font-size="11">retiran</text>
+
+  <!-- esperas -->
+  <path d="M205 163 Q 150 270 72 234" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#flecha-roja)"/>
+  <text x="140" y="266" text-anchor="middle" font-size="11" fill="#b03030">si está lleno, los productores esperan</text>
+  <path d="M369 163 Q 440 260 528 199" fill="none" stroke="#b03030" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#flecha-roja)"/>
+  <text x="460" y="266" text-anchor="middle" font-size="11" fill="#b03030">si está vacío, los consumidores esperan</text>
 </svg>

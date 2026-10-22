@@ -1,69 +1,299 @@
 # Sincronización de procesos
 
-## Conceptos básicos
+## Por qué sincronizar
 
-### Recursos del sistema
+Varios procesos son **concurrentes** cuando su ejecución se solapa en el tiempo:
 
-- **Compartibles**: pueden ser utilizados por varios procesos de forma concurrente. Ejemplo: periféricos, ficheros de solo lectura, zonas de memoria con rutinas puras o datos no modificables.
-- **No compartibles**: su uso se restringe a un único proceso en cada instante. Ejemplo: CPU, ficheros de escritura, zonas de memoria sujetas a modificación.
+- En un solo núcleo de ejecución, los procesos se **intercalan**: no hay paralelismo, pero se aprovechan mejor los recursos (mientras un proceso espera la lectura de un archivo, otro proceso puede usar la CPU).
+- Con varios núcleos se ejecutan en **paralelo**, cada proceso en un núcleo distinto.
 
-Causas de que un recurso no sea compartible: la naturaleza física del recurso lo hace imposible, o el uso concurrente por varios procesos haría que la acción de uno interfiriera con la de otro.
+<img src="img/concurrencia-vs-paralelismo.svg" width="560" alt="Concurrencia: un núcleo alternando dos procesos. Paralelismo: dos núcleos ejecutando un proceso cada uno.">
 
-### Cooperación entre procesos
+A priori no sabemos el orden de ejecuión de los procesos, ya que el planificador ([`TEORIA/04`](../04-planificacion-de-procesos/)) los para y pone en ejecución de forma dinámica. Si un proceso depende de lo que hace otro (que haya terminado, dejado datos, dejado de usar algo), hay que **sincronizar** los procesos explícitamente. Y sincronizar bien es difícil, como se verá [al final del tema](#para-terminar-sincronizar-bien-es-difícil).
 
-- La velocidad de un proceso respecto a otro es **impredecible**: depende de la frecuencia de la interrupción asociada a cada uno y de su planificación.
-- Un proceso se ejecuta **asíncronamente** respecto a otro. Sin embargo, hay instantes en que los procesos deben **sincronizar** sus actividades: un proceso no puede progresar hasta que otro haya completado algún tipo de actividad. Los procesos también necesitan **comunicarse**.
+## Tipos de sincronización
 
-### Mecanismos de comunicación entre procesos (IPC)
+| Qué queremos | Ejemplo que ya conoces | Mecanismo |
+|---|---|---|
+| [Esperar a que otro proceso termine](#esperar-a-otro-proceso) | El padre espera al hijo ([P2](../../PRACTICA/02-procesos/)) | `waitpid` |
+| [Esperar un aviso de otro proceso](#esperar-a-otro-proceso) (A antes que B) | `pause` hasta que llega una señal ([P5](../../PRACTICA/05-senales/)) | señal, semáforo a 0 |
+| [Esperar datos de otro proceso](#esperar-datos-paso-de-mensajes) | `read` de un pipe ([P3](../../PRACTICA/03-pipes-y-fifos/)), `msgrcv` ([P7](../../PRACTICA/07-colas-de-mensajes/)) | pipe, FIFO, cola de mensajes |
+| [Exclusión mutua](#exclusión-mutua): solo un proceso a la vez | `banco` y `transferencias` ([P6](../../PRACTICA/06-memoria-compartida-y-semaforos/)) | semáforo a 1 |
+| [Limitar a N procesos a la vez](#limitar-a-n-procesos) | `./seccion 22 2` ([P6](../../PRACTICA/06-memoria-compartida-y-semaforos/)) | semáforo a N |
+| [Barrera](#barreras): esperar a que lleguen todos | El padre espera a todos sus hijos | contador + semáforos |
 
-La comunicación entre procesos (*Inter‑Process Communication*) es una función básica de los sistemas operativos: archivo · señal · socket · tubería (*pipe*) · FIFO · memoria compartida · mensajes (MPI, Java RMI, CORBA…) · mapa de memoria · cola de mensajes · puertos.
+Casi todas se resuelven **bloqueando** al proceso hasta que se cumple la condición. La herramienta general para hacerlo es el semáforo.
 
-### Concurrencia
+## Semáforos
 
-La **concurrencia** o computación concurrente consiste en la ejecución simultánea de varias tareas. Hay que garantizar la correcta secuenciación de las interacciones entre procesos y del acceso a los recursos compartidos.
+Un **semáforo** es un contador entero no negativo, compartido por varios procesos, con dos operaciones **atómicas** (se ejecutan sin que nadie pueda interrumpirlas a medias):
 
-En un sistema monoprocesador multiprogramado los procesos se **intercalan** en el tiempo aparentando ejecución simultánea; no hay procesamiento paralelo, pero la ejecución intercalada beneficia la estructuración de los programas y la eficiencia.
+- **acquire**: si el contador es mayor que 0, lo decrementa y el proceso sigue; si vale 0, **bloquea** al proceso hasta que otro proceso haga un release en el semáforo.
+- **release**: incrementa el contador; si había procesos bloqueados, despierta a un proceso, que decrementará el contador y pasará.
 
-**Problema**: la velocidad de ejecución de los procesos no puede predecirse y depende de otros procesos. Compartir recursos ocasiona problemas ⇒ hay que protegerlos.
+Se puede ver el contador como el número de **fichas** disponibles:
+- **acquire**: coge una ficha; si no queda ninguna, espera bloqueado a que alguien devuelva una.
+- **release**: devuelve una ficha; si alguien estaba esperando, se la lleva y sigue.
 
-Más detalle (multiprogramación/multiprocesamiento/procesamiento distribuido, contextos en que aparece la concurrencia, tareas del SO al respecto): [`material_adicional.md`](material_adicional.md).
+El **valor inicial** del semáforo decide para qué sirve: 0 para esperar un aviso, 1 para exclusión mutua, N para dejar pasar hasta N procesos.
 
-### Concurrencia vs paralelización
+Los ejemplos de este tema usan estas macros para que se lean mejor:
 
-- **Concurrencia**: varios procesos progresan intercalándose en el tiempo sobre (al menos) un procesador.
-- **Paralelización**: varios procesos se ejecutan literalmente a la vez, en distintos procesadores.
-
-<img src="img/concurrencia-vs-paralelismo.svg" width="560" alt="Concurrencia: un procesador alternando dos procesos. Paralelismo: dos procesadores ejecutando un proceso cada uno.">
-
-### Sincronización entre procesos
-
-Los procesos cooperantes pueden compartir espacios de direcciones o datos a través de un archivo o de un mecanismo de IPC. Problemas a considerar: cómo **evitar la inconsistencia** de los datos compartidos y cómo **acceder a espacios críticos** de código compartido.
-
-**Mecanismos de sincronización entre procesos**: semáforos · monitores · paso de mensajes.
-
-## Problema de la sección crítica
-
-### Exclusión mutua
-
-Una condición de carrera aparece cuando el resultado depende del orden imprevisible en que varias ejecuciones acceden a un dato compartido: si dos cajeros leen el mismo saldo de 100 € y cada uno autoriza una retirada, pueden llegar a autorizarse 150 € partiendo de 100 €.
-
-```mermaid
-sequenceDiagram
-    participant A as Cajero A
-    participant S as Saldo compartido = 100 €
-    participant B as Cajero B
-    A->>S: lee 100 €
-    B->>S: lee 100 €
-    A->>S: escribe 20 € tras retirar 80 €
-    B->>S: escribe 30 € tras retirar 70 €
-    Note over A,B: se autorizaron 150 € partiendo de 100 €
+```c
+#define sem_acquire(id) semop(id, &(struct sembuf){ .sem_num = 0, .sem_op = -1 }, 1)
+#define sem_release(id) semop(id, &(struct sembuf){ .sem_num = 0, .sem_op = 1 }, 1)
 ```
 
-*Una condición de carrera aparece cuando el resultado depende del orden imprevisible en que varias ejecuciones acceden a un dato compartido.*
+### Espera activa frente a bloqueo
 
-Cuando un proceso ejecuta la sección crítica, **ningún otro** proceso puede ejecutarla: la ejecución de la sección crítica es **mutuamente exclusiva en el tiempo**. Los recursos no compartibles se protegen del acceso simultáneo evitando que los procesos ejecuten concurrentemente sus secciones críticas. Idear soluciones que garanticen la exclusión mutua es uno de los problemas fundamentales de la programación concurrente.
+Esperar comprobando una variable una y otra vez es **espera activa**: funciona, pero gasta CPU sin hacer nada útil. Un semáforo **bloquea** al proceso: no gasta CPU hasta que lo despiertan.
 
-- Hacer cumplir la exclusión mutua puede provocar **interbloqueo** o **inanición**. Si tres procesos P₁, P₂ y P₃ necesitan un recurso R y el SO concede el acceso alternativamente a P₁ y P₂, puede **negar indefinidamente** el acceso a P₃.
+```c
+for (; *listo == 0; ) { }                  /* espera activa: gasta CPU */
+
+for (; *listo == 0; ) { sched_yield(); }   /* espera activa con cesión: cede la CPU en cada vuelta */
+
+sem_acquire(sem_listo);                    /* bloqueo: no gasta CPU */
+```
+
+Con `sched_yield()` el proceso sigue comprobando la variable, pero en cada vuelta cede la CPU a otro proceso listo: es **espera activa con cesión** (*yield*).
+
+## Esperar a otro proceso
+
+**A que termine**: `waitpid` bloquea al padre hasta que el hijo acaba.
+
+```c
+pid_t pid = fork();
+if (pid == 0) {
+    hacer_trabajo();
+    exit(0);
+}
+waitpid(pid, NULL, 0);   /* bloquea hasta que el hijo termina */
+```
+
+**A que avise** (A antes que B): B no debe empezar su trabajo hasta que A haya terminado el suyo. Con un semáforo `aviso` inicializado a **0**:
+
+| Proceso A | Proceso B |
+|---|---|
+| `primer_trabajo();` | `sem_acquire(aviso);  /* espera a A */` |
+| `sem_release(aviso);` | `segundo_trabajo();` |
+
+Con señales (`kill` + `pause`, [P5](../../PRACTICA/05-senales/)) también se puede, pero si la señal llega antes de que B llame a `pause`, el aviso se pierde:
+
+| Proceso A | Proceso B |
+|---|---|
+| `primer_trabajo();` | `pause();`  |
+| `kill(pid_b, SIGUSR1);` | `segundo_trabajo();`  |
+
+El semáforo **recuerda** el aviso porque es un contador: si A hace el release antes, B pasa sin bloquearse. Siempre funciona.
+
+## Esperar datos: paso de mensajes
+
+Leer de un pipe vacío o hacer `msgrcv` sobre una cola vacía bloquea al proceso hasta que llegan datos: la comunicación ya sincroniza. En general, el **paso de mensajes** se basa en dos primitivas:
+
+```text
+send(destino, mensaje)
+receive(origen, mensaje)
+```
+
+En cuanto a la sincronización hay **tres combinaciones**:
+
+| Envío | Recepción | Nombre | Comentario |
+|-------|-----------|--------|------------|
+| Bloqueante | Bloqueante | **Síncrona** (*rendez‑vous*) | Emisor y receptor se bloquean hasta que llega el mensaje. |
+| No bloqueante | Bloqueante | **Asíncrona** | El emisor continúa; el receptor se bloquea hasta recibir el mensaje. Así funcionan los pipes y las colas de mensajes: `write`/`msgsnd` vuelven enseguida (salvo que esté lleno) y `read`/`msgrcv` esperan a que haya datos. |
+| No bloqueante | No bloqueante | **Totalmente asíncrona** | Nadie espera: el receptor tiene que comprobar una y otra vez si hay mensaje (sondeo), como `msgrcv` con `IPC_NOWAIT`. |
+
+Pipes y FIFOs: [`TEORIA/07`](../07-ipc-pipes-y-fifos/). Colas de mensajes: [`TEORIA/09`](../09-ipc-colas-de-mensajes/).
+
+## Exclusión mutua
+
+Cuando varios procesos modifican los mismos datos, solo uno debe hacerlo a la vez.
+
+### El problema: condiciones de carrera
+
+Una **condición de carrera** aparece cuando el resultado depende del orden imprevisible en que varios procesos (o hilos) acceden a un dato compartido. Por ejemplo, dos hilos que incrementan 10 millones de veces la misma variable:
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+long contador = 0;   /* compartida por los dos hilos */
+
+void *incrementar(void *arg) {
+    for (int i = 0; i < 10000000; i++) {
+        contador++;
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t h1, h2;
+    pthread_create(&h1, NULL, incrementar, NULL);
+    pthread_create(&h2, NULL, incrementar, NULL);
+    pthread_join(h1, NULL);
+    pthread_join(h2, NULL);
+    printf("%ld\n", contador);   /* casi nunca 20000000 */
+}
+```
+
+Cada ejecución da un resultado distinto, casi siempre menor que 20 millones. El motivo es que `contador++` no es atómico: la CPU lo hace en tres pasos (leer la variable en un registro, sumar 1, escribir). Normalmente un hilo hace los tres pasos seguidos y después el otro:
+
+| Hilo 1 | Hilo 2 | `contador` |
+|---|---|---|
+| `r1 = contador;  /* 0 */` | | 0 |
+| `r1++;           /* 1 */` | | 0 |
+| `contador = r1;` | | 1 |
+| | `r2 = contador;  /* 1 */` | 1 |
+| | `r2++;           /* 2 */` | 1 |
+| | `contador = r2;` | 2 |
+
+Pero si el planificador cambia de hilo entre esos pasos, o los dos núcleos los ejecutan a la vez, los pasos se entrelazan y un incremento se pierde:
+
+| Hilo 1 | Hilo 2 | `contador` |
+|---|---|---|
+| `r1 = contador;  /* 0 */` | | 0 |
+| | `r2 = contador;  /* 0 */` | 0 |
+| `r1++;           /* 1 */` | | 0 |
+| | `r2++;           /* 1 */` | 0 |
+| `contador = r1;` | | 1 |
+| | `contador = r2;` | 1 |
+
+El mismo problema aparece en `transferencias` ([P6](../../PRACTICA/06-memoria-compartida-y-semaforos/), ejercicio 4): `cuentas[a] -= cantidad` también es leer, operar y escribir, y el total del banco cambia.
+
+### La solución: proteger la sección crítica con un semáforo
+
+La parte del código que accede al dato compartido es la **sección crítica**. Hay **exclusión mutua** cuando sólo 1 proceso puede estar ejecutando esa sección de código. Se consigue con un semáforo inicializado a **1**:
+
+```c
+void *incrementar(void *arg) {
+    for (int i = 0; i < 10000000; i++) {
+        sem_acquire(sem_contador);   /* sem_contador inicializado a 1 */
+        contador++;                  /* sección crítica */
+        sem_release(sem_contador);
+    }
+    return NULL;
+}
+```
+
+Ahora el resultado es siempre 20 millones.
+
+Un semáforo a 1 tiene una única ficha, que funciona como una llave: mientras un proceso la tiene y está en la sección crítica, los demás esperan; cuando la libera, otro puede tomarla. Un semáforo así también se llama **mutex** (de *mutual exclusion*).
+
+### Variables atómicas
+
+Si la sección crítica es **una sola operación sobre una variable**, como `contador++`, no hace falta un semáforo: C11 tiene variables **atómicas** (`<stdatomic.h>`), cuyas operaciones hace la CPU en un solo paso:
+
+```c
+#include <stdatomic.h>
+
+atomic_long contador = 0;   /* compartida por los dos hilos */
+
+void *incrementar(void *arg) {
+    for (int i = 0; i < 10000000; i++) {
+        atomic_fetch_add(&contador, 1);   /* leer, sumar y escribir en un solo paso */
+    }
+    return NULL;
+}
+```
+
+Ventajas frente al semáforo:
+
+- **Mucho más rápido**: con el semáforo, cada incremento son dos llamadas al sistema (`semop`); la operación atómica es una sola instrucción y no entra en el kernel.
+- **Nadie se bloquea**: ningún proceso se queda dormido esperando, así que no hay cambios de contexto ni puede haber interbloqueo.
+- **Más sencillo**: no hay que crear, inicializar ni borrar ningún semáforo, ni acordarse de hacer el release.
+- Funciona también **entre procesos** si la variable está en memoria compartida ([P6](../../PRACTICA/06-memoria-compartida-y-semaforos/)).
+
+Su límite: solo protege **una** operación sobre **una** variable. En `transferencias` hay dos variables que deben cambiar juntas (nadie debe ver el dinero restado de una cuenta y aún no sumado a la otra), y para eso hace falta el semáforo:
+
+```c
+sem_acquire(sem_cuentas);   /* sem_cuentas inicializado a 1 */
+cuentas[a] -= cantidad;
+cuentas[b] += cantidad;
+sem_release(sem_cuentas);
+```
+
+### Limitar la sección a N procesos
+
+Con el semáforo inicializado a **N**, pueden estar dentro hasta N procesos a la vez: N conexiones, N impresoras, el aforo de una sala. Es el `./seccion 22 2` de [P6](../../PRACTICA/06-memoria-compartida-y-semaforos/) (ejercicio 5).
+
+## Barreras
+
+Una **barrera** es un punto del código en el que cada proceso espera a que lleguen todos los demás antes de seguir. Sirve para dividir un trabajo en fases: nadie empieza la fase 2 hasta que todos han acabado la fase 1. 
+
+Con N procesos y un semáforo inicializado a N, cada proceso resta 1 al llegar y después espera a que el semáforo valga 0 (`sem_op = 0`):
+
+```c
+/* barrera inicializada a N */
+
+semop(barrera, &(struct sembuf){ .sem_op = -1 }, 1);   /* he llegado */
+semop(barrera, &(struct sembuf){ .sem_op = 0 }, 1);    /* espera a que lleguen todos (valor 0) */
+```
+
+<details> <summary> GPU y membarrier </summary>
+La misma idea aparece en las **GPU**, donde miles de hilos avanzan por fases y se sincronizan por bloques (`__syncthreads()` en CUDA). Las **barreras de memoria** (*memory barriers*) son otra cosa con nombre parecido: no esperan a otros procesos, sino que obligan a que las lecturas y escrituras anteriores se completen antes que las posteriores, porque la CPU y el compilador pueden reordenarlas (instrucciones como `mfence` en x86, o la llamada `membarrier()` de Linux).
+</details>
+
+## Interbloqueo
+
+El **interbloqueo** (bloqueo mutuo o *deadlock*) es el bloqueo **permanente** de un conjunto de procesos: cada uno espera algo que solo puede darle otro proceso del conjunto, que a su vez está esperando. 
+
+Como cuatro vehículos que entran a la vez en un cruce estrecho: cada uno conserva el espacio que ocupa mientras espera el que ocupa el siguiente, y la espera circular impide que cualquiera avance.
+
+<img src="img/interbloqueo-cruce.png" width="520" alt="Cuatro vehículos ocupan un cruce y cada uno bloquea el avance del siguiente">
+
+Interbloqueos que se pueden dar en las prácticas:
+
+- **Dos semáforos pedidos en distinto orden**:
+
+  | Proceso A | Proceso B |
+  |---|---|
+  | `sem_acquire(sem_a);` | `sem_acquire(sem_b);` |
+  | `sem_acquire(sem_b);` | `sem_acquire(sem_a);  /* cada uno espera al otro */` |
+
+- **`waitpid` antes de leer un pipe**: el padre espera a que el hijo termine, pero el hijo se bloquea en `write` porque el pipe está lleno (64 KB en Linux) y nadie lo vacía.
+- **Dos procesos que se leen mutuamente**: cada uno hace `read` del pipe del otro antes de escribir en el suyo.
+
+### Condiciones de Coffman (1971)
+
+Necesarias (aunque no suficientes) para que se produzca interbloqueo; deben cumplirse **simultáneamente**:
+
+| Condición | Significado |
+|-----------|-------------|
+| **Exclusión mutua** | Existe al menos un recurso al que solo puede acceder un proceso a la vez. |
+| **Posesión y espera** | Un proceso retiene un recurso mientras espera otro que tiene otro proceso. |
+| **No apropiación** | Los recursos no se pueden quitar; solo los libera voluntariamente quien los tiene. |
+| **Espera circular** | `P₀` espera un recurso de `P₁`, que espera uno de `P₂`, …, que espera uno de `P₀`. |
+
+```mermaid
+flowchart LR
+    P1(("P1")) -->|espera SemA| P2(("P2"))
+    P2 -->|espera SemB| P3(("P3"))
+    P3 -->|espera SemC| P1
+
+    classDef bloqueado fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
+    class P1,P2,P3 bloqueado;
+```
+
+### Resolución del interbloqueo
+
+- **Prevención**: impedir que se cumpla alguna de las condiciones de Coffman; por ejemplo, pedir los semáforos siempre en el mismo orden evita la espera circular.
+- **Evitación**: conocer de antemano los recursos que necesitará cada proceso y conceder cada petición solo si el sistema queda en un **estado seguro** (algoritmo del banquero, en [`material_adicional.md`](material_adicional.md)).
+- **Detección**: construir periódicamente el **grafo de asignación de recursos**; si hay un ciclo, hay interbloqueo, y se rompe terminando alguno de los procesos implicados para liberar sus recursos.
+
+### Grafo de asignación de recursos
+
+Una asignación concreta de recursos a procesos se representa con un grafo en el que:
+
+- Los **círculos** representan procesos y los **cuadrados** representan recursos.
+- Cada cuadrado tiene tantos **puntos** en su interior como instancias haya de ese recurso.
+- Los **arcos son dirigidos**: de proceso a recurso indican **petición**; de recurso a proceso indican **asignación**.
+
+<img src="img/grafo-asignacion-recursos.svg" width="560" alt="Grafo de asignación de recursos con un ciclo P1, R1, P2, R2, P1 que indica interbloqueo">
+
+## Inanición
+
+Un proceso sufre **inanición** cuando se queda indefinidamente sin acceder a un recurso porque siempre se prefiere a otros. Si P₁, P₂ y P₃ necesitan un recurso R y se concede alternativamente a P₁ y P₂; entonces P₃ puede no obtenerlo nunca. No es un interbloqueo porque P₁ y P₂ siguen avanzando.
 
 ```mermaid
 flowchart LR
@@ -79,406 +309,275 @@ flowchart LR
     class R recurso;
 ```
 
-- Los recursos no compartibles a los que dos o más procesos desean acceder simultáneamente se denominan **recursos críticos**. La parte del programa en la que se accede a los recursos críticos es la **sección crítica**.
-- El **control de la competencia** involucra al SO, que es quien asigna los recursos. La cooperación puede darse **compartiendo** (procesos que interactúan sin conocerse explícitamente, p. ej. acceso a variables compartidas) o **por comunicación** (paso de mensajes; las primitivas para enviar y recibir las da el lenguaje o el SO).
+Ejemplos: los mensajes normales cuando no paran de llegar urgentes ([P7](../../PRACTICA/07-colas-de-mensajes/), ejercicio 4), o los procesos de baja prioridad en el planificador de [P8](../../PRACTICA/08-planificador-de-procesos/). Se soluciona con **envejecimiento**: aumentar la prioridad de quien lleva mucho tiempo esperando ([`TEORIA/04`](../04-planificacion-de-procesos/)).
 
-### Sección crítica
+## Patrones de concurrencia comunes
 
-Porción de código de un programa en la que se accede a un recurso compartido (estructura de datos o dispositivo) que **no debe ser accedido por más de un hilo** en ejecución. Se necesita un mecanismo de sincronización en la entrada y salida de la sección crítica; el acceso concurrente se controla vigilando las variables que se modifican dentro y fuera de ella. Solo **un proceso** puede estar en una sección crítica a la vez; el método más común es la **exclusión mutua**.
+### Productor‑consumidor
 
-El mutex se comporta como una única llave: mientras un trabajador la tiene y está en la sección crítica, los demás esperan; cuando la libera, otro puede tomarla.
+Unos procesos (**productores**) generan datos y otros (**consumidores**) los procesan, cada uno a su ritmo. Entre ellos hay un **búfer** de tamaño limitado que absorbe las diferencias de velocidad: el productor solo espera si el búfer está lleno y el consumidor solo si está vacío.
 
-<img src="img/exclusion-mutua-llave.svg" width="560" alt="Linea de tiempo: A y B se turnan la unica llave para entrar en la seccion critica">
+<img src="img/productor-consumidor-bufer.svg" width="560" alt="Tres productores depositan en un búfer circular de 4 casillas y dos consumidores retiran; los productores esperan si está lleno y los consumidores si está vacío">
 
-*El mutex garantiza que solo una ejecución entre en la sección crítica. Las demás esperan hasta que el propietario libere el recurso.*
+Ejemplos:
 
-### Condiciones para resolver el problema de la sección crítica
+- Acueducto de [P4](../../PRACTICA/04-ejercicio-procesos-y-pipes/): la pipe es un búfer (64 KB) entre un productor y un consumidor.
+- `encolador` → `procsched` en [P8](../../PRACTICA/08-planificador-de-procesos/): el encolador produce comandos en la cola de mensajes y el planificador los consume.
+- Los productores y consumidores de [P7](../../PRACTICA/07-colas-de-mensajes/) (ejercicios 2 y 3).
+- **Cola de impresión**: las aplicaciones dejan trabajos y el servicio de impresión los envía a las impresoras.
+- **Audio y vídeo**: el descodificador produce muestras y la tarjeta de sonido las consume a ritmo fijo; si el búfer se vacía, se oye un corte.
+- **Tarjeta de red**: deposita los paquetes recibidos en un búfer y el kernel los consume.
+- **Servidor con hilos trabajadores**: un hilo acepta peticiones y las deja en una cola, y varios trabajadores las atienden (un productor, varios consumidores).
 
-| Condición | Significado |
-|-----------|-------------|
-| **Exclusión mutua** | Solo un proceso ejecuta la sección crítica en cada instante. |
-| **Progresión** | Ordenadamente, todos los procesos pueden ejecutarse y entrar en la SC. |
-| **Espera limitada** (viveza) | Una vez que un proceso solicita entrar en la SC, debe hacerlo en un plazo de tiempo determinado. |
+Con un pipe o una cola de mensajes el kernel ya lo resuelve: `write`/`msgsnd` bloquean si está lleno y `read`/`msgrcv` si está vacío. 
 
-La solución se implementa mediante distintos algoritmos; las instrucciones máquina se ejecutan **atómicamente**, sin hacer suposiciones a priori sobre las velocidades relativas de los procesos ni el número de procesadores disponibles.
+<details> <summary> Con memoria compartida habría que hacerlo a mano. </summary>
+`buffer[N]`, `*cabeza` y `*cola` en memoria compartida, y tres semáforos (`lleno = 0`, `vacio = N`, `sem_indices = 1`):
 
-### Conceptos de sincronización
+| Productor | Consumidor |
+|---|---|
+| `sem_acquire(vacio);` | `sem_acquire(lleno);` |
+| `sem_acquire(sem_indices);` | `sem_acquire(sem_indices);` |
+| `buffer[*cabeza] = dato;` | `int dato = buffer[*cola];` |
+| `*cabeza = (*cabeza + 1) % N;` | `*cola = (*cola + 1) % N;` |
+| `sem_release(sem_indices);` | `sem_release(sem_indices);` |
+| `sem_release(lleno);` | `sem_release(vacio);` |
 
-| Concepto | Definición |
-|----------|-----------|
-| **Condiciones de competencia** | Se presentan cuando dos o más procesos compiten por acceder a un mismo recurso; sin sincronización, al interferirse los cambios puede haber serias inconsistencias. |
-| **Exclusión mutua** | La ejecución de las secciones críticas de los procesos es mutuamente exclusiva en el tiempo. |
-| **Operaciones atómicas** | Operación que no se interrumpe hasta que finaliza su ejecución. |
-| **Sección crítica** | Mientras se ejecuta, hay garantía de que ningún proceso ejecutará a la vez ese código: se comporta como una operación atómica. |
-| **Interbloqueo** | Dos o más procesos esperan la ocurrencia de un evento que solo uno de los procesos que esperan puede causar. |
-| **Inanición** (bloqueo indefinido) | Un proceso queda indefinidamente sin acceder a un recurso disponible porque otros procesos son siempre preferidos. No implica interbloqueo: en el ejemplo de P₁, P₂ y P₃, estos dos primeros no están bloqueados entre sí. |
+- `lleno` cuenta las casillas ocupadas y `vacio` las libres; `sem_indices` protege los índices cuando hay varios productores o varios consumidores (con uno de cada, sobra).
+- El orden importa: si el productor hiciera `sem_acquire(sem_indices)` antes que `sem_acquire(vacio)` con el búfer lleno, se bloquearía con `sem_indices` cogido y el consumidor ya no podría entrar a vaciarlo: interbloqueo.
 
-## Semáforos
+</details>
 
-Los **semáforos** son herramientas elementales de sincronización que evitan la **espera activa**. Un semáforo es una zona de memoria compartida que almacena un **entero no negativo** sobre el que solo puede actuarse con:
+### Lectores‑escritores
 
-- **Inicialización**: un semáforo solo puede inicializarse una vez, normalmente al definirlo (`s := x`, con `x` entero no negativo).
-- **`wait(s)` / `P()`**: si `s > 0`, decrementa `s` en una unidad; si `s` vale 0, **bloquea** el proceso hasta que otro realice un `signal` sobre `s`. Si hay varios procesos bloqueados, solo uno pasará a listo tras un `signal`, y no se sabe cuál.
-- **`signal(s)` / `V()`**: si no hay procesos bloqueados en `s`, incrementa `s` en una unidad; si hay procesos bloqueados (`s` valdrá 0), provoca la transición a listo de uno de ellos.
+Varios procesos acceden a un mismo dato: los **lectores** pueden estar varios dentro a la vez, pero un **escritor** necesita estar solo (ningún escritor ni ningún lector).
 
-Definición operacional (con contador con signo `e(s)` y fila de espera `f(s)`):
+<details> <summary> solucion con prioridad a los lectores </summary>
 
-```text
-P(s)                             V(s)
-  e(s) = e(s) - 1;                 e(s) = e(s) + 1;
-  si e(s) < 0 entonces             si e(s) <= 0 entonces
-      estado(p) = bloqueado;           sale(q, f(s));
-      entra(p, f(s));                  estado(q) = elegible;
-                                       entra(q, f(elegibles));
+```c
+/* sem_escritura = 1; sem_lectores = 1; *lectores (en memoria compartida) = 0 */
+
+/* escritor */
+sem_acquire(sem_escritura);
+escribir();
+sem_release(sem_escritura);
+
+/* lector */
+sem_acquire(sem_lectores);
+(*lectores)++;
+if (*lectores == 1) {
+    sem_acquire(sem_escritura);   /* el primero bloquea a los escritores */
+}
+sem_release(sem_lectores);
+leer();
+sem_acquire(sem_lectores);
+(*lectores)--;
+if (*lectores == 0) {
+    sem_release(sem_escritura);   /* el último los deja pasar */
+}
+sem_release(sem_lectores);
 ```
 
-Elementos: un entero `e(s)`, una fila de espera `f(s)` y las dos primitivas `P(s)` y `V(s)` (`wait` y `signal`). Las acciones de `wait` y `signal` son **atómicas**, se ejecutan indivisiblemente. Una zona compartida de memoria no puede ser accedida concurrentemente por más de un proceso si al menos uno la modifica.
+Mientras sigan llegando lectores, `*lectores` nunca vuelve a 0 y los escritores sufren **inanición**.
 
-### Semáforos de exclusión mutua
+**Sin inanición**: un semáforo `turno` más hace que, cuando un escritor está esperando, los lectores nuevos se pongan en cola detrás de él.
 
-Objetivo: proteger el acceso a una fuente única (variable, impresora…). `e(s)` se inicializa a **1**. Todos los procesos deben seguir la misma regla:
+```c
+/* turno = 1 */
 
-```text
-P(s)
-    < Sección Crítica >
-V(s)
+/* escritor */
+sem_acquire(turno);       /* a partir de aquí no entran lectores nuevos */
+sem_acquire(sem_escritura);
+sem_release(turno);
+escribir();
+sem_release(sem_escritura);
+
+/* lector: pasa por el turno y después sigue igual que antes */
+sem_acquire(turno);
+sem_release(turno);
+sem_acquire(sem_lectores);
+/* ... */
+```
+</details>
+
+En la práctica no hace falta construirlo a mano POSIX lo ofrece como `pthread_rwlock_t`. Cuatro hilos leen un precio y uno lo modifica:
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+pthread_rwlock_t cerrojo = PTHREAD_RWLOCK_INITIALIZER;
+int precio = 100;   /* dato compartido */
+
+void *lector(void *arg) {
+    pthread_rwlock_rdlock(&cerrojo);   /* pueden entrar varios lectores a la vez */
+    printf("precio: %d\n", precio);
+    pthread_rwlock_unlock(&cerrojo);
+    return NULL;
+}
+
+void *escritor(void *arg) {
+    pthread_rwlock_wrlock(&cerrojo);   /* espera a que no haya nadie dentro */
+    precio += 10;
+    pthread_rwlock_unlock(&cerrojo);
+    return NULL;
+}
+
+int main(void) {
+    pthread_t hilos[5];
+    for (int i = 0; i < 4; i++) {
+        pthread_create(&hilos[i], NULL, lector, NULL);
+    }
+    pthread_create(&hilos[4], NULL, escritor, NULL);
+    for (int i = 0; i < 5; i++) {
+        pthread_join(hilos[i], NULL);
+    }
+}
 ```
 
-### Semáforos de sincronización
+- Quién tiene prioridad depende de la implementación: en Linux (glibc) los lectores, así que los escritores pueden sufrir inanición; se puede cambiar con `pthread_rwlockattr_setkind_np`.
 
-Objetivo: un proceso debe esperar a otro para continuar (o comenzar) su ejecución. `e(s)` se inicializa a **0**:
 
-```text
-Proceso 1                     Proceso 2
-    Primer trabajo                P(s)            // espera al proceso 1
-    V(s)  // despierta al P2       Segundo trabajo
-```
+### Filósofos comensales
 
-### Interbloqueo con semáforos
-
-`SemA` y `SemB` son dos semáforos de exclusión mutua. Si cada proceso los pide en distinto orden, se produce interbloqueo:
-
-```text
-Proceso i                     Proceso j
-    ...                           ...
-    P(semA);                      P(semB);
-    P(semB);                      P(semA);
-    < Sección Crítica >           < Sección Crítica >
-    V(semB);                      V(semA);
-    V(semA);                      V(semB);
-```
-
-## Problemas clásicos de sincronización
-
-Filósofos comensales · productor‑consumidor · lectores‑escritores.
-
-### Problema de los filósofos comensales
-
-Cinco filósofos se sientan alrededor de una mesa. Cada filósofo alterna `Pensar()` y `Comer()`, y para comer necesita **dos cubiertos** (el de su izquierda y el de su derecha). Hay tantos cubiertos como filósofos y cada cubierto es un **recurso reutilizable**. Hay que modelar el comportamiento de cada filósofo evitando **inaniciones** e **interbloqueos**.
+Cinco filósofos se sientan alrededor de una mesa. Cada uno alterna `pensar()` y `comer()`, y para comer necesita **dos cubiertos**: el de su izquierda y el de su derecha. Hay tantos cubiertos como filósofos.
 
 <img src="img/filosofos-comensales.svg" width="420" alt="Cinco filósofos alrededor de una mesa con un cubierto entre cada par de vecinos">
 
-**Solución 1** (con un semáforo por cubierto):
+Solución directa, con un semáforo por cubierto:
 
-```text
-Filósofo i:
-    Pensar();
-    P(cubierto[i]);
-    P(cubierto[(i + 1) mod 5]);
-    Comer();
-    V(cubierto[i]);
-    V(cubierto[(i + 1) mod 5]);
+```c
+/* cubierto[0..4]: un semáforo por cubierto, inicializado a 1 */
+for (;;) {
+    pensar();
+    sem_acquire(cubierto[i]);
+    sem_acquire(cubierto[(i + 1) % 5]);
+    comer();
+    sem_release(cubierto[i]);
+    sem_release(cubierto[(i + 1) % 5]);
+}
 ```
 
-Si **todos** los filósofos toman a la vez su cubierto `i`, hay **interbloqueo**.
+Si **todos** cogen a la vez el cubierto de su izquierda, cada uno espera al de su derecha y hay **interbloqueo**.
 
 <img src="img/filosofos-comensales-recursos.svg" width="340" alt="Cinco filosofos numerados en circulo, cada uno conectado al siguiente por el tenedor que comparten">
 
-*El problema de los filósofos muestra cómo competir por varios recursos puede causar bloqueo o inanición incluso cuando cada participante sigue una regla aparentemente razonable.*
+Tres formas de evitarlo, cada una rompiendo una condición de Coffman:
 
-**Solución 2** (estado por filósofo + `mutex` + un semáforo `s[i]` por filósofo):
+1. **Siempre en el mismo orden**: cada filósofo coge primero el cubierto de número menor. El filósofo 4 coge primero el 0, y ya no puede formarse la espera circular.
 
-```text
-Filósofo i:
-    Pensar();
-    tomar_cubierto(i);
-    Comer();
-    dejar_cubierto(i);
+   ```c
+   int izq = i;
+   int der = (i + 1) % 5;
+   sem_acquire(cubierto[izq < der ? izq : der]);
+   sem_acquire(cubierto[izq < der ? der : izq]);
+   ```
 
-tomar_cubierto(i):
-    P(mutex);
-    estado[i] = HAMBRE;
-    test(i);
-    V(mutex);
-    P(s[i]);
+2. **Como mucho cuatro sentados**: un semáforo `sillas` inicializado a 4 antes de coger los cubiertos. Con cuatro filósofos y cinco cubiertos, siempre hay uno que puede comer.
 
-dejar_cubierto(i):
-    P(mutex);
-    estado[i] = PIENSA;
-    test(IZQUIERDA);
-    test(DERECHA);
-    V(mutex);
+   ```c
+   sem_acquire(sillas);
+   /* coger cubiertos, comer, soltar cubiertos */
+   sem_release(sillas);
+   ```
 
-test(i):
-    si (estado[i] == HAMBRE && estado[IZQUIERDA] != COMER && estado[DERECHA] != COMER) entonces
-        estado[i] = COMER;
-        V(s[i]);
+3. **Los dos a la vez**: un `semop` con dos operaciones es atómico: coge los dos cubiertos o ninguno, así que nadie se queda con uno mientras espera el otro.
+
+   ```c
+   /* cubiertos: array de 5 semáforos, todos a 1 */
+   struct sembuf coger[2] = {
+       { .sem_num = i,           .sem_op = -1 },
+       { .sem_num = (i + 1) % 5, .sem_op = -1 },
+   };
+   semop(cubiertos, coger, 2);
+   ```
+
+Otra solución, con un estado por filósofo, está en [`material_adicional.md`](material_adicional.md).
+
+### Clientes‑servidor
+
+Varios clientes envían peticiones a un servidor y esperan respuesta. Con una sola cola de mensajes ([P7](../../PRACTICA/07-colas-de-mensajes/)): los clientes envían con `mtype = 1` y su PID dentro del mensaje; el servidor responde usando ese PID como `mtype`, y cada cliente pide solo los mensajes de su tipo.
+
+El servidor atiende peticiones en bucle y devuelve el cuadrado del número que le mandan:
+
+```c
+// servidor.c — responde a cada petición con el cuadrado del número
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+typedef struct {
+    long  mtype;   /* 1 = petición; PID del cliente = respuesta */
+    pid_t pid;     /* quién pregunta */
+    long  num;     /* el número (petición) o su cuadrado (respuesta) */
+} msg_t;
+
+int main(void) {
+    key_t clave = ftok("/etc", 22);
+    int cola = msgget(clave, 0600 | IPC_CREAT);
+
+    for (msg_t m;;) {
+        msgrcv(cola, &m, sizeof(msg_t) - sizeof(long), 1, 0);   /* solo peticiones */
+        printf("petición de %d: %ld\n", m.pid, m.num);
+        m.mtype = m.pid;            /* la respuesta va al tipo del cliente */
+        m.num = m.num * m.num;
+        msgsnd(cola, &m, sizeof(msg_t) - sizeof(long), 0);
+    }
+}
 ```
 
-### Problema del productor‑consumidor
+```c
+// cliente.c — pide al servidor el cuadrado de un número
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
-Productor y consumidor deben coordinarse sobre un búfer circular: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.
+typedef struct {
+    long  mtype;
+    pid_t pid;
+    long  num;
+} msg_t;
 
-<img src="img/productor-consumidor-bufer.svg" width="520" alt="Productor deposita en un bufer circular de 4 casillas y el consumidor retira; el productor espera si esta lleno y el consumidor si esta vacio">
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Uso: %s <num>\n", argv[0]);
+        return 1;
+    }
+    key_t clave = ftok("/etc", 22);
+    int cola = msgget(clave, 0600 | IPC_CREAT);
 
-*Productor y consumidor deben coordinarse: el productor espera cuando el búfer está lleno y el consumidor cuando está vacío.*
-
-El productor y el consumidor son dos procesos **cíclicos**:
-
-```text
-Productor                        Consumidor
-    ...                              ...
-    producir(mensajeP);              retirar(casilla, mensajeC);
-    depositar(casilla, mensajeP);    consumir(mensajeC);
-    ...                              ...
+    msg_t m = { .mtype = 1, .pid = getpid(), .num = atol(argv[1]) };
+    msgsnd(cola, &m, sizeof(msg_t) - sizeof(long), 0);
+    msgrcv(cola, &m, sizeof(msg_t) - sizeof(long), getpid(), 0);   /* solo la respuesta para mí */
+    printf("%s al cuadrado = %ld\n", argv[1], m.num);
+    return 0;
+}
 ```
 
-Problemas: depositar un mensaje cuando el consumidor no ha retirado el anterior; retirar un mensaje cuando el productor no ha depositado nada.
-
-**Solución para una variable** (semáforos `llena` y `vacía` inicializados a 0 y 1):
-
-```text
-Productor                        Consumidor
-    producir(mensajeP);              P(llena);
-    P(vacía);                        retirar(casilla, mensajeC);
-    depositar(casilla, mensajeP);    V(vacía);
-    V(llena);                        consumir(mensajeC);
+```bash
+./servidor &
+for i in $(seq 5); do ./cliente $i & done   # 5 clientes a la vez: cada uno recibe su resultado
 ```
 
-**Solución para un búfer de N posiciones.** Hay que administrar el búfer: si está vacío, el consumidor no puede retirar; si está lleno, el productor no puede depositar; el búfer es circular y hay que impedir que los índices `cabeza` y `cola` se solapen. Semáforos `lleno` y `vacío` inicializados a 0 y N (indican el número de casillas llenas y vacías); índices `cabeza` y `cola` inicializados a 0:
+El servidor sigue en marcha hasta `Ctrl-C` (o `kill`); la cola persiste y se borra con `ipcrm`.
 
-```text
-Productor                            Consumidor
-    producir(mensajeP);                  P(lleno);
-    P(vacío);                            mensajeC = buffer[cola];
-    buffer[cabeza] = mensajeP;           cola = (cola + 1) mod n;
-    cabeza = (cabeza + 1) mod n;         V(vacío);
-    V(lleno);                            consumir(mensajeC);
-```
+## Nota del profesor: sincronizar bien es difícil
 
-**Con p productores y c consumidores** hay que proteger el uso de los índices con dos semáforos de exclusión mutua `mutexprod` y `mutexcons` inicializados a 1:
+La concurrencia es una de las partes más difíciles de programar bien. Los errores dependen del orden en que el planificador ejecuta los procesos, o la CPU y el compilador reordenen las instrucciones. Los errores pueden aparecer una vez cada mil ejecuciones, solo en otra máquina, o desaparecer al añadir un `printf` o al usar el depurador.
 
-```text
-Productor                            Consumidor
-    producir(mensajeP);                  P(lleno);
-    P(vacío);                            P(mutexcons);
-    P(mutexprod);                        mensajeC = buffer[cola];
-    buffer[cabeza] = mensajeP;           cola = (cola + 1) mod n;
-    cabeza = (cabeza + 1) mod n;         V(mutexcons);
-    V(mutexprod);                        V(vacío);
-    V(lleno);                            consumir(mensajeC);
-```
+Al sincronizar hay un compromiso:
 
-### Problema de los lectores‑escritores
+- **Bloquear todo** : un único semáforo a 1 protege todos los datos. Es fácil de hacer bien, pero los procesos se esperan aunque no se molesten. En lectores-escritores, un solo semáforo para todos funciona, pero los lectores, que podrían leer a la vez, pasan de uno en uno. El ejemplo más conocido es el **GIL** (*Global Interpreter Lock*) de Python: un único cerrojo que solo deja ejecutar código Python a un hilo a la vez. Simplifica mucho el intérprete, pero varios hilos de Python no aprovechan varios núcleos. Para paralelismo real se usan procesos (`multiprocessing`). Desde Python 3.13 hay una versión experimental sin GIL.
 
-`nlect` y `nesc` son el número de lectores y escritores accediendo simultáneamente a un archivo. Restricciones de integridad: `nesc = 0` y `nlect ≥ 0`, **o** `nesc = 1` y `nlect = 0`.
+- **Afinar**: cerrojos de lectura/escritura, un semáforo por dato, variables atómicas, colas de mensajes… Se aprovecha mejor el paralelismo, pero hay más piezas y más ocasiones de equivocarse: carreras, interbloqueos, inanición.
 
-**Con monitor:**
+Por eso, salvo para aprender, **no conviene implementar estos mecanismos a mano**: es mejor usar los que ya ofrecen el sistema operativo y las bibliotecas, probados por mucha gente:
 
-```text
-Lector_escritor : monitor;
-    var escr : booleano;
-        nl   : entero;
-        c_escr, c_lect : condición;
-
-    procedure empezar_lectura;
-    inicio
-        si escr entonces c_lect.esperar;
-        nl := nl + 1;
-        c_lect.marcar;
-    fin;
-
-    procedure fin_lectura;
-    inicio
-        nl := nl - 1;
-        si nl = 0 entonces c_escr.marcar;
-    fin;
-
-    procedure empezar_escritura;
-    inicio
-        si escr o nl > 0 entonces c_escr.esperar;
-        escr := true;
-    fin;
-
-    procedure fin_escritura;
-    inicio
-        escr := false;
-        si nl > 0 entonces c_lect.marcar;
-        si no c_escr.marcar;
-    fin;
-
-inicio
-    nl := 0; escr := false;
-fin lector_escritor.
-```
-
-**Con semáforos** (`mutex`, `sem_escritura` y el entero `num_lecturas`):
-
-```text
-Escritor                          Lector
-    P(sem_escritura);                 P(mutex);
-    < Sección Crítica >               num_lecturas++;
-    V(sem_escritura);                 si (num_lecturas == 1) P(sem_escritura);
-                                     V(mutex);
-
-                                     < Lectura >
-
-                                     P(mutex);
-                                     num_lecturas--;
-                                     si (num_lecturas == 0) V(sem_escritura);
-                                     V(mutex);
-```
-
-## Monitores
-
-- El concepto de **monitor** fue definido por **Hoare (1974)**. Java emplea monitores para garantizar la exclusión mutua.
-- Un monitor es una herramienta evolucionada de sincronización: un **tipo abstracto de datos** para el cual, en cada instante, un proceso/hilo puede estar ejecutando **cualquiera de sus procedimientos miembro**.
-- Con semáforos, las llamadas a las funciones necesarias quedan repartidas por el código, lo que dificulta corregir errores y asegurar el buen funcionamiento; los monitores evitan estos inconvenientes.
-- En programación paralela, los monitores son objetos pensados para usarse con seguridad por más de un hilo. Sus métodos se ejecutan en **exclusión mutua**: en cada instante solo un proceso/hilo ejecuta alguno de sus métodos.
-
-Un monitor está formado por: **variables de estado**, **procesos internos**, **procesos externos** (puntos de entrada), **condiciones** y **primitivas de sincronización**. Las variables de estado solo son accesibles por los procesos externos (**encapsulación**).
-
-**Funcionamiento**: solo los procedimientos del monitor acceden a las variables de datos locales; un proceso entra en el monitor invocando uno de sus procedimientos; solo un proceso puede estar ejecutándose dentro del monitor en un momento dado, y cualquier otro queda suspendido esperando su disponibilidad (salvo si un proceso ejecuta la primitiva `esperar`).
-
-**Monitor `incr_dism`** (cada `procedure` se ejecuta en exclusión mutua):
-
-```text
-incr_dism : monitor;
-    var i : entero;
-
-    procedure incrementa;
-    inicio
-        i := i + 1;
-    fin;
-
-    procedure disminuye;
-    inicio
-        i := i - 1;
-    fin;
-
-inicio
-    i := 0;
-fin incr_dism.
-```
-
-**Monitor de reunión (*rendez‑vous*)** — cada proceso que llega espera hasta que han llegado los `N`:
-
-```text
-Reunión : monitor;
-    var n : entero;
-        llegaron_todos : condición;
-
-    procedure llegar;
-    inicio
-        n := n + 1;
-        si n < N entonces llegaron_todos.esperar;
-        llegaron_todos.marcar;
-    fin;
-
-inicio
-    n := 0;
-fin reunión.
-```
-
-## Comunicación por paso de mensajes
-
-Los requisitos básicos cuando dos o más procesos interactúan son **sincronización** y **comunicación**. El **paso de mensajes** permite realizar ambas funciones y es fácil de implementar en sistemas distribuidos y en sistemas mono y multiprocesador de memoria compartida. Se da mediante un par de primitivas:
-
-```text
-send(destino, mensaje)
-receive(origen, mensaje)
-```
-
-En cuanto a la sincronización hay **tres combinaciones**:
-
-| Envío | Recepción | Comentario |
-|-------|-----------|-----------|
-| Bloqueante | Bloqueante | Emisor y receptor se bloquean hasta que llega el mensaje. Se conoce como ***rendez‑vous***. |
-| No bloqueante | Bloqueante | El emisor continúa; el receptor se bloquea hasta recibir el mensaje. **La combinación más útil.** |
-| No bloqueante | No bloqueante | Nadie espera. |
-
-- El `send` **no bloqueante** es lo más natural para muchas tareas concurrentes, pero por error puede llevar a generar mensajes repetidamente.
-- El `receive` **bloqueante** es lo más natural: un proceso que solicita un mensaje suele necesitar la información antes de continuar.
-
-## Interbloqueo
-
-El **interbloqueo**, bloqueo mutuo o *deadlock* es el bloqueo **permanente** de un conjunto de procesos/hilos en un sistema concurrente que compiten por recursos o se comunican entre ellos. **No existe una solución general.** Todos los interbloqueos surgen de necesidades que no pueden ser satisfechas por parte de dos o más procesos: varios procesos esperan acceder a recursos que nunca se liberarán porque los tienen ocupados los procesos implicados.
-
-Como cuatro vehículos que entran a la vez en un cruce estrecho: cada uno conserva el espacio que ocupa mientras espera el que ocupa el siguiente, y la espera circular impide que cualquiera avance.
-
-<img src="img/interbloqueo-cruce.png" width="520" alt="Cuatro vehículos ocupan un cruce y cada uno bloquea el avance del siguiente">
-
-*En un interbloqueo, cada participante conserva un recurso mientras espera otro. La espera circular impide que cualquiera pueda continuar.*
-
-### Modelo de sistema
-
-- Conjunto de procesos `P₁, P₂, …, Pₙ`.
-- Conjunto de recursos (físicos o lógicos) `R₁, R₂, …, Rₘ`; de cada recurso puede haber **una o más instancias**.
-- Consumo de recursos por parte de los procesos: **petición** (si no está disponible, el proceso queda suspendido hasta que lo esté) → **uso** → **liberación**.
-
-### Condiciones de Coffman (1971)
-
-Necesarias (aunque no suficientes) para que se produzca interbloqueo; deben cumplirse **simultáneamente** y no son totalmente independientes entre sí:
-
-| Condición | Significado |
-|-----------|-------------|
-| **Exclusión mutua** | Existe al menos un recurso compartido al que solo puede acceder un proceso simultáneamente. |
-| **Posesión y espera** | Al menos un proceso `Pᵢ` ha adquirido un recurso y lo retiene mientras espera al menos otro recurso `Rⱼ` ya asignado a otro proceso. |
-| **No apropiación** | Los recursos no pueden ser expropiados; solo se liberan voluntariamente por sus propietarios. |
-| **Espera circular** | `P₀` espera un recurso adquirido por `P₁`, que espera uno adquirido por `P₂`, …, que espera uno adquirido por `P₀`. Implica la condición de retención y espera. |
-
-```mermaid
-flowchart LR
-    P1(("P1")) -->|espera SemA| P2(("P2"))
-    P2 -->|espera SemB| P3(("P3"))
-    P3 -->|espera SemC| P1
-
-    classDef bloqueado fill:#fbe0e0,stroke:#c0392b,color:#7a1f1f;
-    class P1,P2,P3 bloqueado;
-```
-
-### Resolución del interbloqueo
-
-- **Prevención**: ejecutar los `P()` siempre en el mismo orden; usar algoritmos seguros y declarar de antemano los recursos que se van a utilizar.
-- **Evitación**: llevar control de la demanda y consumo de recursos.
-- **Detección**: construir periódicamente el **grafo de los conflictos**; si hay un ciclo, hay interbloqueo; matar un proceso y efectuar los `V()` restantes.
-
-### Evitando interbloqueos
-
-Los bloqueos mutuos pueden evitarse si se conoce cierta información sobre los procesos antes de asignar recursos. Para cada petición, el sistema comprueba si, satisfaciéndola, entraría en un **estado inseguro** (donde puede producirse un bloqueo); solo satisface la petición si asegura quedar en un **estado seguro**. Se necesita conocer el número y tipo de todos los recursos existentes, disponibles y requeridos.
-
-**Algoritmos para evitar interbloqueos**: algoritmo del banquero (Dijkstra) · algoritmo del grafo de asignación de recursos · algoritmo de seguridad · algoritmo de solicitud de recursos.
-
-### Algoritmo del banquero
-
-Analogía con un banco: los **clientes** son los procesos (con un crédito límite), el **dinero** son los recursos y el **banquero** es el SO. El banco confía en que no todos los clientes usarán todo su crédito a la vez, y asume que si un cliente maximiza su crédito podrá terminar sus negocios y devolver el dinero, permitiendo servir a otros.
-
-- Un sistema está en **estado seguro** si existe una **secuencia segura**: una sucesión de procesos `<P₁, …, Pₙ>` tal que, para cada `Pᵢ`, su petición de recursos puede satisfacerse con los recursos disponibles más los que están usando los `Pⱼ` con `j < i` (que liberarán al terminar).
-- Si no hay suficientes recursos para `Pᵢ`, este espera hasta que algún `Pⱼ` termine y libere sus recursos; entonces `Pᵢ` toma los necesarios, los usa y termina, y así sucesivamente. Si no existe tal secuencia, el sistema está en **estado inseguro**.
-- **Restricciones**: se debe conocer a priori la demanda máxima de recursos; los procesos deben ser independientes (ejecutables en cualquier orden, sin sincronización forzada); debe haber un número fijo y conocido de recursos y de procesos; los procesos no pueden finalizar mientras retengan recursos.
-
-### Grafo de asignación de recursos
-
-Una asignación concreta de recursos a procesos se representa con un grafo en el que:
-
-- Los **círculos** representan procesos y los **cuadrados** representan recursos.
-- Cada cuadrado tiene tantos **puntos** en su interior como instancias haya de ese recurso.
-- Los **arcos son dirigidos**: de proceso a recurso indican **petición**; de recurso a proceso indican **asignación**.
-
-<img src="img/grafo-asignacion-recursos.svg" width="560" alt="Grafo de asignación de recursos con un ciclo P1, R1, P2, R2, P1 que indica interbloqueo">
-
----
-
-## Material gráfico
-
-Las figuras de este tema están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo, no reproducible): la lámina de los filósofos monjes, los *clipart* de lectores‑escritores, las fotos de atascos de tráfico (interbloqueo) y las capturas del panel «Control de Aforo».
+- pipes y colas de mensajes para productor-consumidor;
+- `pthread_rwlock_t` para lectores-escritores;
+- variables atómicas para contadores;
+- las colas concurrentes del lenguaje (`queue.Queue` en Python, `java.util.concurrent` en Java).

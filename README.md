@@ -25,9 +25,9 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | IPC: pipes y fifos | [`TEORIA/07`](TEORIA/07-ipc-pipes-y-fifos/) |
 | IPC: señales | [`TEORIA/08`](TEORIA/08-ipc-senales/) |
 | IPC: colas de mensajes | [`TEORIA/09`](TEORIA/09-ipc-colas-de-mensajes/) |
-<!-- 
-| Concurrencia y sincronización | [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) |
 | Gestión de memoria | [`TEORIA/06`](TEORIA/06-gestion-de-memoria/) |
+| Concurrencia y sincronización | [`TEORIA/05`](TEORIA/05-concurrencia-y-sincronizacion/) |
+<!-- 
 | Memoria compartida y mutex | [`TEORIA/10`](TEORIA/10-memoria-compartida-y-mutex/) |
 | Dispositivos de E/S | [`TEORIA/11`](TEORIA/11-dispositivos-de-es/) |
 | Sistemas de ficheros | [`TEORIA/12`](TEORIA/12-sistemas-de-ficheros/) |
@@ -44,37 +44,35 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | P3 — Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`PRACTICA/03`](PRACTICA/03-pipes-y-fifos/) |
 | P4 — Acueducto: ejercicio de procesos y pipes | [`PRACTICA/04`](PRACTICA/04-ejercicio-procesos-y-pipes/) |
 | P5 — Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`PRACTICA/05`](PRACTICA/05-senales/) |
-<!--
-| P6 — Memoria compartida y semáforos | [`PRACTICA/06`](PRACTICA/06-memoria-compartida-y-semaforos/) |
 | P7 — Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`PRACTICA/07`](PRACTICA/07-colas-de-mensajes/) |
+| P6 — Memoria compartida y semáforos | [`PRACTICA/06`](PRACTICA/06-memoria-compartida-y-semaforos/) |
 | P8 — Planificador de procesos (colas multinivel) | [`PRACTICA/08`](PRACTICA/08-planificador-de-procesos/) |
 | P9 — Sistema concurrente | [`PRACTICA/09`](PRACTICA/09-sistema-concurrente/) |
--->
 
-El `README.md` de cada práctica incluye la descripción del tema, los comandos, llamadas al sistema utilizadas, ejercicios propuestos y ejercicios extra con soluciones.
+El `README.md` de cada práctica incluye la descripción, los comandos, llamadas al sistema y ejercicios propuestos.
 
 ## Guía de estilo
 
 ### Presentaciones
-Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También se pueden dar simulaciones interactivas embebidas, normalmente en HTML + JS. Se utilizará un markdown mínimo y el texto estará siempre en una línea.
+Para teoría, se utilizan archivos Markdown con diagramas mermaid, SVG y JPG. También hay simulaciones interactivas embebidas, normalmente en HTML + JS. Se utilizará un markdown mínimo y el texto estará siempre en una línea.
 
 Se prefieren explicaciones concisas y resumidas.
 
-Para prácticas, se utilizan archivos Markdown, archivos `.c`, Makefiles, scripts bash y configuraciones tmux de terminales.
+Para prácticas, se utilizan archivos Markdown, `.c`, Makefiles, y scripts bash.
 
 <details> <summary> <- clickar en la flecha. Habrá texto expandible  </summary>
-Que contienen información que puede ser útil, pero que no es obligatorio su conocimiento.
+Que contienen información útil, pero que no es obligatorio su conocimiento.
 </details>
 
 ### Código
 
-En código utilizará alojamiento estático (en la pila - stack) para las variables siempre que sea posible y se evitará el uso de `malloc`. 
+En código utilizará alojamiento estático (en la pila - stack) para las variables y se evitará el uso de `malloc`. 
 
 Se evitarán programas con varios archivos C: cada proceso o grupo de procesos será un `.c` que acabará compilado en un binario. Esto hace el uso de Makefile opcional. Se pueden utilizar `.h` para compartir constantes y estructuras comunes.
 
-Se pueden dejar `#include` que no sean necesarios si esto evita estar buscando qué includes necesita cada función. Es más como incluir un bloque común de `#include <>` y quitar los que den *warning* por no usarse.
+Se pueden dejar `#include` que no sean necesarios si esto evita estar buscando qué includes necesita cada función.
 
-Se puede quitar el tratamiento de errores para que el código quede más claro. La captura de errores se puede hacer con strace o gdb.
+Se puede omitir el tratamiento de errores para que el código quede más claro. La captura de errores se hace con strace o gdb.
 
 Estílos de código, aunque cada estudiante puede seguir el suyo:
 
@@ -82,9 +80,8 @@ Estílos de código, aunque cada estudiante puede seguir el suyo:
 - Se usa `snake_case` en lugar de `CamelCase`.
 - Se intenta usar `for` siempre que sea posible (frente a `while` o `do`/`while`).
 - Las variables se declaran e inicializan en la misma línea, en el *scope* más interno posible.
-- Se evita el uso de variables globales.
 - Los `struct` se definen con `typedef struct` sin darle nombre al `struct`.
-- Los permisos se indican siempre en octal (`0640`), aunque existan constantes para los permisos de lectura o escritura (`S_IRUSR`, `SHM_R`…).
+- Los permisos se indican en octal (`0640`) y nos con los flags (`S_IRUSR`, `SHM_R`…).
 
 ## Material adicional
 
