@@ -124,3 +124,6 @@ Los conceptos se pueden explicar por niveles, con estas estructuras:
 - Hay conceptos de teoría que no se trabajan en prácticas: gestión de memoria (modo protegido, paginación, cachés).
 - Algunos ejercicios de práctica resultan artificiales. ¿Qué programa real necesita crear un árbol de procesos? ¿O simular un sistema concurrente mezclando pipes y colas de mensaje?
 
+## Markdown para lectura y para presentación
+
+El contenido markdown es para lectura pero no es fácil de presentar en clase. Utilizar reveal.js o Marp para convertirlo fácilmente en diapositivas.

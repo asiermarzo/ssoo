@@ -42,11 +42,11 @@ Las prácticas se realizan sobre Linux. Los distintos entornos disponibles (orde
 | 1 | Entrada y salida: consola, ficheros, file descriptors | [`entrada-salida-y-ficheros`](PRACTICA/entrada-salida-y-ficheros/) |
 | 2 | Procesos: `fork`, `execvp`, `wait`, `pstree` | [`procesos`](PRACTICA/procesos/) |
 | 3 | Pipes y fifos: `pipe`, `mkfifo`, `dup2` | [`pipes-y-fifos`](PRACTICA/pipes-y-fifos/) |
-| 4 | Acueducto: ejercicio de procesos y pipes | [`ejercicio-procesos-y-pipes`](PRACTICA/ejercicio-procesos-y-pipes/) |
+| 4 | Ejercicio de procesos y pipes: Acueducto | [`ejercicio-procesos-y-pipes`](PRACTICA/ejercicio-procesos-y-pipes/) |
 | 5 | Señales: `kill`, `signal`, `sigaction`, `sleep`, `pause` | [`senales`](PRACTICA/senales/) |
 | 6 | Colas de mensajes: `msgget`, `msgsnd`, `msgrcv`, `ipcs` | [`colas-de-mensajes`](PRACTICA/colas-de-mensajes/) |
 | 7 | Memoria compartida y semáforos | [`memoria-compartida-y-semaforos`](PRACTICA/memoria-compartida-y-semaforos/) |
-| 8 | Planificador de procesos (colas multinivel) | [`planificador-de-procesos`](PRACTICA/planificador-de-procesos/) |
+| 8 | Planificador de procesos | [`planificador-de-procesos`](PRACTICA/planificador-de-procesos/) |
 | 9 | Sistema concurrente | [`sistema-concurrente`](PRACTICA/sistema-concurrente/) |
 
 El `README.md` de cada práctica incluye la descripción, los comandos, llamadas al sistema y ejercicios propuestos.
