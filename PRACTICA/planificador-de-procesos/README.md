@@ -54,31 +54,32 @@ cola_iniciar(&listos);
 cola_encolar(&listos, p);
 
 proceso_t *elegido = NULL;
-COLA_FOR_EACH(&listos, q) { // recorrerla para elegir
+COLA_FOR_EACH(&listos, q) { // recorrer la cola, q es el puntero que apunta a cada elemento
     if (q->prioridad == 2 && (elegido == NULL || q->ultimo_ms < elegido->ultimo_ms)) {
         elegido = q;                             // el de nivel 2 que más lleva sin ejecutarse
     }
 }
+
 if (elegido != NULL) {
-    proceso_t actual = cola_desencolar(&listos, elegido);   // fuera del bucle
+    proceso_t actual = cola_desencolar(&listos, elegido);   
     ...
 }
 ```
 
 ### Bucle de `procsched`
 
-1. **Admitir peticiones**: `msgrcv` sobre *esperando* con `IPC_NOWAIT`, repetido hasta que devuelva `-1` (no quedan mensajes), para admitir todas las pendientes. Si es una petición, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si es un comando, lo aplica. Si *listos* está vacía, no hay nada que planificar por lo que hace un `msgrcv` bloqueante (sin `IPC_NOWAIT`) que espera hasta que llegue algo.
+1. **Admitir peticiones**: lee los mensajes de la cola *esperando* en un bucle hasta que `msgrcv` devuelva `-1` (no quedan mensajes). Si *listos* está vacía, no hay nada que planificar y el `msgrcv` es bloqueante (sin `IPC_NOWAIT`); si no, se hace con `IPC_NOWAIT`. Por cada mensaje: si es una petición, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si es un comando, lo aplica.
 
-2. **Planificar**: elige un proceso de *listos* según las [políticas](#políticas-de-planificación), fija una alarma `ualarm` para el turno, le manda `SIGCONT` al proceso elegido y espera con `pause()`.
+2. **Planificar**: elige un proceso de la cola *listos* según las [políticas](#políticas-de-planificación), fija una alarma `ualarm` para el turno, le manda `SIGCONT` al proceso elegido y espera con `pause()`.
 
-3. **Desalojar**. `pause()` retorna por una de estas señales:
+3. **Desalojar**. `pause()` ha retornado por una de estas señales:
    - `SIGALRM`: se ha acabado el turno.
    - `SIGCHLD`: el hijo en ejecución ha terminado.
 
    Después actúa según el estado del hijo en ejecución:
-   - si terminó (`waitpid(pid, &estado, WNOHANG) > 0`), cancela el temporizador con `ualarm(0, 0)` e imprime en consola `TERMINA` ver [registro](#registro-y-estadísticas).
-   - si es de nivel 1, el planificador vuelve a `pause()` y el proceso de nivel 1 sigue ejecutándose.
-   - si no, le manda `SIGSTOP` y lo mete al final de *listos*.
+   - si terminó (`waitpid(pid, &estado, WNOHANG) > 0`): cancela el temporizador con `ualarm(0, 0)` e imprime en consola `TERMINA` ver [registro](#registro-y-estadísticas).
+   - si es de nivel 1: el planificador vuelve a `pause()` y el proceso de nivel 1 sigue ejecutándose.
+   - si no: le manda `SIGSTOP` y lo mete al final de *listos*.
 
 Con `Ctrl-C` o el comando `fin`, `procsched` termina ordenadamente: mata a los hijos con `SIGKILL`, borra la cola (`msgctl` con `IPC_RMID`) y muestra las estadísticas.
 
@@ -124,7 +125,7 @@ Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell]
 ## Señales en `procsched`
 
 - **Manejadores vacíos**: `pause()` solo retorna si se ejecuta un manejador, así que `procsched` atiende a `SIGALRM` y `SIGCHLD` con un manejador vacío.
-- **`SIGCHLD` se usa con `SA_NOCLDSTOP`**: si no, cada `SIGSTOP` y `SIGCONT` que manda `procsched` a los hijos generarían un `SIGCHLD` que despierta al planificador sin motivo (ver [señales](../senales/#captura-avanzada-sigaction)).
+- **`SIGCHLD` se instala con `SA_NOCLDSTOP`**: si no, cada `SIGSTOP` y `SIGCONT` que manda `procsched` a los hijos generarían un `SIGCHLD` que despierta al planificador sin motivo (ver [señales](../senales/#captura-avanzada-sigaction)).
 - **`msgrcv` interrumpido**: si llega una señal durante un `msgrcv` bloqueante, devuelve `-1` con `errno == EINTR`. No es un error: hay que repetir `msgrcv`.
 
 <!--
@@ -213,14 +214,14 @@ Describen qué procesos se lanzan, con qué prioridad y cuándo. Cada línea es:
 |---|---|
 | `# ...` | Comentario: se ignora. |
 | `prioridad programa arg1 ...` | Petición: se encola con `msgsnd`; `mtype = prioridad` (1–3). |
-| `espera ms` | Espera `ms` milisegundos antes de procesar la siguiente línea. |
+| `0 espera ms` | Encolador espera `ms` milisegundos antes de procesar la siguiente línea. |
 | `4 turno ms`, `4 latencia ms`, `4 estadisticas`, `4 fin` | Comandos especiales: llevan prioridad 4 y se mandan igual que una petición (`mtype = 4`). |
 
 ```
 # Este archivo pide lanzar 2 procesos de cálculo; espera 3 s y manda un proceso urgente
 3 ./buddhabrot 0 0
 3 ./raytracer 340 0
-espera 3000
+0 espera 3000
 1 ./factoriza 1000000016000000063
 ```
 
@@ -247,7 +248,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver la [minishell](../ejercicio-procesos-y-pipes/otras-practicas/minishell.md#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
    *Prueba:* lo que escribes en el `encolador` aparece en la consola de `procsched`.
 
-3. **`encolador` desde fichero.** Se lee igual, con `fgets` sobre el `FILE *` de `fopen` (ver [entrada y salida](../entrada-salida-y-ficheros/#lectura)). Hay que ignorar los `#` e implementar `espera ms` (`usleep`). Los comandos especiales ya llevan el 4 delante, así que se mandan como cualquier petición.
+3. **`encolador` desde fichero.** Se lee igual, con `fgets` sobre el `FILE *` de `fopen` (ver [entrada y salida](../entrada-salida-y-ficheros/#lectura)). Hay que ignorar los `#` e implementar `0 espera ms` (`usleep`). Los comandos especiales ya llevan el 4 delante, así que se mandan como cualquier petición.
    *Prueba:* `./encolador set1-roundrobin.txt` y en `procsched` salen las líneas en orden, con sus pausas.
 
 4. **Hijos pausados en *listos*.** En vez de imprimir la petición, `procsched` crea el hijo pausado (`fork` + `str_split` + `pause` + `execvp`), lo mete en *listos* con `cola_encolar` e imprime `NUEVO`.
@@ -261,13 +262,11 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
    ```
    repetir siempre:
        // 1. admitir peticiones
-       si listos está vacía:
-           msgrcv(esperando, 0) // bloqueante
-           si devuelve -1: repetir 
-       si no: 
-           msgrcv(esperando, IPC_NOWAIT) 
-       si se ha leído mensaje:
-            crear hijo pausado y encolarlo en listos
+       mientras listos esté vacía:                     // nada que planificar: esperar
+           si msgrcv(esperando, 0) != -1:              // bloqueante
+               crear hijo pausado y encolarlo en listos
+       mientras msgrcv(esperando, IPC_NOWAIT) != -1:   // leer lo pendiente sin bloquear
+           crear hijo pausado y encolarlo en listos
 
        // 2. planificar
        actual = desencolar el primero de listos

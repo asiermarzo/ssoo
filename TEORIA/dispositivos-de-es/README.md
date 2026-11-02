@@ -1,26 +1,24 @@
 # Dispositivos de Entrada/Salida
 
-Conceptos básicos · Funciones de entrada/salida · Almacenamiento intermedio · Tipos de discos duros · Planificación de discos · Caché de disco · Entrada/salida en Linux.
+## Dispositivo, controlador y manejador
 
----
+Un dispositivo de E/S tiene dos partes hardware y una software:
 
-## Conceptos básicos
+- El **dispositivo** propiamente dicho: la parte mecánica o electrónica (platos y cabezales, teclas, sensor…).
+- El **controlador**: la electrónica que lo gobierna. La CPU no habla con el dispositivo, sino con los **registros** de su controlador: **orden** (qué operación hacer), **estado** (ocupado, terminado, error) y **datos** (el dato leído o el que se va a escribir). Muchos controladores tienen además un **búfer** propio.
+- El **manejador** (*driver*): el código del sistema operativo que sabe programar los registros de un controlador concreto.
 
-- Los **controladores** son la interfaz **software** entre el hardware del dispositivo y el sistema operativo.
-- Para lograr **homogeneidad** en el conjunto de instrucciones que el SO puede invocar sobre un dispositivo, se dispone de **manejadores de dispositivos**: un conjunto de funciones que abstraen el funcionamiento de un controlador concreto.
-- Se construyen **APIs** con las funciones básicas de acceso a un dispositivo: `open`, `close`, `control`, `seek`… El manejador exporta al SO una **interfaz común de llamadas al sistema** para los dispositivos.
+En castellano «controlador» también se usa para traducir *driver* (Windows habla de «controladores de dispositivo»). En este tema, **controlador = hardware** y **manejador = software**.
 
-<img src="img/capas-es.svg" width="420" alt="Pirámide de capas de la E/S: de abajo arriba, controladores y manejadores de interrupciones, manejadores de dispositivos, rutinas del sistema operativo y programas de usuario">
+La CPU accede a los registros del controlador de dos formas:
 
-- Las operaciones de lectura y escritura son **secuenciales**. Interesa **paralelizar** al máximo las actividades de las aplicaciones durante los intervalos de acceso a los dispositivos ⇒ **solapamiento de E/S y procesador**. Requisitos:
-  - El lenguaje de programación y el SO deben permitir que el hilo **inicie** una operación de E/S y **sondee** si ha concluido.
-  - El hilo debe poder realizar otros trabajos mientras se llevan a cabo las operaciones de E/S.
+- **Puertos de E/S**: un espacio de direcciones aparte, con instrucciones privilegiadas propias (`in`/`out` en x86).
+- **E/S mapeada en memoria**: los registros ocupan direcciones de memoria física y se leen y escriben con instrucciones normales. Esas páginas se marcan **sin caché** (ver [gestión de memoria](../gestion-de-memoria/)): si no, la CPU leería una copia antigua del registro de estado. Es la forma habitual hoy.
 
-### Características de los dispositivos
+### Dispositivos de bloque y de carácter
 
-- **Unidad de transferencia**: los datos pueden intercambiarse como flujos de bytes/caracteres de longitud variable (**dispositivos modo carácter**, p. ej. teclado) o como flujos de bloques de tamaño fijo (**dispositivos modo bloque**, p. ej. disco duro).
-- **Velocidad de transmisión**: muy variable según la naturaleza del dispositivo.
-- **Utilidad**, **complejidad de control** y **representación de los datos**.
+- **Bloque**: transfieren bloques de tamaño fijo (512 bytes en los discos antiguos, hoy normalmente 4096) y son **direccionables**: se puede leer o escribir cualquier bloque tras posicionarse. Discos duros, SSD, memorias USB.
+- **Carácter**: producen o consumen un flujo de bytes **sin direcciones**. Teclado, ratón, puerto serie, terminal.
 
 ```mermaid
 flowchart TB
@@ -43,11 +41,72 @@ flowchart TB
 
 *Los dispositivos de bloque transfieren unidades direccionables de datos; los de carácter producen o consumen secuencias continuas.*
 
-## Funciones de entrada/salida
+### Velocidades
 
-- El acceso mediante **E/S directa** transfiere los datos de entrada desde el controlador a un registro de la CPU y de éste a memoria principal (ídem para la salida).
-- El acceso mediante **DMA** transfiere los datos entre el controlador y la memoria principal **directamente**.
-- Si el dispositivo dispone de **interrupciones**, el software no necesita recurrir a operaciones periódicas de **sondeo**.
+| Dispositivo | Velocidad aproximada |
+|-------------|----------------------|
+| Teclado | 10 B/s |
+| Ratón | 100 B/s |
+| Disco duro (HDD) | 200 MB/s |
+| SSD SATA | 550 MB/s |
+| Red Ethernet de 10 Gb/s | 1,25 GB/s |
+| SSD NVMe | 7 GB/s |
+
+Entre el teclado y un SSD NVMe hay casi **nueve órdenes de magnitud**: ninguna técnica de E/S sirve igual de bien para todos.
+
+## Comunicación entre la CPU y el controlador
+
+Hay dos preguntas independientes:
+
+- ¿**Cómo sabe la CPU** que el dispositivo ha terminado? Preguntándole una y otra vez (**sondeo**) o esperando a que él avise (**interrupción**).
+- ¿**Quién copia los datos** entre el controlador y la memoria? La propia CPU (**E/S programada**) o un controlador de **DMA**.
+
+Se ven de la solución más simple a la más eficiente: cada paso resuelve el problema del anterior.
+
+### Sondeo
+
+La CPU escribe la orden en el controlador y consulta el registro de estado en un bucle hasta que la operación termina (*polling*). Es **espera activa**, como la de [concurrencia y sincronización](../concurrencia-y-sincronizacion/#espera-activa-frente-a-bloqueo):
+
+```mermaid
+sequenceDiagram
+    participant CPU as CPU · manejador
+    participant C as Controlador del dispositivo
+    CPU->>C: escribe la orden en el registro «orden»
+    loop sondeo
+        CPU->>C: consulta el registro «estado»
+        C-->>CPU: ¿operación completada?
+    end
+    CPU->>C: lee el registro «datos» y lo copia a memoria
+```
+
+**Problema**: mientras espera, la CPU no hace nada útil. Con un teclado pasaría casi todo el tiempo dando vueltas en el bucle.
+
+### Interrupciones
+
+La CPU programa el controlador y se dedica a otra cosa (normalmente, a otro proceso). Cuando el controlador termina, activa una **interrupción** («timbre»): la CPU suspende lo que estaba haciendo y ejecuta la **rutina de servicio** del manejador, que copia el dato y despierta al proceso que lo esperaba. Es la **E/S dirigida por interrupciones**.
+
+```mermaid
+sequenceDiagram
+    participant P as Proceso
+    participant CPU as CPU
+    participant C as Controlador
+    P->>CPU: solicita E/S
+    CPU->>C: encarga la operación
+    CPU->>CPU: ejecuta otro proceso
+    C-->>CPU: timbre · interrupción de fin
+    CPU-->>P: datos disponibles · vuelve a listo
+```
+
+*En lugar de consultar continuamente al dispositivo, el procesador recibe una interrupción cuando la operación de E/S ha concluido.*
+
+- Cómo guarda la CPU el contexto y salta a la rutina se ve en [espacio de usuario y espacio de kernel](../espacio-usuario-espacio-kernel/).
+- Para saber **qué dispositivo** ha interrumpido, cada uno tiene un número (IRQ) que indexa una tabla con la dirección de su rutina: **interrupciones vectorizadas**. Sin esa tabla, el gestor de interrupciones tendría que preguntar (sondear) a cada controlador.
+
+**Problema**: la CPU sigue copiando los datos uno a uno, con una interrupción por dato. Vale para un teclado, pero un disco generaría millones de interrupciones por segundo.
+
+### DMA
+
+Un controlador de **DMA** (*Direct Memory Access*, acceso directo a memoria) copia el bloque completo entre el dispositivo y la memoria sin pasar por la CPU. La CPU solo indica origen, destino y tamaño, y recibe **una interrupción al final** del bloque, no una por dato. Mientras tanto sigue ejecutando otros procesos.
 
 ```mermaid
 sequenceDiagram
@@ -65,195 +124,175 @@ sequenceDiagram
 
 *El acceso directo a memoria (DMA) permite transferir bloques sin que la CPU tenga que copiar personalmente cada palabra.*
 
-**Estrategias de acceso**: E/S directa con sondeo · E/S por DMA con sondeo *(muy poco frecuente)* · E/S directa con interrupciones · E/S por DMA con interrupciones.
+### Resumen
 
-### E/S con sondeo (lectura)
+| | Aviso por **sondeo** | Aviso por **interrupción** |
+|---|---|---|
+| **Copia la CPU** (E/S programada) | Lo más simple; la CPU queda ocupada esperando. Microcontroladores sencillos. | Una interrupción por dato. Teclado, ratón. |
+| **Copia el DMA** | Muy poco frecuente. | Una interrupción por bloque. Discos, red. |
 
-El proceso solicita la lectura y **espera activamente** consultando el registro de estado del controlador hasta que el dato está disponible:
+### ¿Cuándo compensa el sondeo?
 
-```mermaid
-sequenceDiagram
-    participant P as Proceso / función leer
-    participant C as Controlador del dispositivo
-    P->>C: 1-2. leer(dispositivo, …): programa la operación
-    P->>C: 3. escribe la orden en el registro «Operación»
-    loop 4. sondeo
-        P->>C: consulta el registro «Estado»
-        C-->>P: ¿operación completada?
-    end
-    C-->>P: 5. lee el registro «Datos» y lo copia a memoria
-```
+Atender una interrupción no es gratis: hay que guardar el contexto, ejecutar la rutina de servicio, y el proceso despertado aún tiene que esperar su turno en la cola de listos. En total, unos pocos microsegundos.
 
-### E/S dirigida por interrupciones
+- **Dispositivo lento** comparado con ese coste (teclado: cientos de milisegundos entre pulsaciones; disco duro: milisegundos): las interrupciones ganan de lejos, sondear sería tirar casi toda la CPU.
+- **Dispositivo muy rápido** (SSD NVMe: unos 10 µs por lectura; red de 100 Gb/s: millones de paquetes por segundo): el coste de las interrupciones se acerca al de la propia operación y **sondear vuelve a compensar**. Linux, cuando hay mucho tráfico de red, desactiva las interrupciones de la tarjeta y la sondea mientras queden paquetes (NAPI); los SSD NVMe también admiten lecturas por sondeo.
+- Lo habitual hoy es un esquema **híbrido**: una interrupción despierta al manejador y, mientras quede trabajo, sondea.
 
-El proceso se **bloquea** tras lanzar la operación; el controlador avisa con una interrupción al terminar:
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso
-    participant D as Manejador (lectura/escritura)
-    participant T as Tabla de estado de dispositivo
-    participant MI as Manejador de interrupción
-    participant C as Controlador
-    P->>D: 1-3. leer(dispositivo, …)
-    D->>T: 4. registra la operación pendiente
-    D->>C: 5. programa Operación / Estado / Datos
-    Note over P: el proceso queda BLOQUEADO, la CPU ejecuta otro proceso
-    C-->>MI: 6. interrupción al completar
-    MI->>T: 7. actualiza la tabla de estado
-    MI->>D: 8a-8b. copia los datos
-    D-->>P: 9. proceso LISTO (datos disponibles)
-```
-
-En lugar de consultar continuamente al dispositivo, el procesador puede dedicarse a otro proceso y recibir una interrupción («timbre») cuando la operación de E/S ha concluido:
-
-```mermaid
-sequenceDiagram
-    participant P as Proceso
-    participant CPU as CPU
-    participant D as Dispositivo
-    P->>CPU: solicita E/S
-    CPU->>D: encarga la operación
-    CPU->>CPU: ejecuta otro proceso
-    D-->>CPU: timbre · interrupción de fin
-    CPU-->>P: datos disponibles · vuelve a listo
-```
-
-*En lugar de consultar continuamente al dispositivo, el procesador recibe una interrupción cuando la operación de E/S ha concluido.*
-
-### Gestor general de interrupciones
-
-1. Guarda el **contexto** del proceso en ejecución (contenido de los registros del procesador).
-2. Determina el **tipo** de interrupción (sondeo o interrupciones vectorizadas).
-3. Llama a la **rutina de servicio de interrupción** específica.
-
-### Modelo de tiempos
-
-| Componente | Significado |
-|-----------|-------------|
-| `tiempo_cómputo` | tiempo invertido en el cómputo |
-| `tiempo_dispositivo` | tiempo invertido en las operaciones de E/S |
-| `tiempo_sobrecarga` | tiempo que el proceso invierte en determinar cuándo se completa cada operación de E/S |
-| `tiempo_sondeo` | tiempo que el proceso invierte en determinar la finalización de la E/S **con sondeo** |
-| `tiempo_manejador` | tiempo acumulado en ejecutar el manejador de interrupciones y las rutinas de manejo del dispositivo |
-| `tiempo_listo` | tiempo que el proceso acumula esperando para usar la CPU al concluir la E/S |
+`/proc/interrupts` muestra cuántas interrupciones ha atendido cada CPU en cada línea (IRQ) y qué manejador la usa (salida recortada):
 
 ```text
-tiempo_total = tiempo_cómputo + tiempo_dispositivo + tiempo_sobrecarga
-
-E/S con sondeo:          tiempo_sobrecarga = tiempo_sondeo
-E/S con interrupciones:  tiempo_sobrecarga = tiempo_manejador + tiempo_listo
-
-   tiempo_sondeo  >  tiempo_manejador + tiempo_listo
+$ cat /proc/interrupts
+            CPU0       CPU1       CPU2       CPU3
+   1:          0          0       2158          0  IR-IO-APIC    1-edge       i8042
+ 125:          0     184342          0          0  IR-PCI-MSI    327680-edge  xhci_hcd
+ 127:      51236          0          0          0  IR-PCI-MSI    1048577-edge nvme0q1
+ 128:          0      48877          0          0  IR-PCI-MSI    1048578-edge nvme0q2
+ 129:          0          0      50310          0  IR-PCI-MSI    1048579-edge nvme0q3
+ 130:          0          0          0      47702  IR-PCI-MSI    1048580-edge nvme0q4
+ LOC:    4523109    4187322    4398001    4012877  Local timer interrupts
 ```
 
-Con varios hilos de ejecución y solapamiento mediante interrupciones, el `tiempo_total` deja de ser la suma de los `tiempo_total` individuales: mientras un hilo hace E/S (`tiempo_dispositivo`), otro computa (`tiempo_cómputo`). **Al emplear interrupciones se reduce el tiempo medio de ejecución de cada proceso.**
+Con `watch -n 1 cat /proc/interrupts`, al teclear o mover el ratón sube el contador de `i8042` (teclado de portátil) o de `xhci_hcd` (controlador USB). `LOC` son las interrupciones del reloj de cada CPU, que usa el planificador.
 
-## Almacenamiento intermedio
+## Capas de software de E/S
 
-Un **búfer** es un almacenamiento en memoria principal que se emplea en la gestión de dispositivos de E/S para **mantener su ocupación** cuando un proceso no solicita operaciones de E/S, de modo que se **solapan** el funcionamiento del dispositivo y de la CPU. Permite realizar tareas en paralelo y reducir los tiempos de espera.
+<img src="img/capas-es.svg" width="420" alt="Pirámide de capas de la E/S: de abajo arriba, controladores y manejadores de interrupciones, manejadores de dispositivos, rutinas del sistema operativo y programas de usuario">
 
-- **Búfer de entrada**: almacena en MP los datos leídos del dispositivo de entrada.
-- **Búfer de salida**: almacena en MP los datos a volcar sobre un dispositivo de salida.
-- Los **búferes hardware** están en el **controlador** del dispositivo (registros electrónicos).
-- Los sistemas de **doble búfer** disponen de búferes **hardware** en el controlador y de búferes **software** en el manejador del dispositivo.
+- El **manejador** oculta los detalles de un controlador concreto y ofrece al resto del sistema operativo una **interfaz común**, la misma para todos los dispositivos: `open`, `read`, `write`, `lseek`, `ioctl` (operaciones propias de cada dispositivo: velocidad del puerto serie, expulsar un disco…) y `close`.
+- Por encima, el sistema operativo hace lo que es **independiente del dispositivo**: nombres, permisos, búferes, caché y tratamiento de errores.
+- Los programas de usuario usan siempre las mismas llamadas al sistema, sea cual sea el dispositivo.
+
+### En UNIX, todo es un fichero
+
+- Cada dispositivo aparece como un **fichero especial** en `/dev`: se abre, se lee y se escribe con las mismas llamadas que un fichero normal. También hay dispositivos sin hardware detrás, como `/dev/null` o `/dev/urandom` (ver [pipes y fifos](../ipc-pipes-y-fifos/)).
+- Cada fichero de dispositivo tiene:
+  - **clase**: de bloque (`b`) o de carácter (`c`).
+  - **número mayor** (*major number*): identifica el manejador, es decir, la familia de dispositivos.
+  - **número menor** (*minor number*): se le pasa al manejador para distinguir entre varios dispositivos semejantes (cada disco, cada partición, cada terminal).
+
+```text
+$ ls -l /dev/null /dev/nvme0n1 /dev/sda /dev/sda1 /dev/tty1
+crw-rw-rw- 1 root root   1, 3 Oct 23 09:12 /dev/null
+brw-rw---- 1 root disk 259, 0 Oct 23 09:12 /dev/nvme0n1
+brw-rw---- 1 root disk   8, 0 Oct 23 09:12 /dev/sda
+brw-rw---- 1 root disk   8, 1 Oct 23 09:12 /dev/sda1
+crw--w---- 1 root tty    4, 1 Oct 23 09:12 /dev/tty1
+```
+
+La primera letra es la clase, y donde un fichero normal muestra el tamaño aparecen `mayor, menor`. `/proc/devices` relaciona cada número mayor con su manejador (salida recortada):
+
+```text
+$ cat /proc/devices
+Character devices:
+  1 mem
+  4 tty
+Block devices:
+  8 sd
+259 blkext
+```
+
+## La E/S vista desde el proceso
+
+Todo lo anterior ocurre dentro del kernel: el proceso no ve interrupciones ni DMA, solo llamadas al sistema. Lo que sí elige es **qué hace mientras espera** a que acabe la E/S:
+
+| Modo | `read()` sin datos disponibles | Mientras tanto, el proceso… | Cómo |
+|------|--------------------------------|-----------------------------|------|
+| **Bloqueante** | espera | pasa a **en espera** y la CPU ejecuta otro proceso | por defecto |
+| **No bloqueante** | devuelve `-1` con `errno = EAGAIN` | sigue y lo vuelve a intentar más tarde | `O_NONBLOCK` |
+| **Multiplexada** | espera a **varios** descriptores a la vez | despierta en cuanto uno tiene datos | `select` |
+| **Asíncrona** | la operación queda en marcha | sigue trabajando y luego comprueba si ha terminado | `aio_read`, `io_uring` |
+
+- **Bloqueante** es lo normal y lo más sencillo de programar. Cuando la interrupción indica que la operación ha terminado, el proceso pasa a **listo**. La CPU y el dispositivo trabajan a la vez, pero **para procesos distintos**: mientras uno espera al disco, otro calcula.
+- **No bloqueante** es sondeo, pero a nivel de proceso: si se reintenta en un bucle, gasta CPU igual que la espera activa. `O_NONBLOCK` y `select` se ven en [pipes y fifos](../ipc-pipes-y-fifos/).
+- **Asíncrona**: para que un mismo proceso solape su cálculo con su E/S, el sistema operativo debe permitirle **iniciar** una operación y **comprobar** más tarde si ha concluido (o recibir un aviso). Una alternativa más sencilla es usar dos [hilos](../procesos-e-hilos/): uno hace la E/S bloqueante mientras el otro calcula.
+
+### Búferes
+
+Un **búfer** es una zona de memoria donde se acumulan datos entre el dispositivo y el proceso, para que ninguno tenga que esperar al otro en cada dato:
+
+- **Búfer de entrada**: el sistema operativo lee por adelantado (por ejemplo, el bloque siguiente de un fichero) y, cuando el proceso lo pide, ya está en memoria.
+- **Búfer de salida**: `write()` copia los datos al búfer y vuelve; el sistema operativo los vuelca al dispositivo después.
+- Hay búferes **hardware**, en el controlador, y **software**, en el kernel.
+- **Doble búfer**: con dos búferes que se alternan, mientras el dispositivo llena uno el proceso vacía el otro.
 
 <img src="img/doble-bufer.svg" width="520" alt="Doble búfer: mientras el dispositivo llena un búfer, el proceso vacía el otro; los papeles se alternan en el instante siguiente">
 
-## Tipos de discos duros
+La **caché de bloques**, que guarda en memoria los bloques ya leídos para no volver a leerlos del disco, se ve en [sistemas de ficheros](../sistemas-de-ficheros/#caché-de-bloques).
 
-| Tipo | Descripción |
-|------|-------------|
-| **HDD** (*Hard Disk Drive*), discos magnéticos | Dispositivos mecánicos de superficies giratorias; gran capacidad a coste reducido, pero más lentos y frágiles. |
-| **SSD** (*Solid State Drive*), estado sólido | Usan chips de memoria flash; más rápidos, duraderos, silenciosos y de menor consumo, pero más caros. La interfaz **NVMe** es un SSD ultrarrápido para conexión directa a la placa base. |
-| **SSHD**, híbridos | Combinan ambas tecnologías; sus prestaciones dependen de la cantidad de memoria flash, dedicada a los datos de acceso más frecuente. |
+## Recorrido completo de un `read()`
 
-**Tipos de conexión**: **SATA** (discos internos) · **NVMe** (SSD de alta velocidad, placa base) · **USB** (discos externos) · **tarjetas SD** (externos).
+Lo que ocurre al leer de un fichero en disco, juntando todo lo anterior:
 
-## Planificación de discos
+```mermaid
+sequenceDiagram
+    participant P as Proceso
+    participant K as Kernel · sistema de ficheros
+    participant M as Manejador del disco
+    participant C as Controlador del disco · DMA
+    P->>K: read(fd, buf, n) · llamada al sistema
+    alt el bloque está en la caché
+        K-->>P: copia a buf y read() vuelve enseguida
+    else no está
+        K->>M: pide el bloque
+        M->>C: apunta la petición y programa los registros
+        Note over P: en espera · la CPU ejecuta otros procesos
+        C->>C: lee el bloque y lo copia a memoria por DMA
+        C-->>M: interrupción de fin
+        M-->>K: bloque en la caché · el proceso pasa a listo
+        K-->>P: cuando vuelve a tener CPU, copia a buf y read() devuelve n
+    end
+```
 
-### Geometría del disco
+*Un `read()` de disco combina todo el tema: llamada al sistema, caché, manejador, DMA, interrupción y cambio de estado del proceso.*
 
-En un disco magnético, el tiempo de acceso depende del movimiento del cabezal (unido al brazo actuador) y de la rotación de los platos necesaria para alcanzar el sector.
+## Discos
+
+| Tipo | Cómo funciona | Ventajas | Inconvenientes |
+|------|---------------|----------|----------------|
+| **HDD** (*Hard Disk Drive*) | Platos magnéticos que giran y cabezales en un brazo móvil | Barato por GB, gran capacidad | Lento en accesos aleatorios (milisegundos), frágil |
+| **SSD** (*Solid State Drive*) | Chips de memoria flash, sin partes móviles | Rápido (microsegundos), silencioso, poco consumo | Más caro por GB; cada celda aguanta un número limitado de escrituras |
+
+Los SSD se conectan por **SATA** (como los discos duros, hasta unos 550 MB/s) o por **NVMe**, el protocolo para conectarlos directamente al bus PCIe (varios GB/s).
+
+`lsblk` lista los discos; la columna `ROTA` indica si son rotacionales (1 = HDD, 0 = SSD):
+
+```text
+$ lsblk -d -o NAME,ROTA,SIZE,TYPE
+NAME    ROTA   SIZE TYPE
+sda        1   1.8T disk
+nvme0n1    0 476.9G disk
+```
+
+### Disco duro: el tiempo se va en mover piezas
 
 <img src="img/disco-duro-abierto.jpg" width="460" alt="Disco duro Seagate abierto, con platos, brazo actuador y cabezales visibles">
 
 <sub>Fuente: © Raimond Spekking / CC BY-SA 4.0, vía Wikimedia Commons. [Ficha y licencia](https://commons.wikimedia.org/wiki/File:Seagate_ST9300AG_-_opened._Platter_and_head_mechanics-9324.jpg).</sub>
 
-- Los discos magnéticos se organizan en **placas** de discos físicos, cada uno con una o dos **superficies** de almacenamiento.
-- Cada superficie se divide lógicamente en **sectores** (porciones angulares del círculo, del mismo tamaño en bytes) y en **pistas** (anillos concéntricos).
-- La intersección de una pista con un sector es el **sector de pista**.
-- Para leer/escribir se precisa: que el disco esté **girando**, **posicionar la cabeza** en la pista seleccionada, **posicionarla sobre el sector** seleccionado y **leer/escribir** los datos.
-- Las cabezas de lectura/escritura están unidas a un **mismo brazo** y se mueven en paralelo (un único motor). El conjunto de pistas sobre el que se sitúan todas las cabezas para cada superficie —al que se accede **sin mover las cabezas**— se denomina **cilindro**.
-- El número de bloques (registros físicos) del disco viene dado por el número de pistas, sectores y superficies.
-
-<img src="img/geometria-disco.svg" width="420" alt="Superficie de un disco dividida en pistas concéntricas y sectores angulares">
-
-### Tiempo de acceso a disco
-
 ```text
-t_total = t_posicionamiento + t_rotación + t_transferencia
+t_acceso = t_búsqueda + t_rotación + t_transferencia
 ```
 
-- **Tiempo de búsqueda o posicionamiento**: tiempo que tarda la cabeza en posicionarse sobre la pista de acceso.
-- **Retardo de rotación o latencia**: tiempo desde que la cabeza está en la pista hasta que el bloque de datos pasa por debajo de la cabeza.
-- **Tiempo de transferencia**: tiempo en transferir los datos entre el disco y la memoria.
+- **Búsqueda**: mover el brazo hasta la pista (4–10 ms).
+- **Rotación**: esperar a que el sector pase bajo el cabezal (a 7200 rpm, media vuelta son unos 4 ms).
+- **Transferencia**: leer los datos (4 KB a 200 MB/s, unos 0,02 ms).
 
-### Algoritmos de planificación
+En un acceso aleatorio casi todo el tiempo es mecánico: leer bloques seguidos es cientos de veces más rápido que saltar de uno a otro. Por eso los sistemas operativos **reordenaban las peticiones** para que el brazo se moviera lo menos posible (algoritmos FCFS, SSTF, SCAN, LOOK…).
 
-Para todos los ejemplos, cola de **peticiones: 76, 124, 17, 269, 201, 29, 137, 12** con la cabeza inicialmente en la pista **76**.
+### SSD: lo que cambia
 
-#### FCFS — *first come, first served*
+- **No hay brazo ni giro**: cualquier bloque tarda lo mismo (10–100 µs), así que reordenar peticiones apenas aporta. Linux no usa planificador para los NVMe (entre corchetes, el activo; en un disco duro suele ser `mq-deadline` o `bfq`):
 
-Las solicitudes se sirven en el **orden de llegada** al manejador. Recorrido total: **880** pistas.
+```text
+$ cat /sys/block/nvme0n1/queue/scheduler
+[none] mq-deadline kyber bfq
+$ cat /sys/block/sda/queue/scheduler
+none [mq-deadline] kyber bfq
+```
 
-<img src="img/planificacion-disco-fcfs.svg" width="480" alt="Movimiento de la cabeza con FCFS: 76, 124, 17, 269, 201, 29, 137, 12">
+- **No se puede sobrescribir en el sitio**: la memoria flash hay que **borrarla por bloques grandes** (cientos de KB) antes de volver a escribir, y cada bloque aguanta un número limitado de borrados. El propio controlador del SSD lo oculta: traduce los bloques lógicos a físicos y reparte las escrituras para que todas las celdas se gasten por igual (**nivelación del desgaste**, *wear leveling*).
+- **TRIM**: al borrar un fichero, el sistema de ficheros avisa al SSD de qué bloques ya no se usan, para que pueda borrarlos con antelación y no los copie inútilmente. En Linux lo hace `fstrim` (normalmente una vez por semana) o la opción de montaje `discard`.
+- **Varias colas**: NVMe admite miles de colas de peticiones. Linux crea una por núcleo, así cada núcleo envía sus peticiones sin competir con los demás por un cerrojo (son las `nvme0q1`…`nvme0q4` de `/proc/interrupts`, cada una atendida por una CPU).
 
-#### SSTF — *shortest seek time first*
-
-Se sirven antes las solicitudes que requieren un **menor tiempo de búsqueda**. Minimiza el tiempo de búsqueda, pero puede producir **inanición** (*starvation*). Orden de servicio: `76 → 29 → 17 → 12 → 124 → 137 → 201 → 269`. Recorrido total: **321** pistas.
-
-<img src="img/planificacion-disco-sstf.svg" width="480" alt="Movimiento de la cabeza con SSTF: 76, 29, 17, 12, 124, 137, 201, 269">
-
-#### Barrido (SCAN) e Inspección (LOOK)
-
-- **SCAN**: la cabeza comienza en la pista 0 y **barre todas las pistas** de abajo arriba y de arriba abajo, atendiendo las peticiones conforme alcanza las pistas deseadas. Al alcanzar la **última pista** invierte la dirección.
-- **LOOK**: como SCAN, pero al alcanzar la **pista más alta de las seleccionadas** (no la última física) invierte la dirección.
-- **Barrido/inspección circular (C‑SCAN / C‑LOOK)**: el barrido se produce **siempre en el mismo sentido**, de forma circular; se reducen los tiempos de espera al evitar que la cabeza vaya y regrese hasta alcanzar la posición deseada.
-
-Recorridos totales para la cola del ejemplo: **LOOK ≈ 512** · **SCAN ≈ 512** (con vuelta a extremo) · **C‑LOOK** y **C‑SCAN** reducen la espera media al recorrer siempre en el mismo sentido.
-
-SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor que recoge pasajeros según sube y no cambia de sentido hasta llegar al extremo:
-
-<img src="img/planificacion-disco-scan.svg" width="480" alt="Movimiento de la cabeza con SCAN en forma de ascensor: 10, 22, 35, 61, 88, extremo, invierte sentido, 74, 40">
-
-*SCAN reduce movimientos atendiendo las solicitudes de disco mientras la cabeza avanza en una dirección, de forma parecida a un ascensor.*
-
-## Caché de disco
-
-Es un conjunto de **búferes de memoria**, cada uno del tamaño de un bloque de disco. Cuando un proceso quiere acceder a un bloque, el **sistema de ficheros** (parte del SO) busca primero una copia en la caché:
-
-- Si la **localiza**, devuelve al proceso el número del búfer correspondiente.
-- Si **no**, busca un búfer desocupado o, si no hay libres, selecciona el que lleva **más tiempo sin usarse** (LRU) y lo sustituye por el bloque pedido, leído del disco. El búfer reemplazado se **graba a disco** antes si es necesario.
-
-Como la memoria es mucho más rápida que el disco y los bloques más frecuentes se leen (salvo la primera vez) de memoria principal, se **reduce el tiempo de E/S**.
-
-## Entrada/salida en UNIX
-
-<img src="img/es-unix.svg" width="420" alt="Capas de E/S en UNIX: programas y aplicaciones, herramientas del sistema, kernel y hardware">
-
-- **Dispositivos orientados a bloques**: se pueden **direccionar** (el programador puede leer o escribir cualquier bloque tras una operación de posicionamiento); emplean bloques de **tamaño fijo** (512 o 1024 bytes). Ejemplos: discos duros, la memoria, discos compactos, unidades de cinta.
-- **Dispositivos orientados a caracteres**: trabajan con secuencias de bytes sin agrupación; **no son direccionables**; funcionan byte a byte. Ejemplos: teclado, pantalla, impresora.
-- UNIX emplea programas especiales en C, los **manejadores** (*drivers*), para atender a cada familia de dispositivos. Los procesos se comunican con los dispositivos mediante llamadas a su manejador, que **aparece como si fuera un archivo** en el que se lee o escribe (gran homogeneidad).
-- Cada dispositivo se estructura con **descriptores**:
-  - **número mayor** (*major number*): asigna el manejador, correspondiente a una familia de dispositivos.
-  - **número menor** (*minor number*): pasa al manejador como argumento y le sirve para acceder a uno de varios dispositivos físicos semejantes.
-  - **clase**: de bloque o de caracteres.
-- Las rutinas de E/S son **independientes de los dispositivos** y de los tipos de acceso: no hay distinción entre acceso aleatorio y secuencial, ni un tamaño de registro lógico impuesto.
-- El sistema mantiene una lista de **búferes** asignados a los dispositivos de bloques; el *kernel* los usa para reducir el tráfico de E/S. Cuando un programa solicita una transferencia, se busca primero en los búferes internos por si el bloque ya está en memoria (por una lectura anterior); si es así, no se realiza la operación física.
-
----
-
-## Material gráfico
-
-Las figuras de este tema están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo): las fotos de discos HDD/SSD/NVMe y de conectores SATA/USB/SD y el render 3D del disco con pistas y sectores.
+Más detalle (modelo de tiempos del sondeo frente a las interrupciones, SSHD y tipos de conexión, geometría del disco y algoritmos de planificación de disco): [`material_adicional.md`](material_adicional.md).

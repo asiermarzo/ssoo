@@ -1,141 +1,151 @@
-# Sistema de ficheros
+# Sistemas de ficheros
 
-Abstracción del sistema de ficheros · Conceptos de fichero y directorio · Nombrado del fichero, propietarios y permisos · Estructura y almacenamiento del fichero · Seguridad en los sistemas de ficheros · Sistemas de ficheros.
+## Ficheros y directorios
 
----
+- Para el **usuario**, un fichero es un conjunto de datos con nombre que se conserva aunque se apague el ordenador.
+- Para el **sistema operativo**, es un **tipo abstracto de datos** al que los procesos acceden con **llamadas al sistema**. El sistema de ficheros oculta los detalles del dispositivo (dónde está cada bloque, cómo se lee) y añade lo que el hardware no da: **nombres**, **protección** y **compartición**.
+- En UNIX un fichero es solo una **secuencia de bytes**: el sistema operativo no impone ninguna estructura; la interpretan los programas.
 
-## Abstracción del sistema de ficheros
+### Tipos de fichero
 
-- Para el **usuario**, un archivo es un conjunto de datos con un nombre asociado que reside en un dispositivo de almacenamiento permanente.
-- Para el **sistema operativo**, un archivo es un **tipo abstracto de datos** que permite gestionar el acceso de los procesos a los dispositivos de almacenamiento permanente.
-- El archivo es la **unidad de almacenamiento** que el SO ofrece a los procesos de usuario.
-- El acceso y la manipulación se realizan mediante **llamadas al sistema**. El SO puede imponer el formato de acceso a los datos (VMS, Macintosh) o no (Linux, Unix, Windows). Los sistemas de archivos hacen **transparente** el acceso a los dispositivos.
+La primera letra de `ls -l` indica el tipo:
 
-### Tipos de archivos
+| Letra | Tipo | Ejemplo |
+|-------|------|---------|
+| `-` | fichero regular | `notas.txt`, `/usr/bin/ls` |
+| `d` | directorio | `/home` |
+| `l` | enlace simbólico | `/bin → usr/bin` |
+| `c` | dispositivo de carácter | `/dev/tty1`, `/dev/null` |
+| `b` | dispositivo de bloque | `/dev/sda` |
+| `p` | FIFO (pipe con nombre) | creada con `mkfifo` |
+| `s` | socket local | `/run/systemd/notify` |
 
-- Archivos **regulares**.
-- **Directorios**.
-- Archivos **especiales de dispositivo**: `stdin`, `stdout`, `stderr`.
-- **Tuberías** (*pipes*) con nombre.
-- **Enlaces simbólicos**.
+Los dispositivos se ven en [dispositivos de E/S](../dispositivos-de-es/) y las FIFO en [pipes y fifos](../ipc-pipes-y-fifos/). `stdin`, `stdout` y `stderr` no son ficheros especiales, sino los descriptores 0, 1 y 2 del proceso, que pueden apuntar a un terminal, a un fichero o a una pipe.
 
-Un **dispositivo RAID** es un conjunto de discos duros que actúan como una única unidad. Una **partición** es un grupo contiguo de cilindros que forman una única unidad sobre la que se sitúa un sistema de ficheros; las particiones permiten mejorar el acceso a disco, limitar el crecimiento de un sistema de ficheros y disponer de distintos sistemas operativos.
+### Directorios y rutas
 
-### Traducción flujo‑bloque
+- Un **directorio** es un fichero especial que guarda una lista de nombres (cómo, se ve más adelante).
+- Los directorios forman un **árbol** cuya raíz es `/`.
+- Una ruta **absoluta** empieza en la raíz (`/home/ana/notas.txt`); una **relativa** empieza en el **directorio de trabajo** del proceso (`notas.txt`, `../ana/notas.txt`), que se hereda con `fork`.
+- Todo directorio contiene `.` (él mismo) y `..` (su directorio padre).
 
-Un **sistema de archivos** es la estructura de datos que permite almacenar archivos en los bloques de bytes direccionables linealmente de los dispositivos. Vincula los bloques del almacenamiento para el **empaquetado** (*marshalling*) de los archivos; el **desempaquetado** (*unmarshalling*) los descompone en bloques. A este proceso se le denomina **traducción flujo‑bloque**.
+Directorios estándar en Linux:
 
-<img src="img/traduccion-flujo-bloque.svg" width="520" alt="Traducción flujo-bloque entre el flujo de bytes del archivo y los bloques del dispositivo de almacenamiento">
+| Directorio | Contenido |
+|------------|-----------|
+| `/etc` | configuración del sistema |
+| `/home` | directorios personales de los usuarios |
+| `/usr` (`/usr/bin`, `/usr/lib`) | programas y bibliotecas instalados |
+| `/var` | datos que cambian: registros (`/var/log`), colas, cachés |
+| `/tmp` | ficheros temporales |
+| `/dev` | ficheros de dispositivo |
+| `/proc`, `/sys` | información del kernel y de los procesos (no están en ningún disco) |
+| `/boot` | kernel y ficheros de arranque |
+| `/mnt`, `/media` | puntos de montaje |
 
-- **Bajo nivel**: el SO solo provee traducción **flujo‑bloque**; la estructuración de los datos recae en las aplicaciones.
-- **Alto nivel / estructurado**: el SO provee traducción **registro‑flujo**; requiere estructuras de datos específicas para el almacenamiento.
+### Particiones y montaje
 
-<img src="img/traduccion-registro-flujo-bloque.svg" width="620" alt="Cadena de traducción registro-flujo-bloque: de registros a flujo y de flujo a bloques">
+- Un disco se divide en **particiones**, rangos contiguos de bloques descritos en una tabla al principio del disco (**GPT**, o **MBR** en los antiguos). Cada partición lleva su propio sistema de ficheros.
+- Aunque haya varios discos y particiones, el usuario ve **un único árbol**: cada sistema de ficheros se **monta** sobre un directorio del árbol, su **punto de montaje**.
+- `mount /dev/sda1 /mnt` monta y `umount /mnt` desmonta; `/etc/fstab` indica qué se monta al arrancar. Antes de extraer un disco hay que desmontarlo, para que se escriba lo que quede en la [caché](#caché-de-bloques).
+- Para consultar: `df -h` (espacio de cada sistema montado), `findmnt` (árbol de montajes), `lsblk -f` (particiones y su tipo de sistema de ficheros).
 
-## Conceptos de fichero y directorio
+```text
+$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2  468G  121G  324G  28% /
+/dev/nvme0n1p1  511M  6.1M  505M   2% /boot/efi
+tmpfs           7.8G  2.1M  7.8G   1% /tmp
+/dev/sda1       1.8T  910G  837G  53% /media/alumno/datos
+```
 
-El sistema de archivos es un **servicio** para los usuarios: acceder a los dispositivos es incómodo, requiere conocer detalles físicos, depende de direcciones físicas (no seguro) y, a nivel físico, el usuario no tiene restricciones.
+## Usar ficheros desde un programa
 
-**Objetivos**: proporcionar mecanismos de **nombrado y localización** de datos no volátiles; ofrecer **primitivas de acceso** cómodas e independientes de los dispositivos; proporcionar **protección y seguridad**.
+| Llamada | Para qué |
+|---------|----------|
+| `open` / `close` | abrir un fichero (devuelve un descriptor) y cerrarlo |
+| `read` / `write` | leer y escribir desde la posición actual, que avanza |
+| `lseek` | mover la posición |
+| `stat` / `fstat` | leer los metadatos (tamaño, permisos, tiempos…) |
+| `unlink` / `rename` | borrar un nombre / renombrar |
+| `link` / `symlink` | crear enlaces duros y simbólicos |
+| `mkdir` / `rmdir` | crear y borrar directorios |
+| `opendir` / `readdir` | recorrer un directorio |
+| `chmod` / `chown` | cambiar permisos y propietario |
+| `fsync` | forzar la escritura en el disco |
 
-**Funciones**: fiabilidad (correcto almacenamiento y recuperación) · almacenamiento **permanente** y **estructurado** · privacidad (solo usuarios autorizados) · abstracción de los dispositivos físicos · accesibilidad mediante llamadas al sistema o librerías · **compartición** (acceso concurrente de usuarios autorizados).
+Su uso se practica en [entrada y salida: consola, ficheros, file descriptors](../../PRACTICA/entrada-salida-y-ficheros/).
 
-### Asignación de bloques
+### Tablas de ficheros abiertos
 
-El *driver* del disco permite ver el disco como una secuencia numerada de bloques de tamaño fijo (**clusters**). La asignación se hace buscando **tasa de transferencia elevada** y **minimizar la fragmentación**.
+Un descriptor es solo un número; detrás hay tres tablas del kernel:
 
-**Asignación de bloques adyacentes (contigua):**
-
-- Asigna a un fichero tantos bloques **consecutivos** como necesite. Solo hay que guardar la posición del primer bloque y el número de bloques.
-- Sencilla, fácil de implementar y con buen rendimiento (no hay saltos de bloques en la lectura).
-- **Desventajas**: se desconoce el tamaño del fichero al crearlo; si crece por encima del espacio asignado, hay que **reubicarlo** si no hay bloques consecutivos; el disco se fragmenta y requiere **compactación** periódica costosa.
-
-**Asignación de bloques no adyacentes:**
-
-- Asigna tantos bloques como necesite, aunque **no** estén consecutivos. Precisa controlar los bloques libres/ocupados y qué bloques pertenecen a cada fichero.
-- Gran penalización si hay que realizar muchos **posicionamientos** de la cabeza (saltos entre bloques).
-- **Tamaño de bloque grande**: reduce el tiempo de posicionamiento pero aumenta la fragmentación del último bloque; no útil en ficheros pequeños.
-- **Tamaño de bloque reducido**: más saltos y más tiempo de posicionamiento, pero menos fragmentación del último bloque; no útil en ficheros grandes.
-- Si se conoce el tamaño medio de los ficheros se puede fijar el tamaño de bloque. Tamaños usados: **1K, 2K, 4K, 8K**.
-
-Estructuras para gestionar los bloques no adyacentes:
-
-| Estructura | Descripción |
-|-----------|-------------|
-| **Mapa de bits** | Un bit por bloque: ocupado o libre. |
-| **Lista de bloques libres** | Lista de punteros a bloques libres. Un bloque de disco de 1 K puede contener 512 números de bloque de 16 bits. |
-| **Listas de archivo** | Las primeras palabras de cada bloque contienen la dirección del siguiente bloque. Fácil de implementar; ineficiente en acceso directo; mezcla información de control y datos. |
-| **Nodos índice** | Cada archivo tiene una tabla que describe sus propiedades y la ubicación de sus bloques. La tabla puede quedarse pequeña y requerir distintos niveles de direccionamiento. |
-
-Como plazas de aparcamiento: la asignación **contigua** ocupa plazas consecutivas (favorece el acceso rápido); la **enlazada** deja que cada plaza señale la siguiente (no exige continuidad); la **indexada** concentra todas las referencias en una estructura específica.
-
-<img src="img/asignacion-bloques-aparcamiento.svg" width="620" alt="Comparación de estrategias de asignación de bloques como plazas de aparcamiento: contigua, enlazada e indexada">
-
-*La asignación contigua favorece el acceso rápido; la enlazada evita exigir continuidad; la indexada concentra las referencias en una estructura específica.*
-
-### Directorios
-
-- En muchos casos son un **tipo especial de archivo**. Organizan el acceso a los ficheros y almacenan información de los archivos que agrupan.
-- Evolución: un único directorio → un directorio por usuario (multiusuario) → **estructura arbórea jerárquica** (sistemas actuales).
-- Rutas de acceso: **absolutas** (desde la raíz del sistema de ficheros) o **relativas** (desde el directorio de trabajo indicado en el PCB del proceso).
-
-### Ejemplo: resolución de `/usr/ast/mbox` con nodos‑i
-
-El sistema de ficheros funciona como una biblioteca: el nombre se busca en un catálogo (el directorio), que remite a una ficha (el inodo) con los metadatos y las referencias a los estantes (los bloques) donde están los datos.
+- **Tabla de descriptores**, una por proceso: el descriptor es un índice en ella. Las entradas 0, 1 y 2 son `stdin`, `stdout` y `stderr`.
+- **Tabla de ficheros abiertos**, común a todo el sistema: una entrada por cada `open`, con la **posición** actual, el **modo** de apertura y un **contador** de cuántos descriptores la usan.
+- **Tabla de nodos‑i en memoria**: una copia de los metadatos de cada fichero en uso, aunque lo hayan abierto varios procesos.
 
 ```mermaid
 flowchart LR
-    N(["Nombre solicitado<br/>/apuntes/tema.pdf"]) --> C["Catálogo · directorio<br/>tema.pdf → inodo 481"]
-    C --> I["Ficha · inodo 481<br/>tipo · permisos · tamaño · punteros"]
-    I --> E1[("Estante · bloque 120")]
-    I --> E2[("Estante · bloque 905")]
-    I --> E3[("Estante · bloque 411")]
+    subgraph PA["Padre · descriptores"]
+        A3["3"]
+    end
+    subgraph PH["Hijo tras fork · descriptores"]
+        H3["3"]
+    end
+    subgraph PO["Otro proceso · descriptores"]
+        O3["3"]
+    end
+    subgraph TA["Tabla de ficheros abiertos"]
+        F1["posición 120<br/>O_RDONLY · contador 2"]
+        F2["posición 0<br/>O_RDONLY · contador 1"]
+    end
+    subgraph TI["Nodos-i en memoria"]
+        I1["nodo-i 60<br/>mbox"]
+    end
+    A3 --> F1
+    H3 --> F1
+    O3 --> F2
+    F1 --> I1
+    F2 --> I1
 
-    classDef solicitud fill:#eef2f7,stroke:#444,color:#222;
-    classDef catalogo fill:#fdf3d0,stroke:#a06a1a,color:#222;
-    classDef inodo fill:#cfe2f3,stroke:#2b6f99,color:#222;
-    classDef bloque fill:#d9d9d9,stroke:#555,color:#222;
-
-    class N solicitud;
-    class C catalogo;
-    class I inodo;
-    class E1,E2,E3 bloque;
+    classDef desc fill:#d9ead3,stroke:#4d7a33,color:#000;
+    classDef abierto fill:#fce5a8,stroke:#a06a1a,color:#000;
+    classDef inodo fill:#cfe2f3,stroke:#2b6f99,color:#000;
+    class A3,H3,O3 desc;
+    class F1,F2 abierto;
+    class I1 inodo;
 ```
 
-*El nombre se almacena en el directorio; el inodo conserva los metadatos y las referencias a los bloques que contienen los datos.*
+*Padre e hijo comparten la entrada de la tabla de ficheros abiertos (y la posición); otro proceso que abre el mismo fichero tiene su propia entrada.*
 
-| Paso | Estructura | Contenido relevante | Resultado |
-|------|-----------|---------------------|-----------|
-| 1 | Directorio raíz (bloque de `/`) | `1 .` · `1 ..` · `4 bin` · `7 dev` · `14 lib` · `9 etc` · `6 usr` · `8 tmp` | la búsqueda de `usr` produce el **nodo‑i 6** |
-| 2 | Nodo‑i 6 | modo · tamaño · tiempos · datos en el **bloque 132** | `/usr` está en el bloque 132 |
-| 3 | Bloque 132 (directorio de `/usr`) | `6 .` · `1 ..` · `19 dick` · `30 erik` · `51 jim` · `26 ast` · `45 bal` | `/usr/ast` es el **nodo‑i 26** |
-| 4 | Nodo‑i 26 | modo · tamaño · tiempos · datos en el **bloque 406** | `/usr/ast` está en el bloque 406 |
-| 5 | Bloque 406 (directorio de `/usr/ast`) | `26 .` · `6 ..` · `64 grants` · `92 books` · `60 mbox` · `81 minix` · `17 src` | `/usr/ast/mbox` es el **nodo‑i 60** |
+- Tras `fork`, el hijo copia la tabla de descriptores, pero sus entradas apuntan a las **mismas** entradas de la tabla de ficheros abiertos: padre e hijo **comparten la posición**, y si uno lee, el otro sigue donde lo dejó.
+- Dos `open` del mismo fichero crean dos entradas distintas, cada una con su posición.
+- `dup2(fd, 1)` hace que el descriptor 1 apunte a la misma entrada que `fd`: así redirige el shell la salida estándar.
+- `close` resta uno al contador y la entrada solo se libera al llegar a 0. Por eso hay que cerrar los extremos de una pipe que no se usan (ver [pipes y fifos](../ipc-pipes-y-fifos/)).
 
-## Nombrado del fichero, propietarios y permisos
+`/proc/<pid>/fd` muestra los descriptores de un proceso (`self` es el propio proceso que lo consulta, aquí `ls`, que tiene abierto como 3 el directorio que está listando):
 
-- La mayoría de los sistemas de archivos modernos permiten asignar **permisos** (derechos de acceso) a usuarios y grupos, restringiendo o permitiendo visualización, modificación y/o ejecución.
-- **UNIX, POSIX, Linux y macOS X** tienen un sistema simple para archivos individuales. POSIX especifica **listas de control de acceso (ACL)**, pero solo lo implementan ciertos sistemas.
-- Las variantes de **DOS** no implementan ningún sistema de permisos.
-- **Microsoft Windows**, así como VMS y OpenVMS, emplean **ACL** para un conjunto de permisos más complejo y variado.
+```text
+$ ls -l /proc/self/fd
+lrwx------ 1 alumno alumno 64 Oct 23 10:05 0 -> /dev/pts/0
+lrwx------ 1 alumno alumno 64 Oct 23 10:05 1 -> /dev/pts/0
+lrwx------ 1 alumno alumno 64 Oct 23 10:05 2 -> /dev/pts/0
+lr-x------ 1 alumno alumno 64 Oct 23 10:05 3 -> /proc/12345/fd
+```
 
-### Notación simbólica en Linux
+`/proc/<pid>/fdinfo/<fd>` muestra la posición. Si el shell abre un fichero y un hijo lee por ese descriptor, la posición del shell avanza:
 
-**Permisos**: `r` lectura · `w` escritura · `x` ejecución.
+```text
+$ exec 3< mbox                   # el shell abre mbox como descriptor 3
+$ head -c 120 <&3 > /dev/null    # un hijo (head) lee 120 bytes por ese descriptor
+$ cat /proc/$$/fdinfo/3          # $$ es el PID del shell (salida recortada)
+pos:	120
+flags:	0100000
+```
 
-**Símbolo de tipo** (primer carácter):
+## Permisos
 
-| Símbolo | Tipo |
-|---------|------|
-| `-` | archivo regular |
-| `d` | directorio |
-| `b` | archivo especial de bloques |
-| `c` | archivo especial de caracteres |
-| `l` | enlace simbólico |
-| `p` | tubo con nombre (*named pipe*) |
-| `s` | socket de dominio |
-
-Los permisos actúan como llaves diferenciadas: cada categoría de usuario (propietario, grupo, otros) recibe su propio juego de derechos de lectura, escritura y ejecución, que `chmod` modifica.
+Cada fichero tiene un **propietario** (UID), un **grupo** (GID) y nueve bits de permisos: `r` (lectura), `w` (escritura) y `x` (ejecución) para el propietario, el grupo y el resto. Se escriben en octal, un dígito por terna (`r` = 4, `w` = 2, `x` = 1): `0764` es `rwxrw-r--`.
 
 ```mermaid
 flowchart LR
@@ -155,153 +165,218 @@ flowchart LR
 
 *Los permisos determinan qué operaciones puede realizar cada categoría de usuario sobre un fichero.*
 
-## Estructura y almacenamiento del fichero
+- **Cómo se comprueban**: el kernel compara el UID del proceso con el propietario. Si coincide, se aplica la terna del propietario; si no, y el proceso pertenece al grupo, la del grupo; si no, la de otros. Solo se aplica **una** terna: un propietario con `r--` no puede escribir aunque los otros tengan `rw-`. `root` se salta las comprobaciones.
+- **En un directorio**, `r` permite listar los nombres, `w` crear, borrar y renombrar entradas, y `x` atravesarlo (usarlo en una ruta). Borrar un fichero depende de los permisos del **directorio**, no de los del fichero.
+- **`umask`**: máscara que se quita a los permisos al crear un fichero. Con `umask` 022, `open("f", O_CREAT | O_WRONLY, 0666)` crea el fichero con `0644`.
+- Linux también admite **ACL** (listas de control de acceso, `getfacl` / `setfacl`) para dar permisos a usuarios concretos; Windows las usa siempre.
 
-### Primitivas de acceso
+Los comandos (`ls -l`, `chmod`, `chown`) están en [shell y herramientas](../../PRACTICA/shell-y-herramientas/#permisos-de-ficheros).
 
-| Acceso de bajo nivel | Acceso estructurado (secuencial / orientado a registros) | Secuencial indexado |
-|----------------------|---------------------------------------------------------|---------------------|
-| `abrir(nombreArchivo)` | `abrir(nombreArchivo)` | `obtenerRegistro(IDArchivo, indice)` |
-| `cerrar(IDArchivo)` | `cerrar(IDArchivo)` | `ponerRegistro(IDArchivo, registro)` |
-| `leer(IDArchivo, bufer, longitud)` | `obtenerRegistro(IDArchivo, registro)` | `borrarRegistro(IDArchivo, indice)` |
-| `escribir(IDArchivo, bufer, longitud)` | `ponerRegistro(IDArchivo, registro)` | |
-| `buscar(IDArchivo, posicionArchivo)` | `buscar(IDArchivo, posicionArchivo)` | |
+<details> <summary> Bits especiales: setuid, setgid y sticky </summary>
 
-### Descriptor de fichero
+- **setuid** (`s` en lugar de la `x` del propietario): el programa se ejecuta con el UID del **propietario** del fichero, no con el de quien lo lanza. `passwd` es de `root` y tiene setuid para poder modificar `/etc/shadow`: `-rwsr-xr-x`.
+- **setgid**: igual, con el grupo. En un directorio, los ficheros nuevos heredan su grupo.
+- **sticky** (`t` en lugar de la `x` de otros), en un directorio: solo el propietario de un fichero puede borrarlo, aunque todos tengan `w` en el directorio. Es lo que tiene `/tmp`: `drwxrwxrwt`.
 
-Al acceder a un archivo, el gestor de ficheros crea una instancia de un **descriptor de fichero** que incluye: nombre · compartible · propietario · indicadores de protección · longitud · tiempo de creación · tiempo de última modificación · tiempo de último acceso · cuenta de referencias · detalles del dispositivo de almacenamiento. Para el **descriptor de archivo abierto** se añaden: bloqueos · estado actual · usuario.
+</details>
+
+## Cómo se guarda un fichero en el disco
+
+### Traducción flujo‑bloque
+
+El disco se ve como una lista de bloques numerados (ver [dispositivos de E/S](../dispositivos-de-es/)), y el fichero, como una secuencia de bytes. El sistema de ficheros traduce cada posición del fichero a un bloque del disco: con bloques de 4096 bytes, el byte 10 000 está en el bloque 2 del fichero (desplazamiento 1808), y la **asignación** del fichero dice qué bloque del disco es ese.
+
+<img src="img/traduccion-flujo-bloque.svg" width="520" alt="Traducción flujo-bloque entre el flujo de bytes del archivo y los bloques del dispositivo de almacenamiento">
 
 ### Bloques y agrupaciones
 
-- **Bloque**: agrupación lógica de sectores de disco; **unidad de transferencia mínima** del sistema de archivos. Optimiza la eficiencia de la E/S. Todos los SO ofrecen un tamaño de bloque por defecto; el usuario puede fijarlo con el mandato **`mkfs`**.
-- **Agrupación** (*cluster*): conjunto de bloques que se gestionan como una unidad lógica de almacenamiento. Con agrupaciones y bloques grandes aparece **fragmentación interna**. Unidad de asignación: `1 agrupación = X bloques`.
+- **Bloque**: unidad mínima que lee y escribe el sistema de ficheros; agrupa varios sectores del disco. Hoy suele ser de 4 KB y se elige al crear el sistema de ficheros (`mkfs -b`).
+- **Agrupación** (*cluster*, en FAT y NTFS): varios bloques que se asignan juntos.
+- Un fichero ocupa siempre bloques enteros: el espacio sobrante del último es **fragmentación interna**. Un fichero de 5 bytes ocupa 4 KB:
 
-### Formato de las entradas de directorio
+```text
+$ echo hola > a.txt
+$ ls -l a.txt
+-rw-r--r-- 1 alumno alumno 5 Oct 23 10:00 a.txt
+$ du -h a.txt
+4.0K	a.txt
+```
 
-| Sistema | Estructura de la entrada (bytes) |
-|---------|--------------------------------|
-| **UNIX** | 2 (número del nodo‑i) + 14 (nombre del archivo) |
-| **MS‑DOS** | 8 (nombre) + 3 (extensión) + 1 (atributos) + 10 (reservado) + 2 (tiempo) + 2 (fecha) + 2 (primer número de bloque) + 4 (tamaño) |
+- **Bloque grande**: menos metadatos y menos saltos al leer ficheros grandes, pero más espacio perdido en los pequeños. **Bloque pequeño**: al revés.
 
-### Estructura del nodo‑i (UNIX)
+### Asignación de bloques
 
-El nodo‑i de un archivo contiene: nodo del archivo · número de enlaces · UID y GID del propietario · tamaño del archivo · tiempos de creación, último acceso y última modificación · **10 números de bloque del disco** (punteros **directos**) · un puntero **indirecto individual** · un puntero **indirecto doble** · un puntero **indirecto triple**.
+| Método | Qué guarda el sistema de ficheros | Ventajas | Inconvenientes | Ejemplo |
+|--------|-----------------------------------|----------|----------------|---------|
+| **Contigua** | primer bloque y número de bloques | lectura secuencial y acceso directo rápidos | hay que saber el tamaño al crear; fragmentación externa y compactación | CD y DVD (ISO 9660) |
+| **Enlazada** | primer bloque; cada bloque apunta al siguiente | sin fragmentación externa | acceso directo lento: hay que recorrer la cadena | FAT |
+| **Indexada** | una tabla con todos los bloques del fichero | acceso directo rápido | la tabla ocupa sitio y puede quedarse corta (indirecciones) | nodo‑i (UNIX, ext2, ext3) |
+| **Extents** | tramos contiguos: (bloque inicial, longitud) | pocos metadatos para ficheros grandes | empeora si el disco está muy fragmentado | ext4, NTFS, XFS, Btrfs |
 
-<img src="img/nodo-i-indirecciones.svg" width="560" alt="Nodo-i con 10 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
+Como plazas de aparcamiento: la asignación **contigua** ocupa plazas consecutivas; la **enlazada** deja que cada plaza señale la siguiente; la **indexada** concentra todas las referencias en una estructura aparte.
 
-### Superbloque y mapas de bits
+<img src="img/asignacion-bloques-aparcamiento.svg" width="620" alt="Comparación de estrategias de asignación de bloques como plazas de aparcamiento: contigua, enlazada e indexada">
 
-- **Superbloque**: descripción del sistema de archivos, parámetros…
-- **Mapa de bits**: un bit que indica si un recurso está ocupado o no. Hay **mapa de bits de nodos‑i** y **mapa de bits de bloques** (de datos: archivos/directorios).
+**FAT** (*File Allocation Table*) es asignación enlazada, pero con los punteros fuera de los bloques de datos, en una tabla con una entrada por bloque del disco. La entrada de directorio guarda el primer bloque y la tabla da el siguiente. El fichero de la figura, que empieza en el 4:
 
-### Gestión del espacio libre
+| Bloque | 4 | 7 | 19 | 31 |
+|--------|---|---|----|----|
+| FAT[bloque] (siguiente) | 19 | 31 | 7 | fin |
 
-| Método | Comentario |
-|--------|-----------|
-| **Mapas de bits** | Un bit por recurso (descriptor de archivo, bloque o agrupación): libre = 1, ocupado = 0. Fácil y sencillo; eficiente si el dispositivo no está muy lleno ni muy fragmentado. |
-| **Listas de recursos libres** | Lista enlazada con todos los recursos disponibles. Ineficiente salvo para dispositivos muy llenos y fragmentados. |
-| **Uso de agrupaciones** | Gestión por unidades lógicas mayores. |
+Como la tabla cabe en memoria, recorrer la cadena no exige leer los bloques de datos.
+
+Los **extents** son una asignación contigua por tramos: un fichero de 1 GB bien colocado se describe con unos pocos extents (de hasta 128 MB cada uno en ext4), en lugar de con 262 144 punteros.
+
+### Nodo‑i
+
+El **nodo‑i** (*inode*) guarda todo lo que el sistema sabe de un fichero **salvo su nombre**:
+
+- tipo y permisos (el «modo»), número de enlaces, UID y GID;
+- tamaño;
+- tiempos de último acceso (`atime`), última modificación del contenido (`mtime`) y último cambio del nodo‑i (`ctime`: permisos, enlaces…). El UNIX clásico no guarda la fecha de creación;
+- punteros a los bloques: **directos** (10 en el UNIX clásico, 12 en ext2 y ext3) y un **indirecto simple**, un **indirecto doble** y un **indirecto triple**.
+
+<img src="img/nodo-i-indirecciones.svg" width="560" alt="Nodo-i con 12 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
+
+Tamaño máximo con bloques de 4 KB y punteros de 4 bytes (1024 punteros por bloque):
+
+| Punteros | Bloques | Datos |
+|----------|---------|-------|
+| 12 directos | 12 | 48 KB |
+| indirecto simple | 1024 | 4 MB |
+| indirecto doble | 1024² | 4 GB |
+| indirecto triple | 1024³ | 4 TB |
+
+Los ficheros pequeños, que son la mayoría, solo usan punteros directos y no necesitan lecturas extra. ext3 se queda en 2 TB por otro límite del nodo‑i (el contador de sectores ocupados).
+
+`stat` muestra el nodo‑i de un fichero:
+
+```text
+$ stat a.txt
+  File: a.txt
+  Size: 5          Blocks: 8          IO Block: 4096   regular file
+Device: 259,2      Inode: 1835210     Links: 2
+Access: (0644/-rw-r--r--)  Uid: ( 1000/  alumno)   Gid: ( 1000/  alumno)
+Access: 2026-10-23 10:00:12.000000000 +0200
+Modify: 2026-10-23 10:00:12.000000000 +0200
+Change: 2026-10-23 10:00:31.000000000 +0200
+ Birth: 2026-10-23 10:00:12.000000000 +0200
+```
+
+`Blocks` cuenta sectores de 512 bytes (8 = un bloque de 4 KB). ext4 sí guarda la creación (`Birth`).
+
+### Directorios por dentro
+
+Una entrada de directorio es solo un par **(número de nodo‑i, nombre)**: en el UNIX clásico, 2 bytes de nodo‑i y 14 de nombre; en ext4, entradas de longitud variable con nombres de hasta 255 bytes.
+
+El sistema de ficheros funciona como una biblioteca: el nombre se busca en un catálogo (el directorio), que remite a una ficha (el nodo‑i) con los metadatos y las referencias a los estantes (los bloques) donde están los datos.
+
+```mermaid
+flowchart LR
+    N(["Nombre solicitado<br/>mbox"]) --> C["Catálogo · directorio /usr/ast<br/>mbox → nodo-i 60"]
+    C --> I["Ficha · nodo-i 60<br/>tipo · permisos · tamaño · punteros"]
+    I --> E1[("Estante · bloque 120")]
+    I --> E2[("Estante · bloque 905")]
+    I --> E3[("Estante · bloque 411")]
+
+    classDef solicitud fill:#eef2f7,stroke:#444,color:#222;
+    classDef catalogo fill:#fdf3d0,stroke:#a06a1a,color:#222;
+    classDef inodo fill:#cfe2f3,stroke:#2b6f99,color:#222;
+    classDef bloque fill:#d9d9d9,stroke:#555,color:#222;
+
+    class N solicitud;
+    class C catalogo;
+    class I inodo;
+    class E1,E2,E3 bloque;
+```
+
+*El nombre se almacena en el directorio; el nodo‑i conserva los metadatos y las referencias a los bloques que contienen los datos.*
+
+Resolver una ruta completa repite ese paso por cada componente. Por ejemplo, `/usr/ast/mbox`:
+
+| Paso | Estructura | Contenido relevante | Resultado |
+|------|-----------|---------------------|-----------|
+| 1 | Directorio raíz (bloque de `/`) | `1 .` · `1 ..` · `4 bin` · `7 dev` · `14 lib` · `9 etc` · `6 usr` · `8 tmp` | la búsqueda de `usr` produce el **nodo‑i 6** |
+| 2 | Nodo‑i 6 | modo · tamaño · tiempos · datos en el **bloque 132** | `/usr` está en el bloque 132 |
+| 3 | Bloque 132 (directorio de `/usr`) | `6 .` · `1 ..` · `19 dick` · `30 erik` · `51 jim` · `26 ast` · `45 bal` | `/usr/ast` es el **nodo‑i 26** |
+| 4 | Nodo‑i 26 | modo · tamaño · tiempos · datos en el **bloque 406** | `/usr/ast` está en el bloque 406 |
+| 5 | Bloque 406 (directorio de `/usr/ast`) | `26 .` · `6 ..` · `64 grants` · `92 books` · `60 mbox` · `81 minix` · `17 src` | `/usr/ast/mbox` es el **nodo‑i 60** |
+
+Cada paso puede ser una lectura de disco; por eso Linux guarda en memoria las últimas traducciones de nombre a nodo‑i.
+
+### Enlaces duros y simbólicos
+
+Como el nombre está en el directorio y no en el nodo‑i, un mismo fichero puede tener **varios nombres**:
+
+- Un **enlace duro** (`ln a.txt b.txt`) es otra entrada de directorio con el **mismo número de nodo‑i**. El nodo‑i cuenta cuántos nombres tiene (`Links`); no hay un nombre «original».
+- Un **enlace simbólico** (`ln -s a.txt c.txt`) es un fichero distinto cuyo contenido es una **ruta**. Si se borra el destino, el enlace queda roto.
+
+```text
+$ ln a.txt b.txt
+$ ln -s a.txt c.txt
+$ ls -li
+total 8
+1835210 -rw-r--r-- 2 alumno alumno 5 Oct 23 10:00 a.txt
+1835210 -rw-r--r-- 2 alumno alumno 5 Oct 23 10:00 b.txt
+1835214 lrwxrwxrwx 1 alumno alumno 5 Oct 23 10:00 c.txt -> a.txt
+```
+
+- `rm` en realidad hace `unlink`: borra un nombre y resta uno al contador de enlaces. El nodo‑i y sus bloques se liberan cuando el contador llega a 0 **y** ningún proceso tiene el fichero abierto. Un fichero borrado pero abierto sigue ocupando espacio (`df` lo cuenta, `du` no).
+- Los enlaces duros no pueden cruzar sistemas de ficheros (cada uno numera sus nodos‑i) ni apuntar a directorios; los simbólicos sí.
+- `.` y `..` son enlaces duros: por eso un directorio tiene 2 enlaces más uno por cada subdirectorio.
+
+### Disposición en el disco
+
+Un sistema de ficheros tipo UNIX reparte la partición en zonas fijas:
+
+<img src="img/disposicion-disco.svg" width="700" alt="Disposición de un sistema de ficheros UNIX en la partición: bloque de arranque, superbloque, mapa de bits de nodos-i, mapa de bits de bloques, tabla de nodos-i y bloques de datos">
+
+- **Superbloque**: describe el sistema de ficheros: tamaño de bloque, número de bloques y de nodos‑i, cuántos quedan libres, estado (limpio o no). Si se pierde, no se puede montar; por eso ext4 guarda copias.
+- **Mapas de bits**: un bit por nodo‑i y otro por bloque, que indica si está libre u ocupado. Con ellos se encuentra espacio libre rápido, incluso bloques contiguos. La alternativa es una **lista enlazada de bloques libres**.
+- **Tabla de nodos‑i**: su tamaño se fija al crear el sistema de ficheros, así que los nodos‑i **se pueden agotar** aunque quede espacio (con muchos ficheros pequeños):
+
+```text
+$ df -i /
+Filesystem       Inodes  IUsed    IFree IUse% Mounted on
+/dev/nvme0n1p2 31223936 612345 30611591    2% /
+```
+
+ext2/3/4 repite esta estructura en cada **grupo de bloques**, para que los nodos‑i queden cerca de sus datos. `sudo dumpe2fs -h /dev/nvme0n1p2` muestra el superbloque.
+
+## Caché y fiabilidad
 
 ### Caché de bloques
 
-Al leer un bloque: (1) comprobar si está en la caché; si no, leerlo del dispositivo y copiarlo a la caché — si está llena, se **reemplaza** un bloque según la política. (2) Si el bloque ha sido escrito (**sucio**), se aplica la **política de escritura**.
+Leer del disco es cientos o miles de veces más lento que leer de memoria, así que el kernel guarda en memoria los bloques usados recientemente. Al leer un bloque:
 
-- **Políticas de reemplazo**: FIFO · segunda oportunidad · MRU (*Most Recently Used*) · **LRU** (la más frecuente). Los bloques más usados tienden a permanecer en la caché; el uso estricto de LRU puede crear problemas de fiabilidad si el ordenador falla.
-- **Políticas de escritura**:
+1. Si está en la **caché**, se usa la copia sin ir al disco.
+2. Si no, se lee del disco y se guarda en la caché. Si está llena, se **reemplaza** un bloque, normalmente el que lleva más tiempo sin usarse (**LRU**). Si el bloque reemplazado se había modificado (**sucio**), antes se escribe en el disco.
+
+En Linux, la caché de páginas usa toda la memoria que no necesitan los procesos (columna `buff/cache` de `free -h`) y es la misma que usa el [mapeo de ficheros con `mmap`](../gestion-de-memoria/#mapeo-de-ficheros-mmap).
+
+**Políticas de escritura**:
 
 | Política | Descripción | Compromiso |
 |----------|-------------|-----------|
-| **Escritura inmediata** (*write‑through*) | Se escribe cada vez que se modifica el bloque. | Sin problema de fiabilidad; reduce el rendimiento. |
-| **Escritura diferida** (*write‑back*) | Solo se escribe a disco cuando el bloque se elige para reemplazo por falta de espacio. | Optimiza el rendimiento; problemas de fiabilidad. |
-| **Escritura retrasada** (*delayed‑write*) | Escribe los bloques modificados a disco periódicamente. Los bloques especiales se escriben de inmediato. Hay que **desmontar** el volumen antes de extraerlo. | Compromiso entre rendimiento y fiabilidad; reduce el alcance de los daños. |
-| **Escritura al cierre** (*write‑on‑close*) | Al cerrar un archivo, se vuelcan sus bloques actualizados. | |
+| **Escritura inmediata** (*write‑through*) | Se escribe en el disco cada vez que se modifica el bloque. | Fiable; lenta. |
+| **Escritura diferida** (*write‑back*) | Solo se escribe cuando el bloque sale de la caché. | Rápida; si se va la luz se pierde lo no escrito. |
+| **Escritura retrasada** (*delayed‑write*) | Los bloques modificados se escriben periódicamente (en Linux, al cabo de unos 30 s); los críticos, de inmediato. | Compromiso entre rendimiento y fiabilidad. Es lo que usan Linux y Windows. |
 
-### Puntos de montaje
+Por eso `write()` vuelve en cuanto el dato está en la caché, no en el disco. Si hace falta garantizarlo (una base de datos, un editor al guardar), `fsync(fd)` espera a que los bloques del fichero lleguen al disco; el comando `sync` lo hace con todos.
 
-- **Punto de montaje**: directorio sobre el que se monta un sistema de ficheros. No todos los ficheros del árbol están en el mismo dispositivo.
-- El *kernel* guarda la información de particiones y puntos de montaje en `/proc/mounts` y `/etc/mtab`. Se consultan con `mount` y `df`. Montaje automatizado: `/etc/fstab`.
+### Consistencia tras un fallo
 
-### Estructura del árbol en Linux/UNIX
+Crear un fichero modifica varios bloques: el mapa de bits de nodos‑i, el nodo‑i, la entrada del directorio, el mapa de bits de bloques y los datos. Si se va la luz a mitad, el sistema de ficheros queda **inconsistente**: por ejemplo, un bloque marcado como ocupado que no es de nadie, o una entrada de directorio que apunta a un nodo‑i libre. Hay tres soluciones:
 
-- La raíz del árbol jerárquico es **`/`**. El árbol se compone de directorios que contienen ficheros.
-- Todo directorio contiene al menos **`.`** (el propio directorio) y **`..`** (enlace a su directorio padre).
-- Cada directorio y su contenido pueden pertenecer a un punto de montaje distinto.
-
-## Sistemas de ficheros
-
-| SO | Sistemas de ficheros |
-|----|----------------------|
-| Unix | Unix System V, BSD |
-| Linux | ext2, ext3, ext4, XFS, JFS, ReiserFS, Btrfs |
-| Solaris | VxFS, QFS, UFS, ZFS |
-| macOS X | HFS Plus, UFS |
-| Windows | FAT16, FAT32, NTFS |
-
-### Comparativa
-
-| | FAT16 | FAT32 | HFS+ | ext3 | NTFS 5.0 | NTFS 6.0 | ext4 |
-|---|---|---|---|---|---|---|---|
-| Año de creación | 1984 | 1996 | 1998 | 1999 | 2001 | 2006 | 2006 |
-| Empresa | Microsoft | Microsoft | Apple | Stephen Tweedie | Microsoft | Microsoft | Varios |
-| SO inicial | MS‑DOS 3 | Windows 95 | Mac OS 8.1 | Linux 2.4.15 | Windows XP | Windows Vista | Linux 2.6.19 |
-| Tamaño máx. de nombre | 8+3 | 8+3 | 255 car. UTF‑16 | 255 bytes | 255 car. | 255 car. | 256 bytes |
-| Tamaño máx. de fichero | 2/4 GB | 4 GB | 8 EB | 2 TB | 16 EB | 16 EB | 16 TB |
-| Tamaño máx. de partición | 2/4 GB | 2/16 TB | 8 EB | 32 TB | 16 EB | 16 EB | 1 EB |
-
-### Sistemas de ficheros *journaled* o transaccionales
-
-Tratan los cambios para crear, modificar o borrar un fichero como una **base de datos**, garantizando un comportamiento **transaccional** y almacenando un histórico. Propiedades **ACID**: Atomicidad, Consistencia, Aislamiento y Durabilidad.
-
-- El **histórico** (*journal*) es una lista de transacciones que permite **reconstruir** el sistema de ficheros ante un error, devolviéndolo a su último estado consistente registrado.
-- Minimiza el tiempo de recuperación y **evita** herramientas como `fsck` (solo se verifican los últimos cambios en los metadatos). Resuelve problemas de escalabilidad.
-- Toda operación que modifique metadatos y datos de un archivo se **agrupa en la misma transacción**. Si el sistema falla, las acciones parcialmente realizadas se deshacen o se completan con el *log*. No se garantiza que el sistema esté **actualizado** al terminar la recuperación, sino que es **consistente**.
-- Ejemplos: ReiserFS/Reiser4, ext3, ext4 (Linux) · NTFS (Windows) · UFS (Solaris) · XFS (IRIX/Linux) · JFS (Linux, IBM, OS/2, AIX) · HFS+ (macOS X).
-
-### Sistemas de ficheros concretos
-
-| Sistema | Características |
-|---------|----------------|
-| **FAT32** | Estándar de facto. Archivos individuales ≤ 4 GB; partición < 8 TB; nombrado solo con caracteres de la gramática inglesa; **sin características de seguridad**. Adecuado para unidades flash USB o discos externos, no para disco duro interno. |
-| **exFAT** | Tabla de Asignación de Archivos Extendida. Similar a FAT32 pero permite archivos > 4 GB. Accesible en Linux, Windows y macOS X. |
-| **NTFS** | Seguridad robusta: cifrado (**EFS**, *Encrypting File System*, con clave pública) que impide el acceso no autorizado. Admite cualquier símbolo UTF. Unidades de 40 GB a 2 TB. Grupos de archivos de 4 KB. Compresión. Permisos de usuario para archivos y carpetas. |
-| **EXT3** | Transaccional (*journal*). Seguridad razonable. Compatible con EXT2. Bajo consumo de CPU. Límite del sistema de archivos: 2³² bloques. |
-| **EXT4** | Transaccional. Volúmenes de hasta **1024 PiB** y ficheros de hasta **16 TiB**. Menor consumo de CPU que EXT3. Mayor velocidad de lectura/escritura. Emplea **extents** (conjuntos de bloques físicos contiguos). Permite montar sistemas EXT3. Escritura retrasada. Límite de 64 000 subdirectorios. |
-
-**Límites de EXT3 según el tamaño de bloque:**
-
-| Tamaño de bloque | Tamaño máximo de archivo | Tamaño máximo del sistema de ficheros |
-|------------------|--------------------------|--------------------------------------|
-| 1 KiB | 16 GiB | 2 TiB |
-| 2 KiB | 256 GiB | 8 TiB |
-| 4 KiB | 2 TiB | 16 TiB |
-| 8 KiB | 2 TiB | 32 TiB |
-
-### Virtual File System (VFS)
-
-El **VFS** ofrece a las aplicaciones una **interfaz uniforme** de llamadas al sistema, aunque los datos estén almacenados con formatos diferentes. Bajo el **servidor de archivos** y el VFS, el **módulo organizador de archivos** integra los distintos sistemas (`ext2`, `vfat`, `reiserfs`, …, `proc`) y accede al **servidor de bloques**.
-
-<img src="img/vfs-capas.svg" width="560" alt="Arquitectura en capas del VFS: procesos, servidor de archivos, VFS, módulo organizador de archivos con ext2, vfat, reiserfs y proc, y servidor de bloques">
-
-Visto como un adaptador universal: las aplicaciones usan siempre las mismas llamadas (`open`, `read`, `write`, `close`) y el VFS las reparte hacia el sistema de ficheros concreto (ext4, NTFS, FAT, procfs…) y, de ahí, hacia el dispositivo real.
-
-<img src="img/vfs-adaptador.svg" width="520" alt="El VFS como adaptador: aplicaciones sobre una interfaz uniforme que reparte hacia ext4, NTFS, FAT y procfs, y de ahí a los dispositivos reales">
-
-*El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados con formatos diferentes.*
-
-## Seguridad en los sistemas de ficheros
-
-El sistema de ficheros debe **garantizar la consistencia** de los datos y que solo los usuarios **autorizados** accedan a ellos para operaciones autorizadas (lectura, escritura, ejecución).
-
-| Soluciones hardware | Soluciones software |
-|---------------------|---------------------|
-| Controladores que tratan con sectores con fallos | *Backups* (copias de respaldo) en discos y en cintas; *backups* incrementales |
-| Discos con información **redundante (RAID)** | **Replicación** |
+- **`fsck`**: al arrancar, recorre todo el sistema de ficheros y corrige las inconsistencias. En discos grandes puede tardar horas.
+- **Journaling** (sistemas transaccionales): antes de modificar las estructuras, se escribe en un **diario** (*journal*) qué se va a hacer, como una transacción de una base de datos. Tras un fallo basta con repasar las últimas entradas del diario: las operaciones completas se rehacen y las incompletas se descartan. El sistema queda **consistente**, aunque se pierdan los últimos cambios. Por defecto ext4 solo registra los **metadatos** (`data=ordered`: escribe los datos antes de confirmar los metadatos). Lo usan ext3, ext4, XFS y NTFS.
+- **Copia en escritura** (*copy‑on‑write*): nunca se sobrescribe un bloque en uso; la versión nueva se escribe en otro sitio y al final se cambia un único puntero de forma atómica. El sistema está siempre consistente y las **instantáneas** (*snapshots*) salen casi gratis. Lo usan Btrfs, ZFS y APFS.
 
 ### RAID
 
-Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que actúan como una única unidad, para mejorar el rendimiento y/o la tolerancia a fallos.
+Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que actúan como una única unidad, para mejorar el rendimiento, la tolerancia a fallos o ambas. Puede hacerse por hardware (una controladora) o por software (`mdadm` en Linux, o el propio Btrfs o ZFS).
 
-**RAID 0** (*striping*): divide los datos entre los discos.
+**RAID 0** (*striping*): reparte los bloques entre los discos.
 
 <img src="img/raid-0.svg" width="300" alt="RAID 0: dos discos con los bloques repartidos, sin redundancia">
 
@@ -309,29 +384,53 @@ Un **RAID** (*Redundant Array of Independent Disks*) combina varios discos que a
 
 <img src="img/raid-1.svg" width="300" alt="RAID 1: dos discos con contenido idéntico (espejo)">
 
-**RAID 5**: división a nivel de bloques con **paridad distribuida** entre todos los discos (`Xp` = bloque de paridad).
+**RAID 5**: reparte los bloques y añade un bloque de **paridad** por fila, que va rotando entre los discos (`Xp` = bloque de paridad). La paridad es el XOR de los bloques de la fila: si falla un disco, cada bloque perdido se recalcula a partir de los demás.
 
 <img src="img/raid-5.svg" width="520" alt="RAID 5: cuatro discos con bloques de datos y paridad distribuida">
 
-**Niveles de RAID:**
+| Nivel | Discos que pueden fallar | Capacidad útil | Notas |
+|-------|--------------------------|----------------|-------|
+| **RAID 0** | ninguno | toda | Lee y escribe más rápido; si falla un disco se pierde **todo**. |
+| **RAID 1** | 1 | la mitad | Lee más rápido (de cualquiera de los dos); escribe como un solo disco. |
+| **RAID 5** | 1 | todos menos uno | Mínimo 3 discos; las escrituras son costosas (hay que actualizar la paridad). |
 
-| Nivel | Técnica | Tolerancia a fallos | Notas |
-|-------|---------|---------------------|-------|
-| **RAID 0** | *Striping* (nivel de bloque) | **Ninguna** | Buen rendimiento de lectura/escritura; aprovecha toda la capacidad; discos homogéneos; si falla una unidad se pierden **todos** los datos. No para sistemas críticos. |
-| **RAID 1** | *Mirroring* | 1 disco | Muy simple; buena velocidad de lectura/escritura; ante un fallo basta hacer una nueva copia; capacidad eficaz = **mitad**; el intercambio en caliente no siempre es posible. |
-| **RAID 2** | *Striping* a nivel de **bit** + disco de paridad + código de **Hamming** | corrección de errores | Apenas se emplea; no atiende varias peticiones simultáneas (discos paralelos pero no independientes). |
-| **RAID 3** | *Striping* a nivel de **byte** + disco de paridad dedicado | 1 disco | No se emplea; la controladora sincroniza los discos; tasas de transferencia muy altas; una petición ocupa todos los discos de datos. |
-| **RAID 4** | *Striping* a nivel de **bloque** + disco de paridad dedicado | 1 disco | Mínimo 3 discos; permite varias lecturas simultáneas; el disco de paridad es el **cuello de botella**. |
-| **RAID 5** | *Striping* a nivel de bloque + **paridad distribuida** | 1 disco | Mínimo 3 discos; bajo coste de redundancia; paridad normalmente por hardware; las **escrituras son costosas**. |
-| **RAID 6** | RAID 5 + **segundo bloque de paridad** | 2 discos | Amplía RAID 5. |
-| **RAID 0+1** | *Mirror* de *stripes* | | Matriz anidada. |
-| **RAID 1+0** (RAID 10) | *Stripe* de *mirrors* | | Matriz anidada. |
-| **RAID 1E**, **RAID 50**, **RAID 100** | Matrices RAID combinadas | | Configuraciones híbridas. |
+**RAID no es una copia de seguridad**: protege frente a la avería de un disco, pero si se borra un fichero, o un virus lo cifra, el cambio se aplica a todos los discos a la vez.
 
-Información adicional: [Seagate — modos RAID](http://www.seagate.com/es/es/manuals/network-storage/business-storage-nas-os/raid-modes/) · [Wikipedia — RAID](https://es.wikipedia.org/wiki/RAID) · [prepressure.com — RAID](https://www.prepressure.com/library/technology/raid) · [IONOS — RAID](https://www.ionos.es/digitalguide/servidores/seguridad/raid/)
+### Copias de seguridad
 
----
+- **Completa**: copia todo. **Incremental**: solo lo que ha cambiado desde la copia anterior; es más rápida, pero para restaurar hacen falta la última completa y todas las incrementales posteriores.
+- Las instantáneas de Btrfs o ZFS no son copias: están en el mismo disco.
+- **Regla 3‑2‑1**: tres copias de los datos, en dos soportes distintos, con una fuera del lugar de trabajo.
 
-## Material gráfico
+## VFS y sistemas de ficheros concretos
 
-Las figuras de este tema están integradas en el texto. Queda como **material fotográfico** adicional (ilustrativo): fotos de cabinas y *enclosures* RAID. Los diagramas de RAID de Wikipedia (RAID 2, 3, 4, 6, 0+1, 1+0, 1E, 50, 100) se resumen en la tabla de niveles.
+### Virtual File System (VFS)
+
+El **VFS** ofrece a las aplicaciones una **interfaz uniforme**: las mismas llamadas (`open`, `read`, `write`, `close`) sirven para cualquier sistema de ficheros. Cada sistema de ficheros (ext4, NTFS, FAT, procfs…) implementa las operaciones del VFS a su manera y el VFS reparte cada llamada al que corresponde según el punto de montaje.
+
+<img src="img/vfs-adaptador.svg" width="520" alt="El VFS como adaptador: aplicaciones sobre una interfaz uniforme que reparte hacia ext4, NTFS, FAT y procfs, y de ahí a los dispositivos reales">
+
+*El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados con formatos diferentes.*
+
+Gracias al VFS hay sistemas de ficheros **sin disco**, que el kernel genera al vuelo:
+
+- **procfs** (`/proc`): procesos y kernel. Por ejemplo, `/proc/<pid>/maps` en [gestión de memoria](../gestion-de-memoria/) o `/proc/interrupts` en [dispositivos de E/S](../dispositivos-de-es/).
+- **sysfs** (`/sys`): dispositivos y manejadores, como `/sys/block/<disco>/queue/scheduler`.
+- **tmpfs**: ficheros en memoria, que desaparecen al apagar. Se usa para `/tmp` y para `/dev/shm`, donde aparecen los objetos de `shm_open` de [memoria compartida](../memoria-compartida-y-mutex/).
+
+### Sistemas de ficheros actuales
+
+| Sistema | Dónde se usa | Rasgos |
+|---------|--------------|--------|
+| **ext4** | Linux (por defecto en Debian y Ubuntu) | nodos‑i con extents, journaling |
+| **XFS** | Linux, servidores (por defecto en Red Hat) | extents, journaling, ficheros muy grandes |
+| **Btrfs** | Linux (por defecto en Fedora y openSUSE) | copia en escritura, instantáneas, RAID integrado |
+| **ZFS** | servidores (FreeBSD, Linux) | copia en escritura, instantáneas, RAID integrado, sumas de comprobación |
+| **NTFS** | Windows | journaling, ACL, cifrado (EFS), compresión |
+| **APFS** | macOS e iOS (desde 2017) | copia en escritura, instantáneas, cifrado |
+| **FAT32** | memorias USB, tarjetas SD, partición de arranque EFI | asignación enlazada, sin permisos ni journaling, ficheros de hasta 4 GB |
+| **exFAT** | memorias USB y tarjetas SD grandes | como FAT32, pero con ficheros de más de 4 GB |
+
+Para una memoria USB que se vaya a usar en varios sistemas, exFAT; si tiene que leerla un aparato antiguo (una tele, un coche), FAT32.
+
+Más detalle (ficheros estructurados en registros, permisos en otros sistemas, formato de las entradas de directorio, otras políticas de reemplazo, comparativa y límites de sistemas de ficheros, todos los niveles de RAID y el VFS en capas): [`material_adicional.md`](material_adicional.md).

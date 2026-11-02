@@ -15,7 +15,7 @@
 2 ./pintar 0 240
 3 ./mandelbrot 340 240
 3 ./buddhabrot 680 240
-4 espera 5000
+0 espera 5000
 1 ./mandelbrot 340 480 200
-4 espera 5000
+0 espera 5000
 1 ./factoriza 1000000016000000063
