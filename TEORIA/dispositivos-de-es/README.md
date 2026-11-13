@@ -2,22 +2,20 @@
 
 ## Dispositivo, controlador y manejador
 
-Un dispositivo de E/S tiene dos partes hardware y una software:
+Un dispositivo de E/S tiene una parte hardware (dispositivo y controlador) y otra software (manejador):
 
-- El **dispositivo** propiamente dicho: la parte mecánica o electrónica (platos y cabezales, teclas, sensor…).
-- El **controlador**: la electrónica que lo gobierna. La CPU no habla con el dispositivo, sino con los **registros** de su controlador: **orden** (qué operación hacer), **estado** (ocupado, terminado, error) y **datos** (el dato leído o el que se va a escribir).
+- El **dispositivo** hardware: la parte mecánica o electrónica (platos y cabezales, teclas, sensor…).
+- El **controlador** del dispositivo: la electrónica que lo gobierna. La CPU no habla con el dispositivo, sino con los **registros** de su controlador: **orden** (qué operación hacer), **estado** (ocupado, terminado, error) y **datos** (el dato leído o el que se va a escribir).
 - El **manejador** (*driver*): el código del sistema operativo que sabe programar los registros de un controlador concreto.
-
-En castellano «controlador» también se usa para traducir *driver* (Windows habla de «controladores de dispositivo»). En este tema, **controlador = hardware** y **manejador = software**.
 
 La CPU accede a los registros del controlador de dos formas:
 
 - **Puertos de E/S**: un espacio de direcciones aparte, con instrucciones privilegiadas propias (`in`/`out` en x86).
-- **E/S mapeada en memoria**: los registros ocupan direcciones de memoria física y se leen y escriben con instrucciones normales (ya mencionada en [gestión de memoria](../gestion-de-memoria/#mapeo-de-ficheros-mmap)). Esas páginas se marcan **sin caché**: si no, la CPU leería una copia antigua del registro de estado. Es la forma habitual hoy.
+- **E/S mapeada en memoria**: los registros ocupan direcciones de memoria física y se leen y escriben con instrucciones normales (ya mencionada en [gestión de memoria](../gestion-de-memoria/#mapeo-de-ficheros-mmap)). Esas páginas se marcan **sin caché**: si no, la CPU leería una copia antigua del registro de estado.
 
 ### Dispositivos de bloque y de carácter
 
-- **Bloque**: transfieren bloques de tamaño fijo (512 bytes en los discos antiguos, hoy normalmente 4096) y son **direccionables**: se puede leer o escribir cualquier bloque tras posicionarse. Discos duros, SSD, memorias USB.
+- **Bloque**: transfieren bloques de tamaño fijo (p. ej. 4096 bytes en discos duros) y son **direccionables**: se puede leer o escribir cualquier bloque tras posicionarse. Discos duros, SSD, memorias USB.
 - **Carácter**: producen o consumen un flujo de bytes **sin direcciones**. Teclado, ratón, puerto serie, terminal.
 
 ### Velocidades
@@ -35,12 +33,8 @@ Entre el teclado y un SSD NVMe hay casi **nueve órdenes de magnitud**: ninguna 
 
 ## Comunicación entre la CPU y el controlador
 
-Hay dos preguntas independientes:
-
-- ¿**Cómo sabe la CPU** que el dispositivo ha terminado? Preguntándole una y otra vez (**sondeo**) o esperando a que él avise (**interrupción**).
+- ¿**Cómo sabe la CPU** que el dispositivo ha terminado la operación? Preguntándole una y otra vez (**sondeo**) o esperando a que él avise (**interrupción**).
 - ¿**Quién copia los datos** entre el controlador y la memoria? La propia CPU (**E/S programada**) o un controlador de **DMA**.
-
-Se ven de la solución más simple a la más eficiente: cada paso resuelve el problema del anterior.
 
 ### Sondeo
 
@@ -58,11 +52,11 @@ sequenceDiagram
     CPU->>C: lee el registro «datos» y lo copia a memoria
 ```
 
-**Problema**: mientras espera, la CPU no hace nada útil. Con un teclado pasaría casi todo el tiempo dando vueltas en el bucle.
+**Problema**: mientras espera, la CPU no hace nada útil. Al esperar una pulsación del teclado pasaría casi todo el tiempo dando vueltas en el bucle.
 
 ### Interrupciones
 
-La CPU programa el controlador y se dedica a otra cosa (normalmente, a otro proceso). Cuando el controlador termina, activa una **interrupción** («timbre»): la CPU suspende lo que estaba haciendo y ejecuta la **rutina de servicio** del manejador, que copia el dato y despierta al proceso que lo esperaba. Es la **E/S dirigida por interrupciones**.
+La CPU programa el controlador y se dedica a otra cosa (ejecutar instrucciones de otro proceso). Cuando el controlador termina, activa una **interrupción**: la CPU suspende lo que estaba haciendo y ejecuta la **rutina de servicio** del manejador, que copia el dato y puede despertar al proceso que lo esperaba. Es la **E/S dirigida por interrupciones**.
 
 ```mermaid
 sequenceDiagram
@@ -76,14 +70,14 @@ sequenceDiagram
     CPU-->>P: datos disponibles · vuelve a listo
 ```
 
-- Cómo guarda la CPU el contexto y salta a la rutina se ve en [espacio de usuario y espacio de kernel](../espacio-usuario-espacio-kernel/).
-- Para saber **qué dispositivo** ha interrumpido, cada uno tiene un número (IRQ) que indexa una tabla con la dirección de su rutina: **interrupciones vectorizadas**. Sin esa tabla, el gestor de interrupciones tendría que preguntar (sondear) a cada controlador.
+- Cómo guarda la CPU el contexto y salta a la rutina de la interrupción se ve en [espacio de usuario y espacio de kernel](../espacio-usuario-espacio-kernel/).
+- Para saber **qué dispositivo** ha interrumpido, cada uno tiene un número (IRQ) que indexa una tabla con la dirección de su rutina: **interrupciones vectorizadas**. Sin esa tabla, el gestor de interrupciones tendría que preguntar (sondear) a cada controlador quién ha terminado y producido la interrupción.
 
 **Problema**: la CPU sigue copiando los datos uno a uno, con una interrupción por dato. Vale para un teclado, pero un disco generaría millones de interrupciones por segundo.
 
 ### DMA
 
-Un controlador de **DMA** (*Direct Memory Access*, acceso directo a memoria) copia el bloque completo entre el dispositivo y la memoria sin pasar por la CPU. La CPU solo indica origen, destino y tamaño, y recibe **una interrupción al final** del bloque, no una por dato. Mientras tanto sigue ejecutando otros procesos, aunque algo más lenta: el DMA y la CPU comparten el bus de memoria y, cuando el DMA lo usa, la CPU tiene que esperar (**robo de ciclos**).
+Un controlador de **DMA** (*Direct Memory Access*, acceso directo a memoria) copia el bloque completo entre el dispositivo y la memoria sin pasar por la CPU. La CPU solo indica origen, destino y tamaño, y recibe **una interrupción al final** del bloque, no una por dato suelto. Mientras tanto sigue ejecutando otros procesos. El DMA y la CPU comparten la memoria: si los dos la usan a la vez, uno espera (**robo de ciclos**). Hoy se nota poco, porque la CPU trabaja casi siempre con su caché.
 
 ```mermaid
 sequenceDiagram
@@ -112,7 +106,6 @@ Atender una interrupción no es gratis: hay que guardar el contexto, ejecutar la
 
 - **Dispositivo lento** comparado con ese coste (teclado: cientos de milisegundos entre pulsaciones; disco duro: milisegundos): las interrupciones ganan de lejos, sondear sería tirar casi toda la CPU.
 - **Dispositivo muy rápido** (SSD NVMe: unos 10 µs por lectura; red de 100 Gb/s: millones de paquetes por segundo): el coste de las interrupciones se acerca al de la propia operación y **sondear vuelve a compensar**.
-- Lo habitual hoy es un esquema **híbrido**: una interrupción despierta al manejador y, mientras quede trabajo, sondea.
 
 `/proc/interrupts` muestra cuántas interrupciones ha atendido cada CPU en cada línea (IRQ) y qué manejador la usa (salida recortada):
 
@@ -179,8 +172,9 @@ Todo lo anterior ocurre dentro del kernel: el proceso no ve interrupciones ni DM
 | **Asíncrona** | la operación queda en marcha | sigue trabajando y luego comprueba si ha terminado | `aio_read`, `io_uring` |
 
 - **Bloqueante** es lo normal y lo más sencillo de programar. Cuando la interrupción indica que la operación ha terminado, el proceso pasa a **listo**. La CPU y el dispositivo trabajan a la vez, pero **para procesos distintos**: mientras uno espera al disco, otro calcula.
-- **No bloqueante** es sondeo, pero a nivel de proceso: si se reintenta en un bucle, gasta CPU igual que la espera activa. `O_NONBLOCK` y `select` se ven en [pipes y fifos](../ipc-pipes-y-fifos/).
-- **Asíncrona**: para que un mismo proceso solape su cálculo con su E/S, el sistema operativo debe permitirle **iniciar** una operación y **comprobar** más tarde si ha concluido (o recibir un aviso). Una alternativa más sencilla es usar dos [hilos](../procesos-e-hilos/): uno hace la E/S bloqueante mientras el otro calcula.
+- **No bloqueante** es sondeo, pero a nivel de proceso: si se reintenta en un bucle, gasta CPU igual que la espera activa. `O_NONBLOCK` y `select` se ven en [pipes y fifos](../ipc-pipes-y-fifos/) (apartado opcional).
+- **Multiplexada**: `select` bloquea hasta que alguno de varios descriptores tiene datos; así un proceso atiende varias pipes a la vez sin sondearlas.
+- **Asíncrona**: el proceso pide la operación («lee estos datos en este búfer») y la llamada vuelve enseguida. La operación sigue en marcha por su cuenta (el kernel con DMA) mientras el proceso calcula, y más tarde el proceso comprueba si el búfer ya está lleno o recibe un aviso. A diferencia de la no bloqueante, no hay que repetir la llamada: la operación avanza sola. `aio_read` es la interfaz POSIX e `io_uring` la más reciente de Linux.
 
 ### Búferes
 
@@ -190,12 +184,13 @@ Un **búfer** es una zona de memoria donde se acumulan datos entre el dispositiv
 - **Búfer de salida**: `write()` copia los datos al búfer y vuelve; el sistema operativo los envía después al dispositivo, a su ritmo (impresora, red).
 - Hay búferes **hardware**, en el controlador, y **software**, en el kernel.
 - **Doble búfer**: con dos búferes que se alternan, mientras el dispositivo llena uno el proceso vacía el otro.
+- En gráficos, el doble búfer es muy común: el programa dibuja la imagen siguiente en un búfer mientras la pantalla muestra el otro, y al terminar se intercambian; así nunca se ve una imagen a medio dibujar. Con **triple búfer**, la tarjeta gráfica puede empezar la imagen siguiente en un tercer búfer sin esperar a que la pantalla haga el cambio.
 
 <img src="img/doble-bufer.svg" width="520" alt="Doble búfer: mientras el dispositivo llena un búfer, el proceso vacía el otro; los papeles se alternan en el instante siguiente">
 
 ***Spooling***: un dispositivo que no se puede compartir, como una impresora, no se asigna a ningún proceso. Cada trabajo se guarda en una cola en disco y un proceso del sistema los envía al dispositivo de uno en uno.
 
-**Búfer frente a caché**: un búfer puede guardar la única copia de un dato mientras va del dispositivo al proceso o al revés; una caché guarda una copia de un dato que también está en otro sitio, para no tener que ir a buscarlo. La **caché de bloques**, que guarda en memoria los bloques ya leídos del disco, se ve en [sistemas de ficheros](../sistemas-de-ficheros/#caché-de-bloques).
+**Búfer frente a caché**: un búfer puede guardar la única copia de un dato mientras va del dispositivo al proceso o al revés; una caché guarda una copia de un dato que también está en otro sitio, para no tener que ir a buscarlo.
 
 ## Recorrido completo de un `read()`
 

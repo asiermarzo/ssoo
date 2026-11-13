@@ -45,6 +45,14 @@ Directorios estándar en Linux:
 ### Particiones y montaje
 
 - Un disco se divide en **particiones**, rangos contiguos de bloques descritos en una tabla al principio del disco (**GPT**, o **MBR** en los antiguos). Cada partición lleva su propio sistema de ficheros.
+- `lsblk` muestra los discos y sus particiones en árbol, con el tamaño y el punto de montaje de cada una:
+  ```text
+  $ lsblk
+  NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+  sda      8:0    0 476.9G  0 disk
+  ├─sda1   8:1    0   512M  0 part /boot/efi
+  └─sda2   8:2    0 476.4G  0 part /
+  ```
 - Aunque haya varios discos y particiones, el usuario ve **un único árbol**: cada sistema de ficheros se **monta** sobre un directorio del árbol, su **punto de montaje**.
 - `mount /dev/sda1 /mnt` monta y `umount /mnt` desmonta; En `/etc/fstab` se indica qué se monta al arrancar. Antes de extraer un disco hay que desmontarlo, para que se escriba lo que quede en la [caché](#caché-de-bloques).
 - `df -h` muestra los sistemas de ficheros montados, su punto de montaje y su espacio libre.
@@ -55,18 +63,18 @@ Las llamadas al sistema para trabajar con ficheros (`open`, `read`, `write`, `ls
 
 ### Acceso secuencial y directo
 
-- **Secuencial**: se lee o escribe en orden; cada `read` o `write` empieza donde acabó el anterior. Es lo habitual: copiar un fichero, compilarlo, reproducir un vídeo.
-- **Directo** (o aleatorio): se salta a cualquier posición con `lseek` y se lee o escribe allí sin pasar por lo anterior. Lo usan, por ejemplo, las bases de datos.
+- **Secuencial**: se lee o escribe en orden; cada `read` o `write` empieza donde acabó el anterior. Es lo habitual: copiar un fichero, reproducir un vídeo.
+- **Directo** (o aleatorio): se salta a cualquier posición con `lseek` y se lee o escribe allí sin pasar por lo anterior. Lo usan, por ejemplo, las bases de datos, un reproductor al saltar al minuto 30 de un vídeo o un cliente BitTorrent, que escribe cada trozo en su sitio según le llega.
 
-Cuánto cuesta cada uno depende de cómo esté guardado el fichero en el disco (ver [asignación de bloques](#asignación-de-bloques)).
+Cuánto tiempo cuesta cada uno depende de cómo esté guardado el fichero en el disco (ver [asignación de bloques](#asignación-de-bloques)).
 
 ### Tablas de ficheros abiertos
 
-Un descriptor es solo un número; detrás hay tres tablas del kernel:
+Un descriptor es solo un número; detrás hay tres tablas en el kernel:
 
 - **Tabla de descriptores**, una por proceso: el descriptor es un índice en ella. Las entradas 0, 1 y 2 son `stdin`, `stdout` y `stderr`, que pueden apuntar a un terminal, a un fichero o a una pipe.
-- **Tabla de ficheros abiertos**, común a todo el sistema: una entrada por cada `open`, con la **posición** actual, el **modo** de apertura y un **contador** de cuántos descriptores la usan.
-- **Tabla de nodos‑i en memoria**: una copia de los metadatos de cada fichero en uso, aunque lo hayan abierto varios procesos.
+- **Tabla de ficheros abiertos** una para todo el sistema: una entrada por cada `open`, con la **posición** actual, el **modo** de apertura y un **contador** de cuántos descriptores la usan.
+- **Tabla de nodos‑i en memoria**, una para todo el sistema: una copia de los metadatos de cada fichero en uso, aunque lo hayan abierto varios procesos.
 
 ```mermaid
 flowchart LR
@@ -102,7 +110,7 @@ flowchart LR
 
 *Padre e hijo comparten la entrada de la tabla de ficheros abiertos (y la posición); otro proceso que abre el mismo fichero tiene su propia entrada.*
 
-- Tras `fork`, el hijo copia la tabla de descriptores, pero sus entradas apuntan a las **mismas** entradas de la tabla de ficheros abiertos: padre e hijo **comparten la posición**, y si uno lee, el otro sigue donde lo dejó.
+- Tras `fork`, el hijo copia la tabla de descriptores, pero sus entradas apuntan a las **mismas** entradas de la tabla de ficheros abiertos. El hijo seguirá leyendo de los ficheros desde donde el padre los dejó, y viceversa.
 - Dos `open` del mismo fichero crean dos entradas distintas, cada una con su posición.
 - `dup2(fd, 1)` hace que el descriptor 1 apunte a la misma entrada que `fd`: así redirige el shell la salida estándar.
 - `close` resta uno al contador y la entrada solo se libera al llegar a 0. Por eso hay que cerrar los extremos de una pipe que no se usan (ver [pipes y fifos](../ipc-pipes-y-fifos/)).
@@ -133,12 +141,12 @@ flags:	0100000
 
 ### Bloqueo de ficheros
 
-Si dos procesos leen, modifican y escriben a la vez el mismo fichero (por ejemplo, un contador), hay una [condición de carrera](../concurrencia-y-sincronizacion/#exclusión-mutua), como con cualquier dato compartido. El fichero se protege con un **cerrojo** (*lock*):
+Si dos procesos leen, modifican y escriben a la vez el mismo fichero, hay una [condición de carrera](../concurrencia-y-sincronizacion/#exclusión-mutua). El fichero se protege con un **cerrojo** (*lock*):
 
 - `flock(fd, LOCK_EX)`: cerrojo **exclusivo**, para escribir; solo puede tenerlo un proceso.
 - `flock(fd, LOCK_SH)`: cerrojo **compartido**, para leer; pueden tenerlo varios procesos a la vez, pero nunca junto con uno exclusivo. Es el problema de los [lectores‑escritores](../concurrencia-y-sincronizacion/#patrones-de-concurrencia-comunes).
 - `flock(fd, LOCK_UN)` lo suelta; también se suelta al cerrar el fichero o al terminar el proceso.
-- Si el cerrojo está cogido, `flock` **bloquea** al proceso hasta que se libere (con `LOCK_NB` devuelve error en vez de esperar).
+- Si el cerrojo está cogido, `flock` **bloquea** al proceso hasta que se libere.
 
 ```c
 int fd = open("contador.txt", O_RDWR);
@@ -150,15 +158,15 @@ close(fd);
 
 - En Linux los cerrojos son **consultivos** (*advisory*): solo protegen frente a procesos que también llaman a `flock`; uno que no lo haga puede escribir igualmente. Windows los aplica de forma **obligatoria** (*mandatory*): por eso no deja borrar un fichero abierto en otro programa.
 - `fcntl` permite bloquear solo un **rango de bytes** (un registro), para que varios procesos modifiquen a la vez partes distintas del fichero. Lo usan bases de datos como SQLite.
-- El comando `flock` hace lo mismo desde el shell: con `flock /tmp/informe.lock ./informe.sh`, si ya hay un `informe.sh` en marcha, el segundo espera a que acabe.
+- El comando `flock` hace lo mismo desde el shell: `flock /tmp/informe.lock ./informe.sh` coge el cerrojo de `/tmp/informe.lock` (un fichero vacío que solo sirve de cerrojo; se crea si no existe), ejecuta `./informe.sh` y lo suelta al acabar. Si se lanza la misma línea mientras la primera sigue en marcha, la segunda espera: nunca hay dos copias del script a la vez.
 
 ## Permisos
 
 Cada fichero tiene un **propietario** (UID), un **grupo** (GID) y nueve bits de permisos: `r` (lectura), `w` (escritura) y `x` (ejecución) para el propietario, el grupo y el resto. Se escriben en octal, un dígito por terna (`r` = 4, `w` = 2, `x` = 1): `0764` es `rwxrw-r--`.
 
 - **Cómo se comprueban**: el kernel compara el UID del proceso con el propietario. Si coincide, se aplica la terna del propietario; si no, y el proceso pertenece al grupo, la del grupo; si no, la de otros. Solo se aplica **una** terna: un propietario con `r--` no puede escribir aunque los otros tengan `rw-`. `root` se salta las comprobaciones.
-- **En un directorio**, `r` permite listar los nombres, `w` crear, borrar y renombrar entradas, y `x` atravesarlo (usarlo en una ruta). Borrar un fichero depende de los permisos del **directorio**, no de los del fichero.
-- **`umask`**: máscara que se quita a los permisos al crear un fichero. Con `umask` 022, `open("f", O_CREAT | O_WRONLY, 0666)` crea el fichero con `0644`.
+- **En un directorio**, `r` permite listar los nombres, `w` crear, borrar y renombrar entradas, y `x` entrar en él (`cd`) o pasar por él en una ruta: para abrir `/home/ana/notas.txt` hace falta `x` en `/`, `/home` y `/home/ana`. Con `r` y sin `x` se ven los nombres pero no se puede abrir nada; con `x` y sin `r` se abre un fichero si se sabe su nombre, pero no se puede listar. Borrar un fichero depende de los permisos del **directorio**, no de los del fichero.
+- **`umask`**: atributo de cada proceso, que heredan los hijos, con los permisos que se quitan al crear un fichero. Se cambia con la llamada `umask(022)` o con el comando del shell `umask 022`. Con 022, `open("f", O_CREAT | O_WRONLY, 0666)` crea el fichero con `0644`.
 - Linux también admite **ACL** (listas de control de acceso, `getfacl` / `setfacl`) para dar permisos a usuarios concretos; Windows las usa siempre.
 
 Los comandos (`ls -l`, `chmod`, `chown`) están en [shell y herramientas](../../PRACTICA/shell-y-herramientas/#permisos-de-ficheros).
@@ -193,7 +201,7 @@ $ du -h a.txt
 4.0K	a.txt
 ```
 
-- **Bloque grande**: menos metadatos y menos saltos al leer ficheros grandes, pero más espacio perdido en los pequeños. **Bloque pequeño**: al revés.
+- **Bloque grande**: menos metadatos y menos saltos al leer ficheros grandes, pero más espacio perdido con archivos pequeños. **Bloque pequeño**: al revés.
 
 ### Asignación de bloques
 
@@ -204,9 +212,11 @@ $ du -h a.txt
 | **Indexada** | una tabla con todos los bloques del fichero | acceso directo rápido | la tabla ocupa sitio y puede quedarse corta (indirecciones) | nodo‑i (UNIX, ext2, ext3) |
 | **Extents** | tramos contiguos: (bloque inicial, longitud) | pocos metadatos para ficheros grandes | empeora si el disco está muy fragmentado | ext4, NTFS, XFS, Btrfs |
 
+Los **extents** son un punto intermedio entre la asignación contigua y la indexada: el fichero se guarda en uno o varios tramos de bloques contiguos y, en lugar de un puntero por bloque, se guarda un par (bloque inicial, longitud) por tramo. Un fichero en los bloques 100–199 y 500–549 se describe con dos extents, (100, 100) y (500, 50), en lugar de con 150 punteros. Si crece y los bloques siguientes están ocupados, se añade otro tramo donde haya sitio. Así, un fichero de 1 GB bien colocado se describe con unos pocos tramos, en lugar de con 262144 punteros.
+
 <img src="img/asignacion-bloques-aparcamiento.svg" width="620" alt="Comparación de estrategias de asignación de bloques como plazas de aparcamiento: contigua, enlazada e indexada">
 
-**FAT** (*File Allocation Table*) es asignación enlazada, pero con los punteros fuera de los bloques de datos, en una tabla con una entrada por bloque del disco. La entrada de directorio guarda el primer bloque y la tabla da el siguiente. El fichero de la figura, que empieza en el 4:
+**FAT** (*File Allocation Table*) es asignación enlazada, pero con los punteros fuera de los bloques de datos, en una tabla con una entrada por bloque del disco. La entrada de directorio guarda el primer bloque del fichero; la entrada de cada bloque en la FAT dice cuál es el siguiente bloque del fichero (o *fin*). El fichero de la figura, que empieza en el 4:
 
 | Bloque | 4 | 7 | 19 | 31 |
 |--------|---|---|----|----|
@@ -214,15 +224,13 @@ $ du -h a.txt
 
 Como la tabla cabe en memoria, recorrer la cadena no exige leer los bloques de datos.
 
-Con **extents**, un fichero de 1 GB bien colocado se describe con unos pocos tramos, en lugar de con 262 144 punteros.
-
 ### Nodo‑i
 
 El **nodo‑i** (*inode*) guarda todo lo que el sistema sabe de un fichero **salvo su nombre**:
 
 - tipo y permisos (el «modo»), número de enlaces, UID y GID;
 - tamaño;
-- tiempos de último acceso (`atime`), última modificación del contenido (`mtime`) y último cambio del nodo‑i (`ctime`: permisos, enlaces…). El UNIX clásico no guarda la fecha de creación;
+- tiempos de último acceso (`atime`), última modificación del contenido (`mtime`) y último cambio del nodo‑i (`ctime`: permisos, enlaces…).
 - punteros a los bloques: **directos** (10 en el UNIX clásico, 12 en ext2 y ext3) y un **indirecto simple**, un **indirecto doble** y un **indirecto triple**.
 
 <img src="img/nodo-i-indirecciones.svg" width="560" alt="Nodo-i con 12 punteros directos a bloques de datos y punteros indirecto individual, doble y triple">
@@ -324,7 +332,7 @@ Leer del disco es cientos o miles de veces más lento que leer de memoria, así 
 1. Si está en la **caché**, se usa la copia sin ir al disco.
 2. Si no, se lee del disco y se guarda en la caché. Si está llena, se **reemplaza** un bloque, normalmente el que lleva más tiempo sin usarse (**LRU**). Si el bloque reemplazado se había modificado (**sucio**), antes se escribe en el disco.
 
-En Linux, la caché de páginas usa toda la memoria que no necesitan los procesos (columna `buff/cache` de `free -h`) y es la misma que usa el [mapeo de ficheros con `mmap`](../gestion-de-memoria/#mapeo-de-ficheros-mmap).
+En Linux, la caché usa toda la memoria que no necesitan los procesos (columna `buff/cache` de `free -h`) y es la misma que usa el [mapeo de ficheros con `mmap`](../gestion-de-memoria/#mapeo-de-ficheros-mmap).
 
 **Políticas de escritura**:
 
@@ -362,7 +370,7 @@ Crear un fichero modifica varios bloques: el mapa de bits de nodos‑i, el nodo�
 
 - **`fsck`**: al arrancar, recorre todo el sistema de ficheros y corrige las inconsistencias. En discos grandes puede tardar horas.
 - **Journaling** (sistemas transaccionales): antes de modificar las estructuras, se escribe en un **diario** (*journal*) qué se va a hacer, como una transacción de una base de datos. Tras un fallo basta con repasar las últimas entradas del diario: las operaciones completas se rehacen y las incompletas se descartan. El sistema queda **consistente**, aunque se pierdan los últimos cambios. Lo usan ext3, ext4, XFS y NTFS.
-- **Copia en escritura** (*copy‑on‑write*): nunca se sobrescribe un bloque en uso; la versión nueva se escribe en otro sitio y al final se cambia un único puntero de forma atómica. El sistema está siempre consistente y las **instantáneas** (*snapshots*) salen casi gratis. Lo usan Btrfs, ZFS y APFS.
+- **Copia en escritura** (*copy‑on‑write*): nunca se sobrescribe un bloque en uso; la versión nueva se escribe en otro sitio y al final se cambia un único puntero de forma atómica. El sistema está siempre consistente y las **instantáneas** (*snapshots*) salen casi gratis: una instantánea es una copia del sistema de ficheros tal como estaba en un momento dado (para copias de seguridad o para volver atrás tras una actualización fallida), y basta con guardar el puntero raíz antiguo y no liberar sus bloques. A cambio, los ficheros que se modifican por partes (bases de datos, imágenes de máquinas virtuales) acaban fragmentados, y cada cambio obliga a reescribir también los metadatos que apuntan al bloque. Lo usan Btrfs, ZFS y APFS.
 
 ### RAID
 
@@ -410,7 +418,7 @@ El **VFS** ofrece a las aplicaciones una **interfaz uniforme**: las mismas llama
 
 *El sistema de ficheros virtual ofrece una interfaz uniforme aunque los datos estén almacenados con formatos diferentes.*
 
-Gracias al VFS hay sistemas de ficheros **sin disco**, que el kernel genera al vuelo:
+Gracias al VFS hay sistemas de ficheros **sin disco**, cuyo contenido lo crea el kernel cuando se lee o vive solo en memoria:
 
 - **procfs** (`/proc`): procesos y kernel. Por ejemplo, `/proc/<pid>/maps` en [gestión de memoria](../gestion-de-memoria/) o `/proc/interrupts` en [dispositivos de E/S](../dispositivos-de-es/).
 - **sysfs** (`/sys`): dispositivos y manejadores, como `/sys/block/<disco>/queue/scheduler`.
