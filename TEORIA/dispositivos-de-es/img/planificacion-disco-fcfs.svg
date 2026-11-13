@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" font-family="sans-serif" font-size="12" role="img" aria-label="Movimiento de la cabeza con FCFS: 76, 124, 17, 269, 201, 29, 137, 12">
+  <rect width="480" height="300" fill="#ffffff"/>
+  <line x1="55" y1="20" x2="55" y2="250" stroke="#333"/>
+  <line x1="55" y1="250" x2="460" y2="250" stroke="#333"/>
+  <text x="10" y="25">300</text><text x="20" y="250">0</text>
+  <!-- escala vertical: pista 0 -> y250, pista 300 -> y20; y = 250 - pista*(230/300) -->
+  <!-- puntos en x acumulado: 0,48,155,407,475,647,755,880 -> x = 55 + cum*(400/880) -->
+  <polyline fill="none" stroke="#2b4a8b" stroke-width="1.6"
+    points="55,192 77,155 104,237 240,44 271,96 348,228 396,145 462,241"/>
+  <g fill="#c0392b">
+    <circle cx="55" cy="192" r="3"/><circle cx="77" cy="155" r="3"/><circle cx="104" cy="237" r="3"/>
+    <circle cx="240" cy="44" r="3"/><circle cx="271" cy="96" r="3"/><circle cx="348" cy="228" r="3"/>
+    <circle cx="396" cy="145" r="3"/><circle cx="462" cy="241" r="3"/>
+  </g>
+  <g fill="#333">
+    <text x="45" y="188">76</text><text x="80" y="150">124</text><text x="108" y="240">17</text>
+    <text x="244" y="42">269</text><text x="275" y="94">201</text><text x="352" y="232">29</text>
+    <text x="400" y="142">137</text><text x="452" y="238">12</text>
+  </g>
+</svg>
