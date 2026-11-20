@@ -113,6 +113,7 @@ void exit(int status);
 
 - `wait` duerme al padre hasta que termine **cualquier** hijo; `waitpid` espera a un hijo en concreto. `wait(&status)` equivale a `waitpid(-1, &status, 0)`.
 - **Devuelven** el `pid` del hijo terminado, o `-1` si no hay hijos o hay error. Si el hijo ya había terminado, retornan de inmediato.
+- `options` de `waitpid`: con `0` espera a que el hijo termine; con `WUNTRACED` también retorna cuando el hijo se detiene (por ejemplo, con `SIGSTOP`); con `WNOHANG` no bloquea: si el hijo no ha terminado, devuelve `0` al momento.
 - Si `status` no es `NULL` guarda el estado de salida, inspeccionable con macros (`#include <sys/wait.h>`):
 
 <details> <summary> macros </summary>

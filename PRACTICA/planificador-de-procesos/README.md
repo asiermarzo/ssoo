@@ -34,6 +34,7 @@ Lo común a `procsched` y `encolador` va en `procsched.h`:
 #define ID_PROJ       22
 
 #define MAX_COMANDO   256 //longitud máxima de un comando
+#define MAX_ARGS 32       //argumentos máximos de un comando
 
 #define TURNO_MS      15   // duración por defecto de un turno (niveles 2 y 3)
 #define LATENCIA_MS   33   // espera máxima por defecto de los interactivos (nivel 2)
@@ -46,15 +47,30 @@ typedef struct {
 } peticion_t;
 ```
 
-`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms` - el instante en que el planificador lo puso en espera). También define `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y `COLA_FOR_EACH` para recorrerla. Primero se recorre para elegir y después se desencola. La cola se puede utilizar así:
+`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms` - el instante en que el planificador lo puso en espera). También define `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y una macro `COLA_FOR_EACH` para recorrer sus elementos. Primero se recorre para elegir qué proceso debe pasar a ejecución, luego se desencola. La cola se puede utilizar así:
+
+Inicializar:
 
 ```c
 cola_t listos;
 cola_iniciar(&listos);
-cola_encolar(&listos, p);
+```
 
+Encolar un proceso:
+
+```c
+proceso_t p;
+/* .. */
+p.pid = crear_y_pausar(p.comando);
+p.ultimo_ms = ahora_ms(); 
+cola_encolar(&listos, p);
+```
+
+Recorrer para buscar y desencolar:
+
+```c
 proceso_t *elegido = NULL;
-COLA_FOR_EACH(&listos, q) { // recorrer la cola, q es el puntero pasa por cada elemento
+COLA_FOR_EACH(&listos, q) { // recorrer la cola, q es el puntero pasa por cada elemento, no hace falta declararlo
     if (q->prioridad == 2 && (elegido == NULL || q->ultimo_ms < elegido->ultimo_ms)) {
         elegido = q;                             // el de nivel 2 que más lleva sin ejecutarse
     }
@@ -70,7 +86,7 @@ if (elegido != NULL) { //tenemos un proceso elegido
 
 1. **Admitir peticiones**: lee los mensajes de la cola *esperando* en un bucle hasta que `msgrcv` devuelva `-1` (no quedan mensajes). Si *listos* está vacía, no hay nada que planificar y el `msgrcv` es bloqueante; si hay procesos listos para ejecución, se hace el `msgrcv` con `IPC_NOWAIT`. Por cada mensaje de *esperando*, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si el mensaje era un [comando](#comandos-especiales-para-procsched), se aplica.
 
-2. **Planificar**: elige un proceso de la cola *listos* según las [políticas](#políticas-de-planificación), fija una alarma `ualarm` para el turno, le manda `SIGCONT` al proceso elegido y espera con `pause()`.
+2. **Planificar**: elige un proceso de la cola *listos* según las [políticas](#políticas-de-planificación), le manda `SIGCONT` al proceso elegido, fija una alarma `ualarm` para el turno y espera con `pause()`.
 
 3. **Desalojar**. `pause()` ha retornado por una de estas señales:
    - `SIGALRM`: se ha acabado el turno.
@@ -100,27 +116,43 @@ En el paso 2, `procsched` recorre *listos* y elige así:
 
 ## Crear el hijo pausado
 
-El hijo no debe hacer `execvp` hasta que `procsched` se lo ordene. Crear un proceso listo, quedaría así:
+El hijo no debe hacer `execvp` hasta que `procsched` se lo ordene: se detiene a sí mismo con `SIGSTOP` y el padre espera con `waitpid(..., WUNTRACED)` a que esté detenido antes de meterlo en *listos*. Así el `SIGCONT` de `procsched` siempre llega a un hijo ya detenido. Crear un proceso listo, quedaría así:
 
 ```c
-void despertar(int senal) {}
-
-...
 pid_t pid = fork();
 if (pid == 0) {
-    signal(SIGCONT, despertar);
-    pause();        // espera SIGCONT de procsched
-    execvp(args[0], args); 
+    kill(getpid(), SIGSTOP);   // se autodetiene
+    execsp(pet.comando);
     exit(127);
 }
-// rama padre: meter el proceso en listos
+// rama padre:
+waitpid(pid, NULL, WUNTRACED);   //espera a que el hijo se detenga
+//meter al proceso en listos
 ```
 
-Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell](../ejercicio-procesos-y-pipes/otras-practicas/minishell.md).
+`execsp` trocea `comando` por espacios y hace `execvp`:
 
-<!--
-> **Condición de carrera.** Si el `SIGCONT` llega **antes** de que el hijo haya llegado a `pause()`, se pierde y el hijo se queda dormido para siempre. En la práctica es raro, porque `procsched` no lo reanuda hasta que le toca, pero es posible. La solución correcta es que el padre **bloquee** `SIGCONT` con `sigprocmask` antes del `fork`. El hijo hereda la máscara, instala el manejador y espera con `sigsuspend` (que desbloquea y espera de forma atómica). Después vuelve a desbloquear `SIGCONT` antes del `execvp`.
--->
+```c
+// trocea line en argumentos y hace execvp; solo retorna si falla
+int execsp(const char *line) {
+    char str[MAX_COMANDO];
+    char *args[MAX_ARGS];
+    strncpy(str, line, MAX_COMANDO - 1);
+    str[MAX_COMANDO - 1] = '\0';
+
+    int n = 0;
+    for (int i = 0; str[i] != '\0' && n < MAX_ARGS - 1; i++) {
+        char c = str[i];
+        if (c == ' ') {
+            str[i] = '\0';
+        } else if (i == 0 || str[i - 1] == '\0') {
+            args[n++] = &str[i];
+        }
+    }
+    args[n] = NULL;
+    return execvp(args[0], args);
+}
+```
 
 ## Señales en `procsched`
 
@@ -251,7 +283,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 3. **`encolador` desde fichero.** Se lee igual, con `fgets` sobre el `FILE *` de `fopen` (ver [entrada y salida](../entrada-salida-y-ficheros/#lectura)). Hay que ignorar los `#` e implementar `0 espera ms` (`usleep`). Los comandos especiales ya llevan el 4 delante, así que se mandan como cualquier petición.
    *Prueba:* `./encolador set1-roundrobin.txt` y en `procsched` salen las líneas en orden, con sus pausas.
 
-4. **Hijos pausados en *listos*.** En vez de imprimir la petición, `procsched` crea el hijo pausado (`fork` + `str_split` + `pause` + `execvp`), lo mete en *listos* con `cola_encolar` e imprime `NUEVO`.
+4. **Hijos pausados en *listos*.** En vez de imprimir la petición, `procsched` crea el hijo pausado (`fork` + `str_split` + `SIGSTOP` + `waitpid` + `execvp`), lo mete en *listos* con `cola_encolar` e imprime `NUEVO`.
    *Prueba:* `ps -o pid,stat,cmd` muestra los hijos dormidos y sin ventana.
 
 5. **Ponerlos todos en ejecución.** Sin planificar todavía: manda `SIGCONT` a todos los de *listos*.
@@ -270,8 +302,8 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 
        // 2. planificar
        actual = desencolar el primero de listos
-       ualarm(TURNO_MS * 1000, 0)
        kill(actual.pid, SIGCONT)
+       ualarm(TURNO_MS * 1000, 0)
        pause()
 
        // 3. desalojar
@@ -346,16 +378,24 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 
 `fork(2)`, `execvp(3)`, `waitpid(2)` ([procesos](../procesos/)); `kill(2)`, `signal(2)`, `sigaction(2)`, `pause(2)` ([señales](../senales/)); `msgget(2)`, `msgsnd(2)`, `msgrcv(2)`, `msgctl(2)` ([colas de mensajes](../colas-de-mensajes/)). Nuevas en esta práctica: `ualarm(3)` y `clock_gettime(2)`.
 
-<!-- 
-Todo: quitar el reporte de estadísticas <- ahora se ven las cosas visualmente
+<!-- Todo: 
+quitar el reporte de estadísticas <- ya se ven las cosas visualmente
 
 ¿quitar urgentes? o que el urgente se haga sin alarm para simplificar
 
 quitar # como inicio de línea para comentario, indicar con número 0. hacer que el parseo de las líneas sea lo más sencillo posible.
+    darles explícitamente una solución para parsear
+    darles explícitamente una funcion execsp(const char* comando) que haga el parseo y el execvp
 
-Los ejercicios deben preguntar por cosas más sencillas: mostrar un roundrobin, latencias, inanición (se puede hacer sin urgentes).
+Los ejercicios deben preguntar por casuísticas sencillas, vistas en teoría: mostrar un roundrobin, inanición (se puede hacer sin urgentes), ajuste de turno (muy grande, muy pequeño).
 
 Quitar programas de ejemplo, es suficiente con:
     interactivo <- arkanoid
     cálculo <- factorizar, raytrace o buddah o mandel?
+
+SIGCONT; el procshed manda SIGCONT antes de que el hijo llega al sleep. la solución más sencilla es que el propio hijo se para (mandándose sigstop) y el padre espera a esto con waitpid. 
+
+de cola.h no les mola nada COLA_FOR_EACH que es una macro para iterar por la cola. Quizás lo maś sencillo sería usar una cola de mensajes para mantener los procesos listos
+
+El X11 está en los ordenadores de clase, pero dar otros commandos alternativos que no necesiten librerías extra (¿pueden abrir ventanas? - con que commando instalar X11-dev)
 -->
