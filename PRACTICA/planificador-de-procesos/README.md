@@ -7,7 +7,7 @@ Programar un planificador de procesos a nivel de usuario (`procsched`), apoyánd
 - `procsched` recibe por una **cola de mensajes** (*esperando*) las peticiones de programas a ejecutar junto a su **prioridad** (1, 2 o 3).
 - Por cada petición, crea un proceso **pausado** y lo guarda en su cola (`cola.h`) de procesos *listos*.
 - Según las **políticas de planificación**, decide qué proceso de *listos* pasa a ejecución y durante cuánto tiempo.
-- Para detener y reanudar procesos usa señales (`SIGSTOP` / `SIGCONT`), y para los turnos un temporizador (`ualarm()` → `SIGALRM`).
+- Para detener y reanudar procesos usa señales (`SIGSTOP` / `SIGCONT`), y para los turnos un temporizador `ualarm()` que le hace llegar una señal `SIGALRM`.
 - Un segundo programa, `encolador`, lee de teclado o de un fichero los programas a ejecutar y sus prioridades, y los manda a la cola *esperando*.
 
 `procsched` solo mantiene un hijo (proceso) en ejecución; a los demás los mantiene parados.
@@ -46,7 +46,7 @@ typedef struct {
 } peticion_t;
 ```
 
-`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms` - el instante en que salió de CPU) y una cola sobre un array con `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y `COLA_FOR_EACH` para recorrerla. Primero se recorre para elegir y después se desencola:
+`cola.h` define `proceso_t` (pid, prioridad, comando y `ultimo_ms` - el instante en que el planificador lo puso en espera). También define `cola_encolar` (al final), `cola_desencolar` (de cualquier posición) y `COLA_FOR_EACH` para recorrerla. Primero se recorre para elegir y después se desencola. La cola se puede utilizar así:
 
 ```c
 cola_t listos;
@@ -54,13 +54,13 @@ cola_iniciar(&listos);
 cola_encolar(&listos, p);
 
 proceso_t *elegido = NULL;
-COLA_FOR_EACH(&listos, q) { // recorrer la cola, q es el puntero que apunta a cada elemento
+COLA_FOR_EACH(&listos, q) { // recorrer la cola, q es el puntero pasa por cada elemento
     if (q->prioridad == 2 && (elegido == NULL || q->ultimo_ms < elegido->ultimo_ms)) {
         elegido = q;                             // el de nivel 2 que más lleva sin ejecutarse
     }
 }
 
-if (elegido != NULL) {
+if (elegido != NULL) { //tenemos un proceso elegido
     proceso_t actual = cola_desencolar(&listos, elegido);   
     ...
 }
@@ -68,7 +68,7 @@ if (elegido != NULL) {
 
 ### Bucle de `procsched`
 
-1. **Admitir peticiones**: lee los mensajes de la cola *esperando* en un bucle hasta que `msgrcv` devuelva `-1` (no quedan mensajes). Si *listos* está vacía, no hay nada que planificar y el `msgrcv` es bloqueante (sin `IPC_NOWAIT`); si no, se hace con `IPC_NOWAIT`. Por cada mensaje: si es una petición, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si es un comando, lo aplica.
+1. **Admitir peticiones**: lee los mensajes de la cola *esperando* en un bucle hasta que `msgrcv` devuelva `-1` (no quedan mensajes). Si *listos* está vacía, no hay nada que planificar y el `msgrcv` es bloqueante; si hay procesos listos para ejecución, se hace el `msgrcv` con `IPC_NOWAIT`. Por cada mensaje de *esperando*, crea el hijo pausado (ver [Crear el hijo pausado](#crear-el-hijo-pausado)) y lo mete en *listos*; si el mensaje era un [comando](#comandos-especiales-para-procsched), se aplica.
 
 2. **Planificar**: elige un proceso de la cola *listos* según las [políticas](#políticas-de-planificación), fija una alarma `ualarm` para el turno, le manda `SIGCONT` al proceso elegido y espera con `pause()`.
 
@@ -87,8 +87,8 @@ Con `Ctrl-C` o el comando `fin`, `procsched` termina ordenadamente: mata a los h
 
 | Prioridad | Tipo | Cuándo se ejecuta | Turno |
 |---|---|---|---|
-| 1 | urgente | En cuanto acaba el turno en curso (como mucho `turno_ms` después de llegar). Si hay varios, por orden de llegada. | hasta que termina |
-| 2 | interactivo | Cuando lleva `>= latencia_ms` (33 ms por defecto) sin ejecutarse. Primero el que más lleve. | `turno_ms` |
+| 1 | urgente | En cuanto acaba el turno en curso . Si hay varios, por orden de llegada. | hasta que termina |
+| 2 | interactivo | Cuando lleva `>= latencia_ms` (33 ms) sin ejecutarse. El que lleve más tiempo esperando. | `turno_ms` |
 | 3 | cálculo | Cuando todos los de nivel 2 llevan menos de `latencia_ms` sin ejecutarse. Round Robin. | `turno_ms` |
 
 En el paso 2, `procsched` recorre *listos* y elige así:
@@ -100,7 +100,7 @@ En el paso 2, `procsched` recorre *listos* y elige así:
 
 ## Crear el hijo pausado
 
-El hijo no debe hacer `execvp` hasta que `procsched` lo ponga en ejecución por primera vez. Poner un proceso en ejecución quedaría así:
+El hijo no debe hacer `execvp` hasta que `procsched` se lo ordene. Crear un proceso listo, quedaría así:
 
 ```c
 void despertar(int senal) {}
@@ -139,7 +139,7 @@ Para trocear `comando` en `args` puedes reutilizar `str_split` de la [minishell]
 useconds_t ualarm(useconds_t usecs, useconds_t interval);
 ```
 
-Como `alarm`, pero en **microsegundos** (`usecs < 1000000`). Con `interval = 0` avisa una sola vez; `ualarm(0, 0)` cancela la alarma. Un turno de 15 ms se puede fijar con `ualarm(15 * 1000, 0)`.
+Como `alarm`, pero en **microsegundos**. Con `interval = 0` avisa una sola vez; `ualarm(0, 0)` cancela la alarma. Un turno de 15 ms se puede fijar con `ualarm(15 * 1000, 0)`.
 
 ### Medir el tiempo
 
@@ -242,7 +242,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 
 ## Pasos sugeridos
 
-1. **`procsched.c` y la cola *esperando*.** `procsched` crea la cola (`ftok` + `msgget` con `IPC_CREAT | 0600`) y en un bucle hace `msgrcv` bloqueante e imprime `mtype` y `comando` de lo que llega. Con `Ctrl-C`, borra la cola y termina (`IPC_RMID`).
+1. **`procsched.c` y la cola *esperando*.** `procsched` crea la cola con `IPC_CREAT | 0600` y en un bucle hace `msgrcv` bloqueante e imprime `mtype` y `comando` de lo que llega. Al receibir `Ctrl-C` (SIGTERM), borra la cola (`IPC_RMID`) y termina.
    *Prueba:* `ipcs -q` muestra la cola mientras se ejecuta y no la muestra después de terminar.
 
 2. **`encolador` desde teclado.** Lee líneas con `fgets` (ver la [minishell](../ejercicio-procesos-y-pipes/otras-practicas/minishell.md#1-leer-una-línea-de-teclado)), separa la prioridad del resto y hace `msgsnd`.
@@ -282,7 +282,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
    Hace falta poner los manejadores vacíos para `SIGALRM` y `SIGCHLD` (este con `SA_NOCLDSTOP`).
    *Prueba:* con `TURNO_MS=999` y el set 1, las ventanas se actualizarán una a una, durante 1 segundo.
 
-7. **Procesos que terminan.** Tras el `pause()` de planificar, haz `waitpid(pid, &estado, WNOHANG)` para saber si el proceso había terminado o simplemente se le había acabado el turno. Si ha terminado: cancela alarma `ualarm(0, 0)`, imprime `TERMINA` y no se reencola.
+7. **Procesos que terminan.** Tras el `pause()` de planificar, haz `waitpid(pid, &estado, WNOHANG)` para saber si el proceso había terminado (y te ha llegado SIGCHLD) o simplemente se le había acabado el turno (y te había llegado SIGALARM). Si ha terminado: cancela alarma `ualarm(0, 0)`, imprime `TERMINA` y no se reencola.
    *Prueba:* `mandelbrot 0 0 50` termina y los demás procesos siguen su turno.
 
 8. **Nivel 1 (urgentes).** En la elección, primero los de nivel 1. Si el que está en ejecución es de nivel 1, no se para: se vuelve a `pause()`. Imprimir `URGENTE`.
@@ -292,7 +292,7 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
    *Prueba:* set 2, `arkanoid` y `pintar` se ven fluidos aún con los procesos de cálculo de fondo.
 
 10. **Comandos especiales.** `turno`, `latencia` y `fin` (imprimiendo `COMANDO`).
-    *Prueba:* `4 turno 200` desde otro `encolador` se nota a simple vista en los procesos interactivos.
+    *Prueba:* `4 turno 999` desde otro `encolador`: cada vez que entra un proceso de cálculo, se queda la CPU casi un segundo y los interactivos se congelan. `arkanoid` va a saltos (~1 por segundo) y `pintar` deja de responder al ratón. Con `4 turno 20` vuelven a ir fluidos.
 
 11. **Terminación ordenada.** `Ctrl-C` y `fin` hacen lo mismo: `SIGKILL` a los hijos e `IPC_RMID` en la cola.
     *Prueba:* no quedan procesos (`ps`) ni colas (`ipcs -q`).
@@ -305,14 +305,12 @@ Para terminar uno de los procesos, `kill <pid>` (el pid aparece en la línea `NU
 
 | Programa | Tipo previsto | Qué se ve | Título |
 |---|---|---|---|
-| `mandelbrot [x y [fotogramas]]` | cálculo / urgente | Mandelbrot que gira y hace zoom; en inanición se congela. Con `fotogramas` especificado, termina y guarda el último en `mandelbrot_AAAAMMDD_HHMMSS.ppm`. | fps |
+| `mandelbrot [x y [fotogramas]]` | cálculo / urgente | Mandelbrot que gira y hace zoom; en inanición se congela. Con `fotogramas` especificado, termina y guarda el último frame en `mandelbrot_AAAAMMDD_HHMMSS.ppm`. | fps |
 | `buddhabrot [x y]` | cálculo | La imagen se revela al acumular órbitas. | miles de muestras |
 | `raytracer [x y]` | cálculo | Esferas con sombras; cada píxel sale en cuanto está calculado. | fotograma |
 | `arkanoid [x y]` | interactivo | Pala con el ratón, pelota a 60 fps. Con lag va a cámara lenta y a saltos. | fps |
 | `pintar [x y]` | interactivo | Estela que sigue al ratón. Con lag se queda atrás. | fps |
 | `factoriza n` | urgente | Sin ventana. Factoriza `n` (64 bits) por división por tentativa e imprime el tiempo de CPU y el real. | — |
-
-La prioridad la decide la petición, no el programa.
 
 Conjuntos de prueba (cada fichero explica en sus comentarios qué observar):
 
@@ -332,13 +330,11 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 
 ## Ejercicios propuestos
 
-1. **Reparto en el nivel 3.** Lanza `mandelbrot`, `buddhabrot` y `raytracer` a mano de uno en uno, sin `procsched`, y apunta durante 10 s el valor de su título (fps, miles de muestras, fotogramas). Después lanza el set 1 (cuatro procesos de nivel 3) y apunta lo mismo. ¿Recibe cada uno aproximadamente 1/4 de su ritmo en solitario?
+1. **Reparto en el nivel 3.** Lanza a mano de uno en uno sin `procsched` los programas del set 1: `mandelbrot`, `buddhabrot` y `raytracer`; apunta el valor de su título (fps, miles de muestras, fotogramas). Después lanza con `procsched` el set 1 (cuatro procesos de nivel 3) y apunta lo mismo. ¿Recibe cada uno aproximadamente 1/4 de su ritmo en solitario?
 
-2. **Urgentes.** Lanza el set 3 y observa que cuando entra (`mandelbrot` urgente) y (`factoriza` urgente). el resto de ventanas se congelan. El tiempo que `factoriza` pasa en la CPU debe ser parecido a cuando se ejecuta por separado, al ser prioridad 1 se le da toda la CPU.
+2. **Urgentes.** Lanza el set 3 y observa que cuando entra (`mandelbrot` urgente) y (`factoriza` urgente). el resto de ventanas se congelan hasta que termina el factoriza urgente.
 
-   Después lanza el set 1 y, desde otro `encolador`, manda `3 ./factoriza 1000000016000000063` (factoriza pero con la menor prioridad posible). ¿Cuánto tiempo tarda en ejecutarse ahora?
-
-3. **Latencia de los interactivos.** Lanza el set 2 y mira los fps en el título de `arkanoid` y `pintar`. ¿Llegan a 30 fps (un fotograma cada 33 ms)? Si no, explica por qué (pista: un proceso de nivel 3 puede empezar su turno de 15 ms justo antes de que un interactivo llegue a 33 ms de espera). Manda `4 latencia 18` (33 − 15) y comprueba si ahora llegan a 30 fps. ¿Qué les pasa a los de cálculo?
+3. **Latencia de los interactivos.** Lanza el set 2 y, desde otro `encolador`, prueba `4 latencia 10` y `4 latencia 100`. ¿Qué les pasa a los interactivos (`arkanoid`, `pintar`) y a los de cálculo?
 
 4. **Inanición.** Lanza el set 3 y observa la fase 1 (cuatro interactivos, turno de 15 ms): los de cálculo de nivel 3 se congelan. 
    - Manda `4 turno 5`. ¿Vuelven a moverse los de cálculo? ¿Cuántos interactivos podría haber con `turno 5` antes de que se congelen?
@@ -349,3 +345,17 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 ## Llamadas al sistema útiles
 
 `fork(2)`, `execvp(3)`, `waitpid(2)` ([procesos](../procesos/)); `kill(2)`, `signal(2)`, `sigaction(2)`, `pause(2)` ([señales](../senales/)); `msgget(2)`, `msgsnd(2)`, `msgrcv(2)`, `msgctl(2)` ([colas de mensajes](../colas-de-mensajes/)). Nuevas en esta práctica: `ualarm(3)` y `clock_gettime(2)`.
+
+<!-- 
+Todo: quitar el reporte de estadísticas <- ahora se ven las cosas visualmente
+
+¿quitar urgentes? o que el urgente se haga sin alarm para simplificar
+
+quitar # como inicio de línea para comentario, indicar con número 0. hacer que el parseo de las líneas sea lo más sencillo posible.
+
+Los ejercicios deben preguntar por cosas más sencillas: mostrar un roundrobin, latencias, inanición (se puede hacer sin urgentes).
+
+Quitar programas de ejemplo, es suficiente con:
+    interactivo <- arkanoid
+    cálculo <- factorizar, raytrace o buddah o mandel?
+-->
