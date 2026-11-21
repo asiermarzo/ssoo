@@ -14,14 +14,7 @@ Programar un planificador de procesos a nivel de usuario (`procsched`), apoyánd
 
 ## Arquitectura
 
-```mermaid
-flowchart LR
-    E[encolador] -- "msgsnd<br>(prioridad, comando)" --> Q1[(esperando)]
-    Q1 -- msgrcv --> P[procsched<br>+ cola listos]
-    P -- "SIGCONT / SIGSTOP" --> H1[hijo 1]
-    P -- "SIGCONT / SIGSTOP" --> H2[hijo 2]
-    P -- "SIGCONT / SIGSTOP" --> H3[hijo ...]
-```
+<img src="img/planificador.svg" width="800" alt="Arquitectura del planificador: encolador manda peticion_t de tipo 1 a 4 a la cola esperando; procsched las lee con tipo -4, mete cada proceso_t en su cola listos con cola_encolar y elige el siguiente con COLA_FOR_EACH y cola_desencolar; manda SIGCONT al hijo en ejecución y SIGSTOP a los parados">
 
 - ***esperando***: cola de mensajes (permisos `0600`). El `mtype` es la prioridad (1–3), o `4` para los [comandos especiales](#comandos-especiales-para-procsched). `procsched` lee con `msgtyp = -4`, que saca primero el `mtype` más bajo.
 - ***listos***: una cola propia de `procsched` que se puede recorrer, implementada en [`cola.h`](cola.h).
@@ -381,7 +374,7 @@ taskset -c 0 ./procsched          # lanza procsched y sus hijos solo en el núcl
 <!-- Todo: 
 quitar el reporte de estadísticas <- ya se ven las cosas visualmente
 
-¿quitar urgentes? o que el urgente se haga sin alarm para simplificar
+¿quitar urgentes?
 
 quitar # como inicio de línea para comentario, indicar con número 0. hacer que el parseo de las líneas sea lo más sencillo posible.
     darles explícitamente una solución para parsear
@@ -389,11 +382,13 @@ quitar # como inicio de línea para comentario, indicar con número 0. hacer que
 
 Los ejercicios deben preguntar por casuísticas sencillas, vistas en teoría: mostrar un roundrobin, inanición (se puede hacer sin urgentes), ajuste de turno (muy grande, muy pequeño).
 
-Quitar programas de ejemplo, es suficiente con:
+Quitar algunos programas de ejemplo, es suficiente con:
     interactivo <- arkanoid
     cálculo <- factorizar, raytrace o buddah o mandel?
 
-SIGCONT; el procshed manda SIGCONT antes de que el hijo llega al sleep. la solución más sencilla es que el propio hijo se para (mandándose sigstop) y el padre espera a esto con waitpid. 
+Cambiar a que el hijo creado se manda SIGSTOP y el padre le espera cn WUNTRACED(añadir raise en teoría/práctica).  
+
+Cambiar a que el planificador hace: sigcont(hijo), usleep, sigstop(hijo), waitpid(wuntraced) para detectar si parado o muerto
 
 de cola.h no les mola nada COLA_FOR_EACH que es una macro para iterar por la cola. Quizás lo maś sencillo sería usar una cola de mensajes para mantener los procesos listos
 
